@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact | U818（ユーエイト）</title>
+<meta name="description" content="U818へのお問い合わせフォーム。ご相談、お見積り、ちいさなご質問もお気軽にどうぞ。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="site-logo">
+      U818
+      <small>ユーエイト</small>
+    </a>
+    <button class="nav-toggle" aria-label="メニューを開く" onclick="document.getElementById('gnav').classList.toggle('is-open')">≡</button>
+    <nav class="global-nav" id="gnav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="service.html">Service</a></li>
+        <li><a href="works.html">Works</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="contact.html" class="is-active">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-header">
+    <p class="page-header-en">Contact</p>
+    <h1>お問い合わせ</h1>
+    <p class="lead">
+      ご相談、お見積り、ちいさなご質問も。<br>
+      「こんなこと聞いてもいいかな？」も大歓迎です。<br>
+      お気軽にお声がけください。
+    </p>
+  </section>
+
+  <section class="section">
+    <div class="section-inner">
+
+      <p class="contact-intro">
+        いただいたメッセージには、2〜3営業日以内にお返事いたします。<br>
+        匿名のご相談でも、できる範囲でお返事しますね。
+      </p>
+
+      <form class="contact-form" action="#" method="post" onsubmit="alert('お問い合わせありがとうございます。\nこのフォームはデモのため送信されません。'); return false;">
+
+        <div class="form-group">
+          <label for="name">お名前 <span class="required">必須</span></label>
+          <input type="text" id="name" name="name" placeholder="例：山田 花子" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">メールアドレス <span class="required">必須</span></label>
+          <input type="email" id="email" name="email" placeholder="例：mail@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="subject">ご相談内容の種類</label>
+          <select id="subject" name="subject">
+            <option value="">— 選択してください —</option>
+            <option>note・SNS発信のご相談</option>
+            <option>AI画像・音楽生成のご依頼</option>
+            <option>Webサイト制作のご相談</option>
+            <option>ライティングのご依頼</option>
+            <option>その他・はじめてのご相談</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="message">メッセージ <span class="required">必須</span></label>
+          <textarea id="message" name="message" placeholder="ご相談内容、ご希望、ご予算など、わかる範囲でお書きください。" required></textarea>
+        </div>
+
+        <div class="form-submit">
+          <button type="submit">送信する</button>
+        </div>
+
+      </form>
+
+      <div class="contact-other">
+        <p>フォーム以外でのご連絡もお気軽にどうぞ。</p>
+        <p>
+          <a href="#">note</a>
+          <a href="#">X (Twitter)</a>
+          <a href="#">Instagram</a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="section-inner concept">
+      <div class="section-title">
+        <span class="en">Notice</span>
+        <h2>ご相談の前に</h2>
+        <span class="deco"></span>
+      </div>
+      <p>
+        いただいた内容は、ご依頼の検討以外には使用いたしません。<br>
+        個人情報は、適切に管理し、第三者へ提供することはありません。
+      </p>
+      <p>
+        対応時間は、平日 10:00 – 17:00（オンライン完結）。<br>
+        土日祝はお返事が遅くなる場合があります。
+      </p>
+      <p class="sign">— U818</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-logo">U818</div>
+  <div class="footer-tagline">AIと感性で生きていく</div>
+  <ul class="footer-nav">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="service.html">Service</a></li>
+    <li><a href="works.html">Works</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© U818 All Rights Reserved.</div>
+</footer>
+
+</body>
+</html>
