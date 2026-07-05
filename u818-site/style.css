@@ -1093,3 +1093,132 @@ a:hover {
     font-size: 21px;
   }
 }
+
+/* ---------- Kantei (本格占い鑑定) ---------- */
+.kantei-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.uranai-field .req {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  font-size: 10px;
+  color: #fff;
+  background: var(--color-pink-deep);
+  border-radius: 10px;
+  letter-spacing: 0.1em;
+}
+
+.uranai-field select {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: var(--font-jp-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  transition: border-color var(--transition);
+}
+
+.uranai-field select:focus {
+  outline: none;
+  border-color: var(--color-pink-deep);
+}
+
+.kantei-profile {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.kantei-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 20px;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  font-family: var(--font-jp-serif);
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.kantei-chip small {
+  font-size: 10px;
+  color: var(--color-text-soft);
+  letter-spacing: 0.15em;
+}
+
+.kantei-result #kSections {
+  display: grid;
+  gap: 20px;
+  text-align: left;
+}
+
+.kantei-block {
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 28px 30px 24px;
+}
+
+.kantei-block h3 {
+  font-family: var(--font-jp-serif);
+  font-size: 18px;
+  font-weight: 500;
+  margin: 4px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.kantei-block p {
+  font-size: 14px;
+  color: var(--color-text-soft);
+  line-height: 2;
+  margin: 0 0 10px;
+}
+
+.kantei-block p:last-child {
+  margin-bottom: 0;
+}
+
+.kantei-actions {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.kantei-copy {
+  padding: 12px 32px;
+  font-size: 13px;
+  font-family: var(--font-jp-sans);
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.kantei-copy:hover {
+  color: #fff;
+  background: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .kantei-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kantei-block {
+    padding: 24px 20px;
+  }
+}
