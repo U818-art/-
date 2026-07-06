@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>インド占星術（ジョーティッシュ）| U818（ユーエイト）</title>
+<meta name="description" content="生年月日・出生時間・出生地・性別を入力するだけで、月星座（ラーシ）・ナクシャトラ・ラグナ・ヴィムショッタリ・ダシャーを無料で計算できるインド占星術（ジョーティッシュ）ツールです。">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ===== Jyotish page-specific styles ===== */
+.jyotish-form {
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.jyotish-form .form-row {
+  margin-bottom: 24px;
+}
+.jyotish-form label.field-label {
+  display: block;
+  font-family: var(--font-jp-serif);
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+.jyotish-form label.field-label small {
+  font-family: var(--font-en);
+  color: var(--color-text-soft);
+  margin-left: 8px;
+  letter-spacing: 0.08em;
+}
+.jyotish-form input[type="date"],
+.jyotish-form input[type="time"],
+.jyotish-form input[type="number"],
+.jyotish-form select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: var(--font-jp-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+}
+.jyotish-form .inline-fields {
+  display: flex;
+  gap: 12px;
+}
+.jyotish-form .inline-fields > div { flex: 1; }
+.jyotish-form .gender-options {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.jyotish-form .gender-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.jyotish-form .note {
+  font-size: 12px;
+  color: var(--color-text-soft);
+  margin-top: 6px;
+}
+.jyotish-submit {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  font-family: var(--font-jp-serif);
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  color: #fff;
+  background: var(--color-pink-deep);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.jyotish-submit:hover { background: var(--color-accent); }
+#customPlace { display: none; }
+#customPlace.is-visible { display: block; }
+.form-error {
+  display: none;
+  color: #b0554f;
+  font-size: 13px;
+  margin-top: 16px;
+  text-align: center;
+}
+.form-error.is-visible { display: block; }
+
+/* ----- result ----- */
+#result { display: none; }
+#result.is-visible { display: block; }
+.result-block {
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  margin-bottom: 32px;
+}
+.result-block h3 {
+  font-family: var(--font-jp-serif);
+  font-size: 19px;
+  font-weight: 500;
+  margin: 0 0 4px;
+}
+.result-block .en-label {
+  font-family: var(--font-en);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  color: var(--color-pink-deep);
+  margin: 0 0 20px;
+  text-transform: uppercase;
+}
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.summary-card {
+  background: var(--color-bg-soft);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+}
+.summary-card .card-title {
+  font-size: 12px;
+  color: var(--color-text-soft);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.summary-card .card-value {
+  font-family: var(--font-jp-serif);
+  font-size: 17px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+.summary-card .card-sub {
+  font-size: 12px;
+  color: var(--color-text-soft);
+  margin-top: 6px;
+}
+/* South Indian chart */
+.rasi-chart {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, minmax(84px, auto));
+  max-width: 520px;
+  margin: 0 auto;
+  border: 1.5px solid var(--color-beige);
+}
+.rasi-cell {
+  border: 0.75px solid var(--color-beige);
+  padding: 6px;
+  font-size: 12px;
+  position: relative;
+  min-height: 84px;
+}
+.rasi-cell .sign-name {
+  font-size: 10px;
+  color: var(--color-text-soft);
+  display: block;
+  margin-bottom: 4px;
+}
+.rasi-cell .planets {
+  font-family: var(--font-jp-serif);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+.rasi-cell.lagna-cell { background: #f7ece9; }
+.rasi-cell.lagna-cell::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 18px; height: 18px;
+  border-top: 2px solid var(--color-pink-deep);
+  border-left: 2px solid var(--color-pink-deep);
+}
+.rasi-center {
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+  border: 0.75px solid var(--color-beige);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-en);
+  color: var(--color-pink-deep);
+  letter-spacing: 0.3em;
+  font-size: 14px;
+}
+.rasi-center small {
+  font-family: var(--font-jp-sans);
+  color: var(--color-text-soft);
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  margin-top: 6px;
+}
+/* tables */
+.jyotish-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.jyotish-table th, .jyotish-table td {
+  border-bottom: 1px solid var(--color-line);
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+.jyotish-table th {
+  font-family: var(--font-jp-serif);
+  font-weight: 500;
+  color: var(--color-text-soft);
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.jyotish-table tr.is-current td { background: #f7ece9; }
+.table-scroll { overflow-x: auto; }
+.reading-item { margin-bottom: 28px; }
+.reading-item:last-child { margin-bottom: 0; }
+.reading-item h4 {
+  font-family: var(--font-jp-serif);
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 4px;
+}
+.reading-item .reading-meta {
+  font-size: 12px;
+  color: var(--color-pink-deep);
+  margin: 0 0 10px;
+  letter-spacing: 0.08em;
+}
+.reading-item p { margin: 0; font-size: 14px; }
+.current-dasha-box {
+  background: var(--color-bg-soft);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 2;
+}
+.current-dasha-box strong { font-family: var(--font-jp-serif); font-weight: 500; }
+.jyotish-disclaimer {
+  font-size: 12px;
+  color: var(--color-text-soft);
+  line-height: 1.9;
+  border-top: 1px solid var(--color-line);
+  padding-top: 20px;
+  margin-top: 8px;
+}
+@media (max-width: 600px) {
+  .jyotish-form { padding: 28px 20px; }
+  .result-block { padding: 28px 20px; }
+  .rasi-cell { min-height: 72px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="site-logo">
+      U818
+      <small>ユーエイト</small>
+    </a>
+    <button class="nav-toggle" aria-label="メニューを開く" onclick="document.getElementById('gnav').classList.toggle('is-open')">≡</button>
+    <nav class="global-nav" id="gnav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="service.html">Service</a></li>
+        <li><a href="works.html">Works</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-header">
+    <p class="page-header-en">Jyotish</p>
+    <h1>インド占星術</h1>
+    <p class="lead">
+      生まれた瞬間の星の配置から、<br>
+      あなたの本質と人生のリズムを読み解く<br>
+      5000年の智慧「ジョーティッシュ」。
+    </p>
+  </section>
+
+  <section class="section">
+    <div class="section-inner">
+
+      <form class="jyotish-form" id="jyotishForm" onsubmit="return false;">
+
+        <div class="form-row">
+          <label class="field-label" for="birthDate">生年月日<small>Date of Birth</small></label>
+          <input type="date" id="birthDate" min="1900-01-01" max="2099-12-31" required>
+        </div>
+
+        <div class="form-row">
+          <label class="field-label" for="birthTime">出生時間<small>Time of Birth</small></label>
+          <input type="time" id="birthTime" value="12:00" required>
+          <p class="note">母子手帳などで正確な時間をご確認ください。不明な場合は12:00のままでも計算できますが、ラグナ（アセンダント）の精度が下がります。</p>
+        </div>
+
+        <div class="form-row">
+          <label class="field-label" for="birthPlace">出生地<small>Place of Birth</small></label>
+          <select id="birthPlace"></select>
+          <div id="customPlace">
+            <div class="inline-fields" style="margin-top:12px;">
+              <div>
+                <label class="field-label" for="customLat">緯度（北緯＋）</label>
+                <input type="number" id="customLat" step="0.0001" min="-90" max="90" placeholder="例: 35.69">
+              </div>
+              <div>
+                <label class="field-label" for="customLon">経度（東経＋）</label>
+                <input type="number" id="customLon" step="0.0001" min="-180" max="180" placeholder="例: 139.69">
+              </div>
+              <div>
+                <label class="field-label" for="customTz">時差（UTC）</label>
+                <input type="number" id="customTz" step="0.25" min="-12" max="14" placeholder="例: 9">
+              </div>
+            </div>
+            <p class="note">海外生まれでサマータイム実施中に生まれた方は、時差に＋1時間してください。</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <span class="field-label">性別<small>Gender</small></span>
+          <div class="gender-options">
+            <label><input type="radio" name="gender" value="female" checked> 女性</label>
+            <label><input type="radio" name="gender" value="male"> 男性</label>
+            <label><input type="radio" name="gender" value="other"> その他・回答しない</label>
+          </div>
+        </div>
+
+        <button class="jyotish-submit" id="calcBtn" type="button">鑑定する</button>
+        <p class="form-error" id="formError"></p>
+      </form>
+
+    </div>
+  </section>
+
+  <section class="section" id="result">
+    <div class="section-inner">
+
+      <div class="result-block">
+        <h3>あなたの基本情報</h3>
+        <p class="en-label">Your Cosmic Profile</p>
+        <div class="summary-cards" id="summaryCards"></div>
+      </div>
+
+      <div class="result-block">
+        <h3>ラーシ・チャート（南インド式）</h3>
+        <p class="en-label">Rasi Chart</p>
+        <div class="rasi-chart" id="rasiChart"></div>
+        <p class="note" style="text-align:center; margin-top:14px; color:var(--color-text-soft); font-size:12px;">
+          「La」＝ラグナ（アセンダント）。左上に印のあるマスが第1ハウスです。
+        </p>
+      </div>
+
+      <div class="result-block">
+        <h3>9惑星（ナヴァグラハ）の配置</h3>
+        <p class="en-label">Planetary Positions</p>
+        <div class="table-scroll">
+          <table class="jyotish-table" id="planetTable"></table>
+        </div>
+      </div>
+
+      <div class="result-block">
+        <h3>星からのメッセージ</h3>
+        <p class="en-label">Reading</p>
+        <div id="readings"></div>
+      </div>
+
+      <div class="result-block">
+        <h3>ヴィムショッタリ・ダシャー（人生の運気サイクル）</h3>
+        <p class="en-label">Vimshottari Dasha</p>
+        <div class="current-dasha-box" id="currentDasha"></div>
+        <div class="table-scroll">
+          <table class="jyotish-table" id="dashaTable"></table>
+        </div>
+      </div>
+
+      <div class="result-block">
+        <p class="jyotish-disclaimer">
+          ※ 本ツールはラヒリ・アヤナムシャ（サイデリアル方式）・ホールサインハウスに基づく簡易計算です。
+          天体位置は近似計算のため、星座やナクシャトラの境界付近（±0.1度程度）ではプロの鑑定ソフトと結果が異なる場合があります。<br>
+          ※ 占い結果は人生を縛るものではなく、自分を知るためのひとつの視点としてお楽しみください。
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-logo">U818</div>
+  <div class="footer-tagline">AIと感性で生きていく</div>
+  <ul class="footer-nav">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="service.html">Service</a></li>
+    <li><a href="works.html">Works</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© U818 All Rights Reserved.</div>
+</footer>
+
+<script>
+"use strict";
+
+/* =========================================================
+   1. 出生地データ（都道府県庁所在地 + 海外主要都市）
+   ========================================================= */
+const PLACES = [
+  ["東京都", 35.69, 139.69, 9], ["北海道（札幌）", 43.06, 141.35, 9],
+  ["青森県", 40.82, 140.74, 9], ["岩手県（盛岡）", 39.70, 141.15, 9],
+  ["宮城県（仙台）", 38.27, 140.87, 9], ["秋田県", 39.72, 140.10, 9],
+  ["山形県", 38.24, 140.36, 9], ["福島県", 37.75, 140.47, 9],
+  ["茨城県（水戸）", 36.34, 140.45, 9], ["栃木県（宇都宮）", 36.57, 139.88, 9],
+  ["群馬県（前橋）", 36.39, 139.06, 9], ["埼玉県（さいたま）", 35.86, 139.65, 9],
+  ["千葉県", 35.61, 140.12, 9], ["神奈川県（横浜）", 35.45, 139.64, 9],
+  ["新潟県", 37.90, 139.02, 9], ["富山県", 36.70, 137.21, 9],
+  ["石川県（金沢）", 36.59, 136.63, 9], ["福井県", 36.07, 136.22, 9],
+  ["山梨県（甲府）", 35.66, 138.57, 9], ["長野県", 36.65, 138.18, 9],
+  ["岐阜県", 35.39, 136.72, 9], ["静岡県", 34.98, 138.38, 9],
+  ["愛知県（名古屋）", 35.18, 136.91, 9], ["三重県（津）", 34.73, 136.51, 9],
+  ["滋賀県（大津）", 35.00, 135.87, 9], ["京都府", 35.02, 135.76, 9],
+  ["大阪府", 34.69, 135.50, 9], ["兵庫県（神戸）", 34.69, 135.20, 9],
+  ["奈良県", 34.69, 135.83, 9], ["和歌山県", 34.23, 135.17, 9],
+  ["鳥取県", 35.50, 134.24, 9], ["島根県（松江）", 35.47, 133.05, 9],
+  ["岡山県", 34.66, 133.93, 9], ["広島県", 34.40, 132.46, 9],
+  ["山口県", 34.19, 131.47, 9], ["徳島県", 34.07, 134.56, 9],
+  ["香川県（高松）", 34.34, 134.04, 9], ["愛媛県（松山）", 33.84, 132.77, 9],
+  ["高知県", 33.56, 133.53, 9], ["福岡県", 33.61, 130.42, 9],
+  ["佐賀県", 33.25, 130.30, 9], ["長崎県", 32.74, 129.87, 9],
+  ["熊本県", 32.79, 130.74, 9], ["大分県", 33.24, 131.61, 9],
+  ["宮崎県", 31.91, 131.42, 9], ["鹿児島県", 31.56, 130.56, 9],
+  ["沖縄県（那覇）", 26.21, 127.68, 9],
+  ["ソウル（韓国）", 37.57, 126.98, 9], ["台北（台湾）", 25.03, 121.57, 8],
+  ["上海（中国）", 31.23, 121.47, 8], ["デリー（インド）", 28.61, 77.21, 5.5],
+  ["ロンドン（イギリス）", 51.51, -0.13, 0], ["パリ（フランス）", 48.86, 2.35, 1],
+  ["ニューヨーク（アメリカ）", 40.71, -74.01, -5], ["ロサンゼルス（アメリカ）", 34.05, -118.24, -8],
+  ["ホノルル（ハワイ）", 21.31, -157.86, -10], ["シドニー（オーストラリア）", -33.87, 151.21, 10]
+];
+
+/* =========================================================
+   2. 占星術データ（星座・ナクシャトラ・惑星）
+   ========================================================= */
+const SIGNS = [
+  { jp: "牡羊座", skt: "メーシャ", abbr: "牡羊" },
+  { jp: "牡牛座", skt: "ヴリシャバ", abbr: "牡牛" },
+  { jp: "双子座", skt: "ミトゥナ", abbr: "双子" },
+  { jp: "蟹座", skt: "カルカ", abbr: "蟹" },
+  { jp: "獅子座", skt: "シンハ", abbr: "獅子" },
+  { jp: "乙女座", skt: "カニヤー", abbr: "乙女" },
+  { jp: "天秤座", skt: "トゥラー", abbr: "天秤" },
+  { jp: "蠍座", skt: "ヴリシュチカ", abbr: "蠍" },
+  { jp: "射手座", skt: "ダヌ", abbr: "射手" },
+  { jp: "山羊座", skt: "マカラ", abbr: "山羊" },
+  { jp: "水瓶座", skt: "クンバ", abbr: "水瓶" },
+  { jp: "魚座", skt: "ミーナ", abbr: "魚" }
+];
+
+const MOON_SIGN_TEXT = [
+  "心の奥にいつも小さな炎が灯っている人。思い立ったら即行動のエネルギーと、まっすぐな情熱が持ち味です。多少の失敗も燃料に変えて進んでいける、生まれながらの開拓者タイプです。",
+  "五感が豊かで、心地よいもの・美しいものを見きわめる審美眼の持ち主。一度決めたことをコツコツ続けられる粘り強さがあり、周りに安心感を与える存在です。",
+  "好奇心のアンテナが常に立っていて、情報や言葉を扱う才能に恵まれています。フットワークが軽く、人と人・アイデアとアイデアをつなぐ橋渡し役として輝きます。",
+  "感受性が豊かで、大切な人を包み込むあたたかさを持っています。共感力が高く、相手の気持ちを察する力は随一。安心できる居場所を作ることが幸せの鍵です。",
+  "太陽のような存在感と、人を惹きつけるカリスマ性の持ち主。自分らしく堂々と表現するときに最も輝きます。プライドの高さは、裏を返せば誇り高い責任感です。",
+  "細やかな観察眼と分析力に恵まれた、縁の下の力持ち。誰かの役に立つことに喜びを感じ、実務能力の高さで信頼を集めます。完璧を求めすぎず、自分にもやさしく。",
+  "調和とバランスの感覚に優れ、人間関係の中で自分を磨いていく人。センスが良く、社交の場で自然と場を和ませます。パートナーシップが人生の大きなテーマです。",
+  "物事の本質を見抜く深い洞察力と、一度決めたら貫き通す集中力の持ち主。感情は深く静かに流れ、信頼した相手には誰よりも誠実。変容と再生の星のもとに生まれています。",
+  "自由と真理を追い求める、生まれながらの冒険家。楽観的でおおらか、学びや旅を通して人生を広げていきます。その明るさは周囲の希望の光になります。",
+  "現実を動かす力と、目標に向かって着実に登っていく忍耐力の持ち主。責任感が強く、時間をかけて大きなことを成し遂げます。努力が実を結ぶ大器晩成型です。",
+  "既成概念にとらわれない自由な発想と、博愛の精神を持つ人。少し先の未来を感じ取る感性があり、仲間とともに新しい価値観を生み出していきます。",
+  "境界線のないやさしさと、豊かなイマジネーションの持ち主。芸術やスピリチュアルな世界と相性がよく、人の痛みに寄り添える深い慈愛が最大の魅力です。"
+];
+
+const LAGNA_TEXT = [
+  "第一印象はエネルギッシュで快活。人生をスピード感をもって切りひらいていく姿勢が、周囲に勇気を与えます。",
+  "落ち着いた物腰と安定感が印象的。マイペースに、着実に人生を積み上げていくスタイルです。",
+  "軽やかで話し上手な印象を与えます。多彩な興味を活かして、変化の多い人生を楽しめる人です。",
+  "やわらかく親しみやすい雰囲気の持ち主。感情の機微に敏感で、守り育てることに縁があります。",
+  "堂々とした存在感があり、自然とリーダー役を任されやすい人。誇りを持って生きることがテーマです。",
+  "知的で丁寧な印象を与えます。実務や健康、日々の暮らしを整えることが人生の土台になります。",
+  "上品でバランス感覚のある佇まい。人との関わりの中で運が開けていくタイプです。",
+  "ミステリアスで芯の強い印象。人生の節目で大きな変容を経験し、そのたびに深みを増していきます。",
+  "明るくおおらかな雰囲気で、学びや信念に導かれる人生。海外や高度な学問との縁も示されます。",
+  "真面目で信頼感のある印象。仕事や社会的な役割を通して、時間をかけて評価を築いていきます。",
+  "個性的で先進的な空気をまとう人。独自の視点と人脈が、人生をユニークに彩ります。",
+  "ふんわりと優しい印象で、芸術性や霊性に恵まれたラグナ。直感を信じることが幸運の鍵です。"
+];
+
+const NAKSHATRAS = [
+  ["アシュヴィニー", "ケートゥ", "馬の頭", "スピードと癒しの星。新しいことを始める推進力と、人を元気づける若々しいエネルギーに恵まれています。思い立ったらすぐ動ける行動力が最大の武器です。"],
+  ["バラニー", "金星", "女性の生殖器（創造の門）", "生と死、創造をつかさどる星。忍耐強く物事を育てあげる力と、深い愛情を持っています。抱え込みすぎず、手放すことを覚えると人生が軽やかになります。"],
+  ["クリッティカー", "太陽", "刃物・炎", "鋭い切れ味と浄化の星。物事の本質を見抜き、不要なものを断ち切る勇気があります。厳しさの奥にある面倒見の良さが、あなたの本当の魅力です。"],
+  ["ローヒニー", "月", "牛車・チャリオット", "美と豊穣をつかさどる、最も愛される星のひとつ。人を惹きつける魅力と、豊かさを育てる力に恵まれています。芸術や美的センスを活かす道が吉です。"],
+  ["ムリガシラー", "火星", "鹿の頭", "探求する鹿の星。理想を求めて彷徨う繊細な感性と、知的好奇心の持ち主です。「探し続けること」自体があなたの人生を豊かにしてくれます。"],
+  ["アールドラー", "ラーフ", "涙のしずく・宝石", "嵐と再生の星。感情の振れ幅が大きいぶん、人の痛みを深く理解できます。困難を経験するたびに、ダイヤモンドのような輝きを増していく人です。"],
+  ["プナルヴァス", "木星", "矢筒・帰還の矢", "「再び光り輝く」という意味を持つ復活の星。何度でもやり直せるしなやかさと、寛容であたたかい人柄に恵まれています。原点回帰が幸運の鍵です。"],
+  ["プシュヤ", "土星", "牛の乳房・蓮の花", "27星の中で最も吉祥とされる養育の星。人を育て、支え、栄養を与える力があります。信頼と誠実さで、時間をかけて豊かさを築いていきます。"],
+  ["アーシュレーシャー", "水星", "とぐろを巻く蛇", "蛇の智慧を持つ神秘の星。鋭い洞察力と人の心を読む力に恵まれています。その深い知性を癒しや研究に使うとき、大きな力を発揮します。"],
+  ["マガー", "ケートゥ", "王座", "先祖と王権をつかさどる星。生まれながらの気品と、受け継いだものを守り発展させる使命を持ちます。ルーツを大切にすることが運気を高めます。"],
+  ["プールヴァ・パールグニー", "金星", "ハンモック・寝台", "愛と休息、創造の喜びの星。人生を楽しむ天才で、その華やかさが周囲をも幸せにします。愛されることに罪悪感を持たなくて大丈夫です。"],
+  ["ウッタラ・パールグニー", "太陽", "寝台の後脚", "契約とパートナーシップの星。面倒見がよく、約束を守る誠実さで人望を集めます。誰かと組むことで、一人のとき以上の力を発揮できる人です。"],
+  ["ハスタ", "月", "手のひら", "「手」の星。手先の器用さ、実務の才、ユーモアのセンスに恵まれています。手を使う仕事・創作に大きな才能が眠っています。"],
+  ["チトラー", "火星", "輝く宝石", "美とデザインをつかさどる建築家の星。カリスマ的な華やかさと、美しいものを生み出す才能の持ち主。自分の作品・世界観を作ることが使命です。"],
+  ["スヴァーティー", "ラーフ", "風にそよぐ若芽", "風の星。しなやかな独立心と、どんな環境でも生きていける適応力があります。束縛を離れ、自分の風の吹くままに進むことで開運します。"],
+  ["ヴィシャーカー", "木星", "凱旋門", "目標達成の星。狙いを定めたら決して諦めない集中力と情熱があります。歳を重ねるごとに実りが大きくなる、勝利の星のもとの生まれです。"],
+  ["アヌラーダー", "土星", "蓮の花", "友情と献身の星。困難な場所でも花を咲かせる蓮のように、逆境の中でこそ真価を発揮します。人との縁があなたを遠くまで運んでくれます。"],
+  ["ジェーシュター", "水星", "傘・お守り", "「最年長」を意味する守護者の星。責任感が強く、人知れず誰かを守る役割を担います。その苦労は深い精神性となって返ってきます。"],
+  ["ムーラ", "ケートゥ", "束ねられた根", "「根」を意味する探究の星。物事の根源まで掘り下げずにはいられない、哲学者の魂を持っています。破壊と再生を通して真理に近づく人です。"],
+  ["プールヴァ・アーシャーダー", "金星", "扇・水", "不敗の星。水のように柔らかく、しかし決して負けない不屈の楽観性を持っています。自分の信じる道を宣言することで、運が味方します。"],
+  ["ウッタラ・アーシャーダー", "太陽", "象の牙", "普遍的な勝利の星。誠実さと徳によって、ゆっくりと、しかし確実に頂点へ向かいます。晩年に向けて輝きを増す生まれです。"],
+  ["シュラヴァナ", "月", "耳・3つの足跡", "「聴く」ことの星。学び、聴き、伝える才能に恵まれています。知識と人の声に耳を澄ませることで、智慧の人として尊敬を集めます。"],
+  ["ダニシュター", "火星", "太鼓", "音楽とリズム、豊かさの星。グループの中で輝くスター性と、富を引き寄せる力があります。リズムに乗ること、音楽との縁が開運の鍵です。"],
+  ["シャタビシャー", "ラーフ", "100の薬草・円", "「100人の医師」を意味する癒しの星。神秘的な直感と、独りの時間から生まれる深い洞察の持ち主。医療・ヒーリング・研究に才能があります。"],
+  ["プールヴァ・バードラパダー", "木星", "剣・二本の柱", "変革の炎の星。理想のために自らを燃やす情熱と、深遠な精神性を併せ持ちます。その激しさは、世界をよくするための聖なる炎です。"],
+  ["ウッタラ・バードラパダー", "土星", "水の蛇・双子の柱", "深い海のような静けさの星。包容力と忍耐力に優れ、怒りを制する徳を持ちます。静かな貢献が、やがて大きな尊敬となって返ってきます。"],
+  ["レーヴァティー", "水星", "魚・太鼓", "27星の締めくくり、慈愛と導きの星。人や動物を守り育てる優しさと、旅人を導く光を持っています。あなたの親切は必ず巡って返ってきます。"]
+];
+
+const PLANETS = [
+  { key: "Su", jp: "太陽", abbr: "日" },
+  { key: "Mo", jp: "月", abbr: "月" },
+  { key: "Ma", jp: "火星", abbr: "火" },
+  { key: "Me", jp: "水星", abbr: "水" },
+  { key: "Ju", jp: "木星", abbr: "木" },
+  { key: "Ve", jp: "金星", abbr: "金" },
+  { key: "Sa", jp: "土星", abbr: "土" },
+  { key: "Ra", jp: "ラーフ", abbr: "ラ" },
+  { key: "Ke", jp: "ケートゥ", abbr: "ケ" }
+];
+
+/* ヴィムショッタリ・ダシャー（アシュヴィニー起点の支配星と年数） */
+const DASHA_SEQ = [
+  ["ケートゥ", 7], ["金星", 20], ["太陽", 6], ["月", 10], ["火星", 7],
+  ["ラーフ", 18], ["木星", 16], ["土星", 19], ["水星", 17]
+];
+const DASHA_TEXT = {
+  "ケートゥ": "手放しと精神性の期間。物質より内面の充実に意識が向かいます。",
+  "金星": "愛・美・豊かさが花ひらく期間。楽しみや人間関係に恵まれます。",
+  "太陽": "自己確立と名誉の期間。自分の軸を打ち立てるときです。",
+  "月": "感情と人気運の期間。心の安定と身近な人との絆がテーマです。",
+  "火星": "行動とチャレンジの期間。エネルギッシュに動くほど運が回ります。",
+  "ラーフ": "野心と変化の期間。予想外の展開が人生を大きく動かします。",
+  "木星": "拡大と幸運の期間。学び・出会い・チャンスが広がります。",
+  "土星": "努力と成熟の期間。地道な積み重ねが確かな土台になります。",
+  "水星": "知性とコミュニケーションの期間。学び・仕事・発信が捗ります。"
+};
+
+/* =========================================================
+   3. 天文計算（Paul Schlyter の簡易軌道要素による近似計算）
+   ========================================================= */
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+const norm360 = x => ((x % 360) + 360) % 360;
+const sind = x => Math.sin(x * D2R), cosd = x => Math.cos(x * D2R), tand = x => Math.tan(x * D2R);
+
+function julianDay(y, m, day, utHours) {
+  if (m <= 2) { y -= 1; m += 12; }
+  const A = Math.floor(y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + B - 1524.5 + utHours / 24;
+}
+
+function jdToDate(jd) {
+  const z = Math.floor(jd + 0.5), f = jd + 0.5 - z;
+  let A = z;
+  if (z >= 2299161) {
+    const alpha = Math.floor((z - 1867216.25) / 36524.25);
+    A = z + 1 + alpha - Math.floor(alpha / 4);
+  }
+  const B = A + 1524, C = Math.floor((B - 122.1) / 365.25);
+  const D = Math.floor(365.25 * C), E = Math.floor((B - D) / 30.6001);
+  const day = B - D - Math.floor(30.6001 * E) + f;
+  const month = E < 14 ? E - 1 : E - 13;
+  const year = month > 2 ? C - 4716 : C - 4715;
+  return { y: year, m: month, d: Math.floor(day) };
+}
+
+function solveKepler(M, e) {
+  let E = M + e * R2D * sind(M) * (1 + e * cosd(M));
+  for (let i = 0; i < 20; i++) {
+    const dE = (E - e * R2D * sind(E) - M) / (1 - e * cosd(E));
+    E -= dE;
+    if (Math.abs(dE) < 1e-6) break;
+  }
+  return E;
+}
+
+/* 太陽の地心黄経と動径 */
+function sunPosition(d) {
+  const w = 282.9404 + 4.70935e-5 * d;
+  const e = 0.016709 - 1.151e-9 * d;
+  const M = norm360(356.0470 + 0.9856002585 * d);
+  const E = solveKepler(M, e);
+  const x = cosd(E) - e, y = sind(E) * Math.sqrt(1 - e * e);
+  const v = norm360(Math.atan2(y, x) * R2D);
+  const r = Math.sqrt(x * x + y * y);
+  return { lon: norm360(v + w), r };
+}
+
+/* 月の地心黄経（主要摂動項つき、精度 ±約0.05度） */
+function moonLongitude(d) {
+  const N = 125.1228 - 0.0529538083 * d;
+  const iw = 318.0634 + 0.1643573223 * d;
+  const e = 0.054900;
+  const M = norm360(115.3654 + 13.0649929509 * d);
+  const E = solveKepler(M, e);
+  const a = 60.2666;
+  const x = a * (cosd(E) - e), y = a * sind(E) * Math.sqrt(1 - e * e);
+  const v = Math.atan2(y, x) * R2D;
+  const u = v + iw; // 昇交点からの角距離 + …
+  const xe = cosd(N) * cosd(u) - sind(N) * sind(u) * cosd(5.1454);
+  const ye = sind(N) * cosd(u) + cosd(N) * sind(u) * cosd(5.1454);
+  let lon = norm360(Math.atan2(ye, xe) * R2D);
+  // 摂動計算用の基本引数
+  const Ms = norm360(356.0470 + 0.9856002585 * d);
+  const ws = 282.9404 + 4.70935e-5 * d;
+  const Ls = norm360(Ms + ws);
+  const Lm = norm360(M + iw + N);
+  const D = norm360(Lm - Ls);
+  const F = norm360(Lm - N);
+  lon += -1.274 * sind(M - 2 * D) + 0.658 * sind(2 * D) - 0.186 * sind(Ms)
+       - 0.059 * sind(2 * M - 2 * D) - 0.057 * sind(M - 2 * D + Ms)
+       + 0.053 * sind(M + 2 * D) + 0.046 * sind(2 * D - Ms)
+       + 0.041 * sind(M - Ms) - 0.035 * sind(D) - 0.031 * sind(M + Ms)
+       - 0.015 * sind(2 * F - 2 * D) + 0.011 * sind(M - 4 * D);
+  return norm360(lon);
+}
+
+/* 惑星の地心黄経 */
+function planetLongitude(d, el, sun) {
+  const N = el.N0 + el.Nd * d;
+  const i = el.i0 + el.id * d;
+  const w = el.w0 + el.wd * d;
+  const e = el.e0 + el.ed * d;
+  const M = norm360(el.M0 + el.Md * d);
+  const E = solveKepler(M, e);
+  const xv = el.a * (cosd(E) - e), yv = el.a * sind(E) * Math.sqrt(1 - e * e);
+  const v = Math.atan2(yv, xv) * R2D;
+  const r = Math.sqrt(xv * xv + yv * yv);
+  const u = v + w;
+  // 黄経のみ必要なため、黄緯（z成分）は省略する
+  let xh = r * (cosd(N) * cosd(u) - sind(N) * sind(u) * cosd(i));
+  let yh = r * (sind(N) * cosd(u) + cosd(N) * sind(u) * cosd(i));
+  // 木星・土星の相互摂動（黄経）
+  if (el.name === "Ju" || el.name === "Sa") {
+    const Mj = norm360(19.8950 + 0.0830853001 * d);
+    const Msat = norm360(316.9670 + 0.0334442282 * d);
+    let lonh = norm360(Math.atan2(yh, xh) * R2D);
+    if (el.name === "Ju") {
+      lonh += -0.332 * sind(2 * Mj - 5 * Msat - 67.6) - 0.056 * sind(2 * Mj - 2 * Msat + 21)
+            + 0.042 * sind(3 * Mj - 5 * Msat + 21) - 0.036 * sind(Mj - 2 * Msat)
+            + 0.022 * cosd(Mj - Msat) + 0.023 * sind(2 * Mj - 3 * Msat + 52)
+            - 0.016 * sind(Mj - 5 * Msat - 69);
+    } else {
+      lonh += 0.812 * sind(2 * Mj - 5 * Msat - 67.6) - 0.229 * cosd(2 * Mj - 4 * Msat - 2)
+            + 0.119 * sind(Mj - 2 * Msat - 3) + 0.046 * sind(2 * Mj - 6 * Msat - 69)
+            + 0.014 * sind(Mj - 3 * Msat + 32);
+    }
+    const rh = Math.sqrt(xh * xh + yh * yh);
+    xh = rh * cosd(lonh);
+    yh = rh * sind(lonh);
+  }
+  // 地心変換（太陽の地心直交座標を加算）
+  const xs = sun.r * cosd(sun.lon), ys = sun.r * sind(sun.lon);
+  return norm360(Math.atan2(yh + ys, xh + xs) * R2D);
+}
+
+const ELEMENTS = {
+  Me: { name: "Me", N0: 48.3313, Nd: 3.24587e-5, i0: 7.0047, id: 5.00e-8, w0: 29.1241, wd: 1.01444e-5, a: 0.387098, e0: 0.205635, ed: 5.59e-10, M0: 168.6562, Md: 4.0923344368 },
+  Ve: { name: "Ve", N0: 76.6799, Nd: 2.46590e-5, i0: 3.3946, id: 2.75e-8, w0: 54.8910, wd: 1.38374e-5, a: 0.723330, e0: 0.006773, ed: -1.302e-9, M0: 48.0052, Md: 1.6021302244 },
+  Ma: { name: "Ma", N0: 49.5574, Nd: 2.11081e-5, i0: 1.8497, id: -1.78e-8, w0: 286.5016, wd: 2.92961e-5, a: 1.523688, e0: 0.093405, ed: 2.516e-9, M0: 18.6021, Md: 0.5240207766 },
+  Ju: { name: "Ju", N0: 100.4542, Nd: 2.76854e-5, i0: 1.3030, id: -1.557e-7, w0: 273.8777, wd: 1.64505e-5, a: 5.20256, e0: 0.048498, ed: 4.469e-9, M0: 19.8950, Md: 0.0830853001 },
+  Sa: { name: "Sa", N0: 113.6634, Nd: 2.38980e-5, i0: 2.4886, id: -1.081e-7, w0: 339.3939, wd: 2.97661e-5, a: 9.55475, e0: 0.055546, ed: -9.499e-9, M0: 316.9670, Md: 0.0334442282 }
+};
+
+/* ラヒリ・アヤナムシャ（近似: J2000で23.8531度、年50.29秒角で増加） */
+function lahiriAyanamsa(jd) {
+  return 23.8531 + 0.0139697 * ((jd - 2451545.0) / 365.25);
+}
+
+/* ラグナ（アセンダント、トロピカル）を計算し黄経で返す */
+function ascendantTropical(jd, latDeg, lonDeg) {
+  const d = jd - 2451545.0;
+  const eps = 23.4393 - 3.563e-7 * d;
+  const gmst = norm360(280.46061837 + 360.98564736629 * d);
+  const ramc = norm360(gmst + lonDeg);
+  const asc = Math.atan2(cosd(ramc), -(sind(ramc) * cosd(eps) + tand(latDeg) * sind(eps))) * R2D;
+  return norm360(asc);
+}
+
+/* サイデリアル黄経一式を計算 */
+function computeChart(jd, lat, lon) {
+  const d = jd - 2451543.5;
+  const ayan = lahiriAyanamsa(jd);
+  const sid = trop => norm360(trop - ayan);
+  const sun = sunPosition(d);
+  const rahuTrop = norm360(125.1228 - 0.0529538083 * d);
+  const positions = {
+    Su: sid(sun.lon),
+    Mo: sid(moonLongitude(d)),
+    Ma: sid(planetLongitude(d, ELEMENTS.Ma, sun)),
+    Me: sid(planetLongitude(d, ELEMENTS.Me, sun)),
+    Ju: sid(planetLongitude(d, ELEMENTS.Ju, sun)),
+    Ve: sid(planetLongitude(d, ELEMENTS.Ve, sun)),
+    Sa: sid(planetLongitude(d, ELEMENTS.Sa, sun)),
+    Ra: sid(rahuTrop),
+    Ke: sid(norm360(rahuTrop + 180))
+  };
+  const asc = sid(ascendantTropical(jd, lat, lon));
+  return { positions, asc, ayan };
+}
+
+/* =========================================================
+   4. 占星術ユーティリティ
+   ========================================================= */
+const signOf = lon => Math.floor(norm360(lon) / 30);
+const degInSign = lon => norm360(lon) % 30;
+const nakshatraOf = lon => Math.floor(norm360(lon) / (360 / 27));
+const padaOf = lon => Math.floor(norm360(lon) / (360 / 108)) % 4 + 1;
+
+function fmtDeg(x) {
+  const deg = Math.floor(x), min = Math.floor((x - deg) * 60);
+  return deg + "°" + String(min).padStart(2, "0") + "′";
+}
+function fmtDateJp(dt) {
+  return dt.y + "年" + dt.m + "月" + dt.d + "日";
+}
+
+/* ヴィムショッタリ・ダシャー計算 */
+function vimshottari(moonLon, birthJD) {
+  const YEAR = 365.25;
+  const nak = nakshatraOf(moonLon);
+  const frac = (norm360(moonLon) % (360 / 27)) / (360 / 27);
+  const startIdx = nak % 9;
+  const periods = [];
+  let t = birthJD;
+  for (let k = 0; k < 9; k++) {
+    const [lord, years] = DASHA_SEQ[(startIdx + k) % 9];
+    const lenDays = (k === 0 ? (1 - frac) * years : years) * YEAR;
+    periods.push({ lord, years, start: t, end: t + lenDays, fullYears: years, isBalance: k === 0 });
+    t += lenDays;
+  }
+  return periods;
+}
+
+function antardashas(maha) {
+  const YEAR = 365.25;
+  const startIdx = DASHA_SEQ.findIndex(s => s[0] === maha.lord);
+  const subs = [];
+  // バランス期間（生まれた時点で進行中のダシャー）は満期換算の開始時刻から刻む
+  const fullLen = maha.fullYears * YEAR;
+  let t = maha.end - fullLen;
+  for (let k = 0; k < 9; k++) {
+    const [lord, years] = DASHA_SEQ[(startIdx + k) % 9];
+    const len = fullLen * years / 120;
+    subs.push({ lord, start: t, end: t + len });
+    t += len;
+  }
+  return subs;
+}
+
+/* =========================================================
+   5. UI
+   ========================================================= */
+(function initForm() {
+  const sel = document.getElementById("birthPlace");
+  PLACES.forEach((p, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = p[0];
+    sel.appendChild(opt);
+  });
+  const opt = document.createElement("option");
+  opt.value = "custom";
+  opt.textContent = "その他（緯度・経度を入力）";
+  sel.appendChild(opt);
+  sel.addEventListener("change", () => {
+    document.getElementById("customPlace").classList.toggle("is-visible", sel.value === "custom");
+  });
+})();
+
+document.getElementById("calcBtn").addEventListener("click", () => {
+  const errEl = document.getElementById("formError");
+  errEl.classList.remove("is-visible");
+
+  const dateVal = document.getElementById("birthDate").value;
+  const timeVal = document.getElementById("birthTime").value;
+  if (!dateVal || !timeVal) {
+    errEl.textContent = "生年月日と出生時間を入力してください。";
+    errEl.classList.add("is-visible");
+    return;
+  }
+  const [y, m, day] = dateVal.split("-").map(Number);
+  const [hh, mm] = timeVal.split(":").map(Number);
+
+  const placeSel = document.getElementById("birthPlace").value;
+  let placeName, lat, lon, tz;
+  if (placeSel === "custom") {
+    lat = parseFloat(document.getElementById("customLat").value);
+    lon = parseFloat(document.getElementById("customLon").value);
+    tz = parseFloat(document.getElementById("customTz").value);
+    if (!isFinite(lat) || !isFinite(lon) || !isFinite(tz)) {
+      errEl.textContent = "緯度・経度・時差をすべて入力してください。";
+      errEl.classList.add("is-visible");
+      return;
+    }
+    placeName = "指定地点（北緯" + lat + "° / 東経" + lon + "°）";
+  } else {
+    const p = PLACES[Number(placeSel)];
+    placeName = p[0]; lat = p[1]; lon = p[2]; tz = p[3];
+  }
+  const gender = document.querySelector('input[name="gender"]:checked').value;
+  const genderJp = gender === "female" ? "女性" : gender === "male" ? "男性" : "—";
+
+  const utHours = hh + mm / 60 - tz;
+  const jd = julianDay(y, m, day, utHours);
+  render(computeChart(jd, lat, lon), {
+    jd, y, m, day, hh, mm, placeName, genderJp
+  });
+});
+
+function render(chart, meta) {
+  const pos = chart.positions;
+  const moonLon = pos.Mo;
+  const moonSign = signOf(moonLon), sunSign = signOf(pos.Su), ascSign = signOf(chart.asc);
+  const nak = nakshatraOf(moonLon), pada = padaOf(moonLon);
+
+  /* --- 基本情報カード --- */
+  const cards = [
+    ["月星座（ジャンマ・ラーシ）", SIGNS[moonSign].skt, SIGNS[moonSign].jp + " " + fmtDeg(degInSign(moonLon))],
+    ["ナクシャトラ（生まれ星）", NAKSHATRAS[nak][0], "第" + pada + "パダ／支配星: " + NAKSHATRAS[nak][1]],
+    ["ラグナ（アセンダント）", SIGNS[ascSign].skt, SIGNS[ascSign].jp + " " + fmtDeg(degInSign(chart.asc))],
+    ["太陽星座", SIGNS[sunSign].skt, SIGNS[sunSign].jp + " " + fmtDeg(degInSign(pos.Su))]
+  ];
+  document.getElementById("summaryCards").innerHTML =
+    '<div class="summary-card" style="grid-column:1/-1; text-align:left; padding:16px 20px;">' +
+      '<div class="card-sub">' + meta.y + "年" + meta.m + "月" + meta.day + "日 " +
+      String(meta.hh).padStart(2, "0") + ":" + String(meta.mm).padStart(2, "0") + " 生まれ ／ " +
+      meta.placeName + (meta.genderJp !== "—" ? " ／ " + meta.genderJp : "") + "</div></div>" +
+    cards.map(c =>
+      '<div class="summary-card"><div class="card-title">' + c[0] + '</div>' +
+      '<div class="card-value">' + c[1] + '</div><div class="card-sub">' + c[2] + "</div></div>"
+    ).join("");
+
+  /* --- 南インド式チャート --- */
+  const CELL_POS = [[1,2],[1,3],[1,4],[2,4],[3,4],[4,4],[4,3],[4,2],[4,1],[3,1],[2,1],[1,1]];
+  const bySign = Array.from({ length: 12 }, () => []);
+  PLANETS.forEach(p => bySign[signOf(pos[p.key])].push(p.abbr));
+  let chartHtml = '<div class="rasi-center">RASI<small>ラーシ・チャート</small></div>';
+  for (let s = 0; s < 12; s++) {
+    const [r, c] = CELL_POS[s];
+    const isLagna = s === ascSign;
+    chartHtml += '<div class="rasi-cell' + (isLagna ? " lagna-cell" : "") +
+      '" style="grid-row:' + r + ';grid-column:' + c + ';">' +
+      '<span class="sign-name">' + SIGNS[s].abbr + "</span>" +
+      '<span class="planets">' + (isLagna ? "La " : "") + bySign[s].join(" ") + "</span></div>";
+  }
+  document.getElementById("rasiChart").innerHTML = chartHtml;
+
+  /* --- 惑星テーブル --- */
+  const houseOf = s => ((s - ascSign + 12) % 12) + 1;
+  let tbl = "<tr><th>惑星</th><th>星座</th><th>度数</th><th>ナクシャトラ</th><th>ハウス</th></tr>";
+  tbl += "<tr><td>ラグナ</td><td>" + SIGNS[ascSign].jp + "</td><td>" + fmtDeg(degInSign(chart.asc)) +
+         "</td><td>" + NAKSHATRAS[nakshatraOf(chart.asc)][0] + "</td><td>1</td></tr>";
+  PLANETS.forEach(p => {
+    const L = pos[p.key], s = signOf(L);
+    tbl += "<tr><td>" + p.jp + "</td><td>" + SIGNS[s].jp + "</td><td>" + fmtDeg(degInSign(L)) +
+           "</td><td>" + NAKSHATRAS[nakshatraOf(L)][0] + "</td><td>" + houseOf(s) + "</td></tr>";
+  });
+  document.getElementById("planetTable").innerHTML = tbl;
+
+  /* --- 読み解き --- */
+  const nk = NAKSHATRAS[nak];
+  document.getElementById("readings").innerHTML =
+    '<div class="reading-item"><h4>月星座 ─ ' + SIGNS[moonSign].skt + "（" + SIGNS[moonSign].jp + "）</h4>" +
+    '<p class="reading-meta">インド占星術では「月」があなたの心・本質を表します</p>' +
+    "<p>" + MOON_SIGN_TEXT[moonSign] + "</p></div>" +
+    '<div class="reading-item"><h4>ナクシャトラ ─ ' + nk[0] + "（第" + pada + "パダ）</h4>" +
+    '<p class="reading-meta">シンボル: ' + nk[2] + " ／ 支配星: " + nk[1] + "</p>" +
+    "<p>" + nk[3] + "</p></div>" +
+    '<div class="reading-item"><h4>ラグナ ─ ' + SIGNS[ascSign].skt + "（" + SIGNS[ascSign].jp + "）</h4>" +
+    '<p class="reading-meta">ラグナは、あなたが世界と関わるときの「入り口」を表します</p>' +
+    "<p>" + LAGNA_TEXT[ascSign] + "</p></div>";
+
+  /* --- ヴィムショッタリ・ダシャー --- */
+  const periods = vimshottari(moonLon, meta.jd);
+  const now = new Date();
+  const nowJD = julianDay(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), now.getUTCHours() + now.getUTCMinutes() / 60);
+  const current = periods.find(p => nowJD >= p.start && nowJD < p.end);
+
+  let dashaHtml = "<tr><th>マハーダシャー（支配星）</th><th>期間</th><th>テーマ</th></tr>";
+  periods.forEach(p => {
+    const isCur = current && p === current;
+    dashaHtml += '<tr class="' + (isCur ? "is-current" : "") + '"><td>' + p.lord + "期（" + p.fullYears + "年）" +
+      (isCur ? " ◀ 現在" : "") + "</td><td>" +
+      fmtDateJp(jdToDate(p.start)) + " 〜 " + fmtDateJp(jdToDate(p.end)) +
+      "</td><td>" + DASHA_TEXT[p.lord] + "</td></tr>";
+  });
+  document.getElementById("dashaTable").innerHTML = dashaHtml;
+
+  let curHtml;
+  if (current) {
+    const subs = antardashas(current);
+    const curSub = subs.find(s => nowJD >= s.start && nowJD < s.end);
+    curHtml = "現在は <strong>" + current.lord + "期</strong>（" +
+      fmtDateJp(jdToDate(current.start)) + " 〜 " + fmtDateJp(jdToDate(current.end)) + "）を運行中。" +
+      DASHA_TEXT[current.lord];
+    if (curSub) {
+      curHtml += "<br>さらに細かく見ると <strong>" + current.lord + "期 × " + curSub.lord + "期</strong>（" +
+        fmtDateJp(jdToDate(curSub.start)) + " 〜 " + fmtDateJp(jdToDate(curSub.end)) + "）。" +
+        DASHA_TEXT[curSub.lord];
+    }
+  } else {
+    curHtml = "120年のダシャー・サイクルを表示しています。";
+  }
+  document.getElementById("currentDasha").innerHTML = curHtml;
+
+  /* --- 表示 --- */
+  const result = document.getElementById("result");
+  result.classList.add("is-visible");
+  result.scrollIntoView({ behavior: "smooth" });
+}
+</script>
+
+</body>
+</html>
