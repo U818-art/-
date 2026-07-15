@@ -329,6 +329,104 @@ var AstroEngine = (function () {
     return flags;
   }
 
+  /* ---------- インド占星術（ジョーティシュ） ---------- */
+
+  /* ラヒリ・アヤナームシャ（近似式・±0.01°程度） */
+  function ayanamsaLahiri(T) {
+    var t = T + 1; // 1900年からの世紀数
+    return 22.460148 + 1.396042 * t + 0.000308 * t * t;
+  }
+
+  /* 月の平均昇交点（ラーフ）黄経 */
+  function meanLunarNode(T) {
+    return norm360(125.0445479 - 1934.1362891 * T + 0.0020754 * T * T + T * T * T / 467441);
+  }
+
+  /* ナクシャトラ（27宿）: 各13°20′、パダは各3°20′ */
+  function nakshatraOf(sidLon) {
+    var unit = 360 / 27;
+    var lon = norm360(sidLon);
+    var index = Math.floor(lon / unit);
+    var frac = (lon - index * unit) / unit;
+    var pada = Math.floor(frac * 4) + 1;
+    if (index > 26) index = 26;
+    if (pada > 4) pada = 4;
+    return { index: index, pada: pada, frac: frac };
+  }
+
+  /* ヴィムショッタリ・ダシャー
+     順序: ケートゥ→金星→太陽→月→火星→ラーフ→木星→土星→水星（計120年） */
+  var DASHA_LORDS = ["ketu", "venus", "sun", "moon", "mars", "rahu", "jupiter", "saturn", "mercury"];
+  var DASHA_YEARS = { ketu: 7, venus: 20, sun: 6, moon: 10, mars: 7, rahu: 18, jupiter: 16, saturn: 19, mercury: 17 };
+  var YEAR_MS = 365.25 * 86400000;
+
+  function vimshottariDasha(moonSidLon, birthMs) {
+    var nak = nakshatraOf(moonSidLon);
+    var startLordIdx = nak.index % 9;
+    var firstLord = DASHA_LORDS[startLordIdx];
+    var balanceYears = (1 - nak.frac) * DASHA_YEARS[firstLord];
+    var periods = [];
+    var cursor = birthMs;
+    for (var i = 0; i < 9; i++) {
+      var lord = DASHA_LORDS[(startLordIdx + i) % 9];
+      var years = (i === 0) ? balanceYears : DASHA_YEARS[lord];
+      var end = cursor + years * YEAR_MS;
+      periods.push({ lord: lord, startMs: cursor, endMs: end, years: years, fullYears: DASHA_YEARS[lord] });
+      cursor = end;
+    }
+    return periods;
+  }
+
+  function jdToMs(jd) {
+    return (jd - 2440587.5) * 86400000;
+  }
+
+  /* インド式チャート一式（サイデリアル・ホールサイン） */
+  function computeVedicChart(opts) {
+    var tropical = computeChart(opts);
+    var T = (tropical.jd - 2451545.0) / 36525;
+    var aya = ayanamsaLahiri(T);
+
+    var GRAHA_KEYS = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn"];
+    var v = {
+      jd: tropical.jd,
+      ayanamsa: aya,
+      timeUnknown: tropical.timeUnknown,
+      grahas: {}
+    };
+
+    for (var i = 0; i < GRAHA_KEYS.length; i++) {
+      var k = GRAHA_KEYS[i];
+      v.grahas[k] = {
+        lon: norm360(tropical.planets[k].lon - aya),
+        retro: tropical.planets[k].retro
+      };
+    }
+    var rahuLon = norm360(meanLunarNode(T) - aya);
+    v.grahas.rahu = { lon: rahuLon, retro: true };
+    v.grahas.ketu = { lon: norm360(rahuLon + 180), retro: true };
+
+    if (!tropical.timeUnknown) {
+      v.lagna = norm360(tropical.asc - aya);
+    }
+    /* ホールサイン: 出生時間不明時はチャンドラ・ラグナ（月を第1室） */
+    var refLon = (v.lagna !== undefined) ? v.lagna : v.grahas.moon.lon;
+    var refSign = Math.floor(refLon / 30);
+    v.lagnaSign = refSign;
+    v.chandraLagna = (v.lagna === undefined);
+
+    var keys = Object.keys(v.grahas);
+    for (var j = 0; j < keys.length; j++) {
+      var g = v.grahas[keys[j]];
+      g.sign = Math.floor(g.lon / 30);
+      g.house = ((g.sign - refSign + 12) % 12) + 1;
+      g.nakshatra = nakshatraOf(g.lon);
+    }
+
+    v.dasha = vimshottariDasha(v.grahas.moon.lon, jdToMs(tropical.jd));
+    return v;
+  }
+
   /* ---------- チャート一式 ---------- */
   function computeChart(opts) {
     // opts: {year, month, day, hour, minute, tz, lat, lon, timeUnknown}
@@ -369,6 +467,10 @@ var AstroEngine = (function () {
     houseOf: houseOf,
     findAspects: findAspects,
     computeChart: computeChart,
+    computeVedicChart: computeVedicChart,
+    ayanamsaLahiri: ayanamsaLahiri,
+    nakshatraOf: nakshatraOf,
+    jdToMs: jdToMs,
     norm360: norm360,
     angleDiff: angleDiff,
     PLANET_KEYS: PLANET_KEYS

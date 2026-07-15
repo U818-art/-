@@ -38,7 +38,8 @@
     <h1>出生図鑑定</h1>
     <p class="lead">
       生まれた瞬間の空の配置は、あなただけの星の設計図。<br>
-      生年月日・出生時間・出生地から、10天体の位置とハウス、アスペクトを精密に計算し、<br>
+      生年月日・出生時間・出生地から、西洋占星術（ホロスコープ）と<br>
+      インド占星術（ジョーティシュ）の両方式で出生図を精密に計算し、<br>
       詳しい読み解きとともにお届けします。
     </p>
   </div>
@@ -53,6 +54,13 @@
       </div>
 
       <form class="natal-form" id="natal-form" onsubmit="return false;">
+        <div class="form-group mode-group">
+          <label>占術方式</label>
+          <div class="mode-options">
+            <label class="checkline"><input type="radio" name="nf-mode" value="western" checked> 西洋占星術（トロピカル・プラシーダス）</label>
+            <label class="checkline"><input type="radio" name="nf-mode" value="vedic"> インド占星術（ジョーティシュ／サイデリアル）</label>
+          </div>
+        </div>
         <div class="natal-form-grid">
           <div class="form-group">
             <label for="nf-name">お名前（任意）</label>
@@ -125,6 +133,40 @@
             <li>計算精度の目安：太陽・惑星 ±0.1°程度、月 ±0.3°程度。星座やハウスの境界（カスプ）付近の天体は、前後のサイン・ハウスの両方を視野に入れてお読みください。</li>
             <li>出生時間が不明な場合は正午（12:00）で計算したソーラーチャートです。アセンダント・ハウスは表示されず、月は最大±7°前後の誤差を含みます。</li>
             <li>1948〜1951年の夏季に日本で生まれた方は、サマータイム実施期間の可能性があります。該当する場合は出生時間から1時間引いてください。</li>
+          </ul>
+          <p class="natal-print"><button type="button" onclick="window.print()">この鑑定書を印刷する</button></p>
+        </div>
+
+      </div>
+
+      <div id="vedic-result" hidden>
+
+        <div class="natal-summary" id="vd-head"></div>
+
+        <div class="chart-wrap vedic-chart-wrap">
+          <div id="vedic-chart"></div>
+          <p class="vedic-chart-caption">ラーシチャート（北インド式）</p>
+        </div>
+
+        <div class="natal-table-block">
+          <h3>ナヴァグラハ（9惑星）の配置</h3>
+          <table class="natal-table" id="vd-grahas"></table>
+        </div>
+
+        <div class="natal-table-block">
+          <h3>ヴィムショッタリ・ダシャー（マハーダシャー年表）</h3>
+          <table class="natal-table" id="vd-dasha"></table>
+        </div>
+
+        <div class="natal-reading" id="vd-reading"></div>
+
+        <div class="natal-notes">
+          <h3>鑑定メモ（プロ向け注記）</h3>
+          <ul>
+            <li>獣帯はサイデリアル（ラヒリ・アヤナームシャ）、ハウスはホールサイン方式のラーシチャートです。</li>
+            <li>ラーフ／ケートゥは平均交点（ミーン・ノード）で計算しています。トゥルー・ノードとは最大±1.7°程度の差があります。</li>
+            <li>ダシャーは1年=365.25日で換算しています。ナクシャトラの境界付近では開始・終了時期が前後します。</li>
+            <li>出生時間が不明な場合は正午で計算し、月を第1室とするチャンドラ・ラグナで表示します。月は最大±7°動くため、月のナクシャトラとダシャーの起点は前後の可能性があります。</li>
           </ul>
           <p class="natal-print"><button type="button" onclick="window.print()">この鑑定書を印刷する</button></p>
         </div>
@@ -468,6 +510,138 @@
     document.getElementById("blk-reading").innerHTML = html.join("");
   }
 
+  /* ---------- インド占星術（ジョーティシュ）表示 ---------- */
+  var VD = D.vedic;
+  var GRAHA_ORDER = ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"];
+
+  function rashiLabel(lon) {
+    var r = VD.rashis[Math.floor(AstroEngine.norm360(lon) / 30)];
+    return r.name + "（" + r.jp + "）" + fmtDeg(lon);
+  }
+
+  function dashaDate(ms) {
+    var d = new Date(ms);
+    return d.getUTCFullYear() + "年" + (d.getUTCMonth() + 1) + "月";
+  }
+
+  /* 北インド式ラーシチャート */
+  var NORTH_POS = [
+    null,
+    [220, 120], [120, 70], [72, 120], [120, 220], [72, 320], [120, 372],
+    [220, 320], [320, 372], [368, 320], [320, 220], [368, 120], [320, 70]
+  ];
+
+  function drawNorthChart(v) {
+    var svg = [];
+    svg.push('<svg viewBox="0 0 440 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="北インド式ラーシチャート">');
+    svg.push('<rect x="20" y="20" width="400" height="400" fill="#fffdf9" stroke="#b58e7f" stroke-width="1.5"/>');
+    svg.push('<line x1="20" y1="20" x2="420" y2="420" stroke="#b58e7f" stroke-width="1"/>');
+    svg.push('<line x1="420" y1="20" x2="20" y2="420" stroke="#b58e7f" stroke-width="1"/>');
+    svg.push('<path d="M220 20 L420 220 L220 420 L20 220 Z" fill="none" stroke="#b58e7f" stroke-width="1"/>');
+
+    for (var h = 1; h <= 12; h++) {
+      var pos = NORTH_POS[h];
+      var rashiNum = ((v.lagnaSign + h - 1) % 12) + 1;
+      var inHouse = GRAHA_ORDER.filter(function (k) { return v.grahas[k].house === h; });
+      var lines = [];
+      lines.push({ text: String(rashiNum), cls: "num" });
+      inHouse.forEach(function (k) {
+        lines.push({
+          text: VD.grahas[k].abbr + " " + Math.floor(AstroEngine.norm360(v.grahas[k].lon) % 30) + "°" + (v.grahas[k].retro && k !== "rahu" && k !== "ketu" ? "R" : ""),
+          cls: "graha"
+        });
+      });
+      var fs = lines.length > 4 ? 11 : 12.5;
+      var totalH = (lines.length - 1) * (fs + 2);
+      var startY = pos[1] - totalH / 2;
+      var t = '<text x="' + pos[0] + '" text-anchor="middle" font-size="' + fs + '">';
+      lines.forEach(function (ln, i) {
+        var y = startY + i * (fs + 2);
+        t += '<tspan x="' + pos[0] + '" y="' + y.toFixed(1) + '"' +
+          (ln.cls === "num"
+            ? ' fill="#c9b59a" font-style="italic" font-size="11"'
+            : ' fill="#4a4038"') + '>' + ln.text + '</tspan>';
+      });
+      t += '</text>';
+      svg.push(t);
+    }
+    svg.push('</svg>');
+    document.getElementById("vedic-chart").innerHTML = svg.join("");
+  }
+
+  function renderVedic(v, meta) {
+    // ヘッダー
+    var moonNak = v.grahas.moon.nakshatra;
+    var head = '<p class="ns-name">' + (meta.name ? esc(meta.name) + ' の出生図' : 'あなたの出生図') + '（インド占星術）</p>' +
+      '<p class="ns-data">' + meta.dataLine + '</p>' +
+      '<p class="ns-big3">' +
+      (v.chandraLagna ? 'チャンドラ・ラグナ ' : 'ラグナ ') + VD.rashis[v.lagnaSign].name +
+      '　月 ' + VD.rashis[v.grahas.moon.sign].name +
+      '　ナクシャトラ ' + VD.nakshatras[moonNak.index].name + '（第' + moonNak.pada + 'パダ）</p>' +
+      '<p class="ns-data">アヤナームシャ（ラヒリ）: ' + fmtDeg(v.ayanamsa).replace("′", "′ ") + '</p>';
+    document.getElementById("vd-head").innerHTML = head;
+
+    drawNorthChart(v);
+
+    // グラハ表
+    var rows = ['<tr><th>グラハ</th><th>ラーシ・度数</th><th>ナクシャトラ</th><th>ハウス</th><th>逆行</th></tr>'];
+    if (!v.chandraLagna) {
+      rows.push('<tr><td>La ラグナ</td><td>' + rashiLabel(v.lagna) + '</td><td>' +
+        VD.nakshatras[AstroEngine.nakshatraOf(v.lagna).index].name + '</td><td>第1室</td><td>—</td></tr>');
+    }
+    GRAHA_ORDER.forEach(function (k) {
+      var g = v.grahas[k];
+      var isNode = (k === "rahu" || k === "ketu");
+      rows.push('<tr><td>' + VD.grahas[k].abbr + ' ' + VD.grahas[k].name + '</td>' +
+        '<td>' + rashiLabel(g.lon) + '</td>' +
+        '<td>' + VD.nakshatras[g.nakshatra.index].name + '（' + g.nakshatra.pada + '）</td>' +
+        '<td>第' + g.house + '室</td>' +
+        '<td>' + (isNode ? '<span class="retro">常時R</span>' : (g.retro ? '<span class="retro">R</span>' : '—')) + '</td></tr>');
+    });
+    document.getElementById("vd-grahas").innerHTML = rows.join("");
+
+    // ダシャー表
+    var now = Date.now();
+    var currentLord = null;
+    var drows = ['<tr><th>マハーダシャー</th><th>期間</th><th>年数</th><th></th></tr>'];
+    v.dasha.forEach(function (p) {
+      var isNow = now >= p.startMs && now < p.endMs;
+      if (isNow) currentLord = p.lord;
+      drows.push('<tr' + (isNow ? ' class="dasha-now"' : '') + '>' +
+        '<td>' + VD.grahas[p.lord].abbr + ' ' + VD.grahas[p.lord].name + '期</td>' +
+        '<td>' + dashaDate(p.startMs) + ' 〜 ' + dashaDate(p.endMs) + '</td>' +
+        '<td>' + (Math.round(p.years * 10) / 10) + '年</td>' +
+        '<td>' + (isNow ? '◀ 現在' : '') + '</td></tr>');
+    });
+    document.getElementById("vd-dasha").innerHTML = drows.join("");
+
+    // 読み解き
+    var html = [];
+    var lagnaBody = '';
+    if (v.chandraLagna) {
+      lagnaBody += '<p>出生時間が不明のため、月を第1室とするチャンドラ・ラグナで読み解きます。</p>';
+    } else {
+      lagnaBody += '<p class="reading-pos">ラグナ　' + rashiLabel(v.lagna) + '</p>' +
+        '<p>' + VD.lagna[v.lagnaSign] + '</p>';
+    }
+    lagnaBody += '<p class="reading-pos">チャンドラ・ラーシ（月の星座）　' + VD.rashis[v.grahas.moon.sign].name + '</p>' +
+      '<p>' + VD.chandra[v.grahas.moon.sign] + '</p>';
+    var nk = VD.nakshatras[moonNak.index];
+    lagnaBody += '<p class="reading-pos">ジャンマ・ナクシャトラ　' + nk.name + '　第' + moonNak.pada + 'パダ（支配星: ' + VD.grahas[nk.lord].name + '）</p>' +
+      '<p>' + nk.text + '</p>';
+    html.push(readingSection("基本の三要素 — ラグナ・月・ナクシャトラ", "Janma Kundali", lagnaBody));
+
+    var dashaBody = '';
+    if (currentLord) {
+      dashaBody += '<p class="reading-pos">現在のマハーダシャー　' + VD.grahas[currentLord].name + '期</p>' +
+        '<p>' + VD.dashaMeaning[currentLord] + '</p>';
+    }
+    dashaBody += '<p>ダシャーは人生の「季節」を示します。各期の支配星が在住するハウスとラーシの状態を合わせて読むと、その季節のテーマがより立体的に見えてきます。</p>';
+    html.push(readingSection("ダシャー（人生の季節）", "Vimshottari Dasha", dashaBody));
+
+    document.getElementById("vd-reading").innerHTML = html.join("");
+  }
+
   /* ---------- メイン ---------- */
   function runChart() {
     var dateVal = document.getElementById("nf-date").value;
@@ -490,12 +664,34 @@
       lon = pref[2];
     }
 
-    var chart = AstroEngine.computeChart({
+    var name = document.getElementById("nf-name").value.trim();
+    var placeLabel = placeSel.value === "manual"
+      ? "緯度" + lat + "° / 経度" + lon + "°"
+      : D.prefectures[Number(placeSel.value)][0];
+    var dataLine = parts[0] + "年" + parts[1] + "月" + parts[2] + "日 " +
+      (timeUnknown ? "出生時間不明（正午で計算）" : timeVal) +
+      "（UTC" + (tz >= 0 ? "+" : "") + tz + "）　" + esc(placeLabel);
+    var mode = (document.querySelector('input[name="nf-mode"]:checked') || { value: "western" }).value;
+
+    var opts = {
       year: parts[0], month: parts[1], day: parts[2],
       hour: tParts[0], minute: tParts[1],
       tz: tz, lat: lat, lon: lon,
       timeUnknown: timeUnknown
-    });
+    };
+
+    if (mode === "vedic") {
+      var vChart = AstroEngine.computeVedicChart(opts);
+      renderVedic(vChart, { name: name, dataLine: dataLine });
+      document.getElementById("natal-result").hidden = true;
+      var vres = document.getElementById("vedic-result");
+      vres.hidden = false;
+      vres.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    document.getElementById("vedic-result").hidden = true;
+
+    var chart = AstroEngine.computeChart(opts);
 
     var points = PLANET_ORDER.map(function (k) {
       return { id: k, name: D.planets[k].name, lon: chart.planets[k].lon, isAngle: false };
@@ -507,14 +703,8 @@
     var aspects = AstroEngine.findAspects(points);
 
     // ヘッダー
-    var name = document.getElementById("nf-name").value.trim();
-    var placeLabel = placeSel.value === "manual"
-      ? "緯度" + lat + "° / 経度" + lon + "°"
-      : D.prefectures[Number(placeSel.value)][0];
     var head = '<p class="ns-name">' + (name ? esc(name) + ' の出生図' : 'あなたの出生図') + '</p>' +
-      '<p class="ns-data">' + parts[0] + '年' + parts[1] + '月' + parts[2] + '日 ' +
-      (timeUnknown ? '出生時間不明（正午で計算）' : timeVal) +
-      '（UTC' + (tz >= 0 ? '+' : '') + tz + '）　' + esc(placeLabel) + '</p>' +
+      '<p class="ns-data">' + dataLine + '</p>' +
       '<p class="ns-big3">☉ ' + D.signs[signOf(chart.planets.sun.lon)].name +
       '　☽ ' + D.signs[signOf(chart.planets.moon.lon)].name +
       (chart.timeUnknown ? '' : '　Asc ' + D.signs[signOf(chart.asc)].name) + '</p>';
@@ -554,6 +744,7 @@
 
   function currentFormData() {
     return {
+      mode: (document.querySelector('input[name="nf-mode"]:checked') || { value: "western" }).value,
       name: document.getElementById("nf-name").value.trim(),
       date: document.getElementById("nf-date").value,
       time: document.getElementById("nf-time").value || "12:00",
@@ -566,6 +757,8 @@
   }
 
   function fillForm(p) {
+    var modeInput = document.querySelector('input[name="nf-mode"][value="' + (p.mode || "western") + '"]');
+    if (modeInput) modeInput.checked = true;
     document.getElementById("nf-name").value = p.name || "";
     document.getElementById("nf-date").value = p.date;
     document.getElementById("nf-time").value = p.time || "12:00";
