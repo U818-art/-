@@ -114,6 +114,7 @@
   <div class="footer-copy">© U818 All Rights Reserved.</div>
 </footer>
 
+<script src="astro-engine.js"></script>
 <script>
 (function () {
   var SIGNS = [
@@ -180,11 +181,35 @@
 
   var grid = document.getElementById("zodiac-grid");
 
+  /* 自分の星座（保存済みマイデータ or 前回選んだ星座）を割り出す */
+  var MY_SIGN_KEY = "u818.horoscope.mySign";
+  function mySignIndex() {
+    try {
+      var profiles = JSON.parse(localStorage.getItem("u818.astro.profiles")) || [];
+      var mine = null;
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].isDefault) { mine = profiles[i]; break; }
+      }
+      if (mine && mine.date && typeof AstroEngine !== "undefined") {
+        var d = mine.date.split("-").map(Number);
+        var tz = parseFloat(mine.tz); if (isNaN(tz)) tz = 9;
+        var jd = AstroEngine.julianDay(d[0], d[1], d[2], 12 - tz);
+        return Math.floor(AstroEngine.norm360(AstroEngine.longitudesAt(jd).sun) / 30);
+      }
+      var last = localStorage.getItem(MY_SIGN_KEY);
+      if (last !== null && last !== "") return Number(last);
+    } catch (e) { /* localStorageが使えない環境では自動選択なし */ }
+    return -1;
+  }
+  var myIdx = mySignIndex();
+
+  var cards = [];
   SIGNS.forEach(function (sign, i) {
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "zodiac-card";
     btn.innerHTML =
+      (i === myIdx ? '<span class="my-badge">MY</span>' : '') +
       '<span class="symbol">' + sign.symbol + '</span>' +
       '<span class="name">' + sign.name + '</span>' +
       '<span class="en">' + sign.en + '</span>';
@@ -193,8 +218,10 @@
       var selected = grid.querySelector(".is-selected");
       if (selected) selected.classList.remove("is-selected");
       btn.classList.add("is-selected");
+      try { localStorage.setItem(MY_SIGN_KEY, String(i)); } catch (e) {}
     });
     grid.appendChild(btn);
+    cards.push(btn);
   });
 
   function showResult(i) {
@@ -216,7 +243,19 @@
 
     var result = document.getElementById("horoscope-result");
     result.hidden = false;
-    result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (!suppressScroll) {
+      result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    suppressScroll = false;
+  }
+
+  var suppressScroll = false;
+
+  /* 自分の星座は開いた瞬間に自動表示 */
+  if (myIdx >= 0) {
+    suppressScroll = true;
+    showResult(myIdx);
+    cards[myIdx].classList.add("is-selected");
   }
 })();
 </script>

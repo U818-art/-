@@ -46,6 +46,12 @@
   <section class="section">
     <div class="section-inner">
 
+      <div class="profile-panel" id="profile-panel" hidden>
+        <h3><span class="en">My Data</span>保存した出生データ</h3>
+        <p class="profile-note">★印のデータは、このページを開いたとき自動で鑑定されます。データはこのブラウザの中だけに保存され、外部には送信されません。</p>
+        <div id="profile-list"></div>
+      </div>
+
       <form class="natal-form" id="natal-form" onsubmit="return false;">
         <div class="natal-form-grid">
           <div class="form-group">
@@ -80,6 +86,7 @@
         </div>
         <div class="form-submit">
           <button type="button" id="nf-submit">出生図を作成する</button>
+          <button type="button" id="nf-save" class="btn-sub">この入力内容を保存</button>
         </div>
       </form>
 
@@ -462,7 +469,7 @@
   }
 
   /* ---------- メイン ---------- */
-  document.getElementById("nf-submit").addEventListener("click", function () {
+  function runChart() {
     var dateVal = document.getElementById("nf-date").value;
     if (!dateVal) { alert("生年月日を入力してください。"); return; }
     var parts = dateVal.split("-").map(Number);
@@ -523,7 +530,162 @@
     var result = document.getElementById("natal-result");
     result.hidden = false;
     result.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("nf-submit").addEventListener("click", runChart);
+
+  /* ---------- マイデータ（自分専用・ブラウザ内保存） ---------- */
+  var STORE_KEY = "u818.astro.profiles";
+
+  function loadProfiles() {
+    try {
+      var list = JSON.parse(localStorage.getItem(STORE_KEY));
+      return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
+  }
+
+  function storeProfiles(list) {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    } catch (e) {
+      alert("データを保存できませんでした。ブラウザのプライベートモードでは保存機能が使えないことがあります。");
+    }
+  }
+
+  function currentFormData() {
+    return {
+      name: document.getElementById("nf-name").value.trim(),
+      date: document.getElementById("nf-date").value,
+      time: document.getElementById("nf-time").value || "12:00",
+      timeUnknown: document.getElementById("nf-unknown").checked,
+      place: placeSel.value,
+      lat: document.getElementById("nf-lat").value,
+      lon: document.getElementById("nf-lon").value,
+      tz: document.getElementById("nf-tz").value
+    };
+  }
+
+  function fillForm(p) {
+    document.getElementById("nf-name").value = p.name || "";
+    document.getElementById("nf-date").value = p.date;
+    document.getElementById("nf-time").value = p.time || "12:00";
+    document.getElementById("nf-unknown").checked = !!p.timeUnknown;
+    document.getElementById("nf-time").disabled = !!p.timeUnknown;
+    placeSel.value = p.place;
+    document.getElementById("nf-manual").hidden = p.place !== "manual";
+    document.getElementById("nf-lat").value = p.lat || "";
+    document.getElementById("nf-lon").value = p.lon || "";
+    document.getElementById("nf-tz").value = p.tz || "9";
+  }
+
+  function profileSummary(p) {
+    var d = p.date.split("-");
+    var placeLabel = p.place === "manual"
+      ? "緯度" + p.lat + "° / 経度" + p.lon + "°"
+      : (D.prefectures[Number(p.place)] ? D.prefectures[Number(p.place)][0] : "");
+    return d[0] + "年" + Number(d[1]) + "月" + Number(d[2]) + "日 " +
+      (p.timeUnknown ? "時間不明" : p.time) + "　" + placeLabel;
+  }
+
+  function renderProfiles() {
+    var list = loadProfiles();
+    var panel = document.getElementById("profile-panel");
+    var wrap = document.getElementById("profile-list");
+    if (list.length === 0) { panel.hidden = true; wrap.innerHTML = ""; return; }
+    panel.hidden = false;
+
+    var html = list.map(function (p) {
+      return '<div class="profile-card" data-id="' + p.id + '">' +
+        '<div class="profile-main">' +
+          '<button type="button" class="pf-default' + (p.isDefault ? ' is-on' : '') + '" data-act="default" title="自動鑑定に設定">★</button>' +
+          '<div class="profile-text">' +
+            '<span class="pf-name">' + esc(p.name || "名前なし") + '</span>' +
+            '<span class="pf-summary">' + esc(profileSummary(p)) + '</span>' +
+          '</div>' +
+          '<div class="profile-actions">' +
+            '<button type="button" data-act="run">鑑定する</button>' +
+            '<button type="button" data-act="memo">メモ</button>' +
+            '<button type="button" data-act="del" class="pf-del">削除</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="profile-memo" hidden>' +
+          '<textarea data-act="memo-text" placeholder="鑑定メモ（この欄は自動で保存されます）">' + esc(p.memo || "") + '</textarea>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    wrap.innerHTML = html;
+  }
+
+  document.getElementById("profile-list").addEventListener("click", function (ev) {
+    var btn = ev.target.closest("button");
+    if (!btn) return;
+    var card = ev.target.closest(".profile-card");
+    var id = Number(card.getAttribute("data-id"));
+    var list = loadProfiles();
+    var idx = -1;
+    for (var i = 0; i < list.length; i++) { if (list[i].id === id) idx = i; }
+    if (idx < 0) return;
+    var act = btn.getAttribute("data-act");
+
+    if (act === "run") {
+      fillForm(list[idx]);
+      runChart();
+    } else if (act === "default") {
+      var wasOn = list[idx].isDefault;
+      list.forEach(function (p) { p.isDefault = false; });
+      list[idx].isDefault = !wasOn;
+      storeProfiles(list);
+      renderProfiles();
+    } else if (act === "del") {
+      if (!confirm("「" + (list[idx].name || "名前なし") + "」のデータを削除しますか？")) return;
+      list.splice(idx, 1);
+      storeProfiles(list);
+      renderProfiles();
+    } else if (act === "memo") {
+      var memoBox = card.querySelector(".profile-memo");
+      memoBox.hidden = !memoBox.hidden;
+      if (!memoBox.hidden) memoBox.querySelector("textarea").focus();
+    }
   });
+
+  document.getElementById("profile-list").addEventListener("input", function (ev) {
+    if (ev.target.getAttribute("data-act") !== "memo-text") return;
+    var card = ev.target.closest(".profile-card");
+    var id = Number(card.getAttribute("data-id"));
+    var list = loadProfiles();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) list[i].memo = ev.target.value;
+    }
+    storeProfiles(list);
+  });
+
+  document.getElementById("nf-save").addEventListener("click", function () {
+    var data = currentFormData();
+    if (!data.date) { alert("生年月日を入力してください。"); return; }
+    if (!data.name) {
+      data.name = prompt("このデータの名前を入力してください（例：わたし、〇〇様）", "わたし") || "";
+      if (!data.name) return;
+      document.getElementById("nf-name").value = data.name;
+    }
+    var list = loadProfiles();
+    data.id = Date.now();
+    data.memo = "";
+    data.isDefault = list.length === 0;
+    list.push(data);
+    storeProfiles(list);
+    renderProfiles();
+    document.getElementById("profile-panel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+
+  renderProfiles();
+  var saved = loadProfiles();
+  for (var pi = 0; pi < saved.length; pi++) {
+    if (saved[pi].isDefault) {
+      fillForm(saved[pi]);
+      runChart();
+      break;
+    }
+  }
 })();
 </script>
 

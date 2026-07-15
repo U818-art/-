@@ -909,6 +909,179 @@ a:hover {
 }
 
 /* ---------- Astrology (Natal Chart) ---------- */
+.profile-panel {
+  max-width: 720px;
+  margin: 0 auto 40px;
+  background: #fff;
+  border: 1px solid var(--color-pink);
+  border-radius: var(--radius);
+  padding: 30px 34px;
+}
+
+.profile-panel h3 {
+  font-family: var(--font-jp-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  margin: 0 0 8px;
+}
+
+.profile-panel h3 .en {
+  display: block;
+  font-family: var(--font-en);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  color: var(--color-pink-deep);
+  margin-bottom: 4px;
+}
+
+.profile-note {
+  font-size: 11.5px;
+  color: var(--color-text-soft);
+  line-height: 1.8;
+  margin: 0 0 18px;
+}
+
+.profile-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  background: var(--color-bg);
+}
+
+.profile-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.pf-default {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: var(--color-line);
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color var(--transition), transform var(--transition);
+}
+
+.pf-default:hover {
+  transform: scale(1.15);
+}
+
+.pf-default.is-on {
+  color: var(--color-pink-deep);
+}
+
+.profile-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-name {
+  font-family: var(--font-jp-serif);
+  font-size: 14.5px;
+  letter-spacing: 0.08em;
+}
+
+.pf-summary {
+  font-size: 11.5px;
+  color: var(--color-text-soft);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.profile-actions button {
+  padding: 6px 14px;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  font-family: var(--font-jp-sans);
+  background: #fff;
+  border: 1px solid var(--color-pink-deep);
+  color: var(--color-pink-deep);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.profile-actions button:hover {
+  background: var(--color-pink-deep);
+  color: #fff;
+}
+
+.profile-actions .pf-del {
+  border-color: var(--color-line);
+  color: var(--color-text-soft);
+}
+
+.profile-actions .pf-del:hover {
+  background: var(--color-text-soft);
+  border-color: var(--color-text-soft);
+  color: #fff;
+}
+
+.profile-memo {
+  padding: 0 16px 14px;
+}
+
+.profile-memo textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  font-family: var(--font-jp-sans);
+  font-size: 13px;
+  color: var(--color-text);
+  border-radius: var(--radius);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.profile-memo textarea:focus {
+  outline: none;
+  border-color: var(--color-pink-deep);
+}
+
+.form-submit .btn-sub {
+  margin-left: 14px;
+  background: #fff;
+  color: var(--color-pink-deep);
+  border: 1px solid var(--color-pink-deep);
+}
+
+.form-submit .btn-sub:hover {
+  background: var(--color-bg-soft);
+  color: var(--color-accent);
+}
+
+.zodiac-card {
+  position: relative;
+}
+
+.zodiac-card .my-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-family: var(--font-en);
+  font-style: italic;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: #fff;
+  background: var(--color-pink-deep);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+
 .natal-form {
   max-width: 720px;
   margin: 0 auto;
@@ -1378,6 +1551,21 @@ a:hover {
 
   .balance-row {
     grid-template-columns: 120px 1fr 26px;
+  }
+
+  .profile-main {
+    flex-wrap: wrap;
+  }
+
+  .profile-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .form-submit .btn-sub {
+    margin-left: 0;
+    margin-top: 12px;
+    display: inline-block;
   }
 
   .contact-form,
