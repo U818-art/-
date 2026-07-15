@@ -753,6 +753,161 @@ a:hover {
   border-bottom: 1px solid var(--color-pink-deep);
 }
 
+/* ---------- Horoscope ---------- */
+.horoscope-date {
+  text-align: center;
+  font-family: var(--font-jp-serif);
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  color: var(--color-pink-deep);
+  margin: 0 0 40px;
+}
+
+.zodiac-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.zodiac-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 20px 8px 16px;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  font-family: var(--font-jp-sans);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.zodiac-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px -18px rgba(181, 142, 127, 0.4);
+}
+
+.zodiac-card.is-selected {
+  border-color: var(--color-pink-deep);
+  background: var(--color-bg-soft);
+}
+
+.zodiac-card .symbol {
+  font-size: 24px;
+  color: var(--color-pink-deep);
+  line-height: 1.4;
+}
+
+.zodiac-card .name {
+  font-family: var(--font-jp-serif);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.zodiac-card .en {
+  font-family: var(--font-en);
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--color-text-soft);
+}
+
+.horoscope-result {
+  max-width: 640px;
+  margin: 50px auto 0;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 44px 46px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.result-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.result-symbol {
+  font-size: 40px;
+  color: var(--color-pink-deep);
+  line-height: 1;
+}
+
+.result-head h2 {
+  font-family: var(--font-jp-serif);
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin: 0;
+}
+
+.result-period {
+  font-family: var(--font-en);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-soft);
+  margin: 4px 0 0;
+}
+
+.result-stars {
+  font-size: 20px;
+  letter-spacing: 0.3em;
+  color: var(--color-pink-deep);
+  margin: 0 0 16px;
+}
+
+.result-message {
+  font-size: 14.5px;
+  line-height: 2.2;
+  color: var(--color-text);
+  margin: 0 0 28px;
+}
+
+.result-lucky {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 0;
+}
+
+.result-lucky > div {
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.result-lucky dt {
+  font-family: var(--font-en);
+  font-style: italic;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--color-pink-deep);
+  margin-bottom: 6px;
+}
+
+.result-lucky dd {
+  margin: 0;
+  font-family: var(--font-jp-serif);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+.result-note {
+  margin: 26px 0 0;
+  font-size: 11px;
+  color: var(--color-text-soft);
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+
 /* ---------- Footer ---------- */
 .site-footer {
   background: var(--color-bg-soft);
@@ -885,6 +1040,14 @@ a:hover {
   .blog-list li {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .zodiac-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .horoscope-result {
+    padding: 32px 24px;
   }
 
   .contact-form,

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horoscope | U818（ユーエイト）</title>
+<meta name="description" content="U818（ユーエイト）の今日の星占い。12星座それぞれの今日の運勢を、やさしいことばでお届けします。ラッキーカラーとラッキーアイテムも。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="site-logo">
+      U818
+      <small>ユーエイト</small>
+    </a>
+    <button class="nav-toggle" aria-label="メニューを開く" onclick="document.getElementById('gnav').classList.toggle('is-open')">≡</button>
+    <nav class="global-nav" id="gnav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="service.html">Service</a></li>
+        <li><a href="works.html">Works</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="horoscope.html" class="is-active">Horoscope</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <p class="page-header-en">Horoscope</p>
+    <h1>今日の星占い</h1>
+    <p class="lead">
+      星のことばは、今日をやさしく整えるヒント。<br>
+      あなたの星座を選んで、今日の運勢をのぞいてみてください。
+    </p>
+  </div>
+
+  <section class="section">
+    <div class="section-inner">
+      <p class="horoscope-date" id="horoscope-date"></p>
+
+      <div class="zodiac-grid" id="zodiac-grid"></div>
+
+      <div class="horoscope-result" id="horoscope-result" hidden>
+        <div class="result-head">
+          <span class="result-symbol" id="result-symbol"></span>
+          <div>
+            <h2 id="result-name"></h2>
+            <p class="result-period" id="result-period"></p>
+          </div>
+        </div>
+        <p class="result-stars" id="result-stars" aria-label="総合運"></p>
+        <p class="result-message" id="result-message"></p>
+        <dl class="result-lucky">
+          <div>
+            <dt>Lucky Color</dt>
+            <dd id="result-color"></dd>
+          </div>
+          <div>
+            <dt>Lucky Item</dt>
+            <dd id="result-item"></dd>
+          </div>
+        </dl>
+        <p class="result-note">※ 占いはエンターテインメントとして、今日を楽しむヒントにお使いください。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="section-inner concept">
+      <div class="section-title">
+        <span class="en">Message</span>
+        <h2>星を、暮らしの句読点に。</h2>
+        <span class="deco"></span>
+      </div>
+      <p>
+        当たっても、当たらなくても。<br>
+        朝のひとときに星のことばを読むと、<br>
+        今日という一日が、すこしだけ丁寧に始まる気がします。
+      </p>
+      <p class="sign">— U818</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-logo">U818</div>
+  <div class="footer-tagline">AIと感性で生きていく</div>
+  <ul class="footer-nav">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="service.html">Service</a></li>
+    <li><a href="works.html">Works</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="horoscope.html">Horoscope</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© U818 All Rights Reserved.</div>
+</footer>
+
+<script>
+(function () {
+  var SIGNS = [
+    { name: "牡羊座", en: "Aries",       symbol: "♈", period: "3/21 - 4/19" },
+    { name: "牡牛座", en: "Taurus",      symbol: "♉", period: "4/20 - 5/20" },
+    { name: "双子座", en: "Gemini",      symbol: "♊", period: "5/21 - 6/21" },
+    { name: "蟹座",   en: "Cancer",      symbol: "♋", period: "6/22 - 7/22" },
+    { name: "獅子座", en: "Leo",         symbol: "♌", period: "7/23 - 8/22" },
+    { name: "乙女座", en: "Virgo",       symbol: "♍", period: "8/23 - 9/22" },
+    { name: "天秤座", en: "Libra",       symbol: "♎", period: "9/23 - 10/23" },
+    { name: "蠍座",   en: "Scorpio",     symbol: "♏", period: "10/24 - 11/22" },
+    { name: "射手座", en: "Sagittarius", symbol: "♐", period: "11/23 - 12/21" },
+    { name: "山羊座", en: "Capricorn",   symbol: "♑", period: "12/22 - 1/19" },
+    { name: "水瓶座", en: "Aquarius",    symbol: "♒", period: "1/20 - 2/18" },
+    { name: "魚座",   en: "Pisces",      symbol: "♓", period: "2/19 - 3/20" }
+  ];
+
+  var MESSAGES = [
+    "小さな「好き」に正直になれる日。気になっていたことに、ひとつだけ手をつけてみて。",
+    "ことばが届きやすい日です。伝えそびれていた「ありがとう」を、そっと渡してみましょう。",
+    "がんばりすぎない工夫が幸運のカギ。温かい飲みものを片手に、ひと息つく時間を。",
+    "直感が冴えるとき。迷ったら、心が軽くなるほうを選んで大丈夫です。",
+    "机まわりや部屋の一角を整えると、気持ちまですっきり。新しい風が入ってきます。",
+    "昔からの縁がやさしく背中を押してくれそう。懐かしい人に連絡してみるのも◎。",
+    "情報を集めるより、手を動かすほうが実りのある日。下書きのままの何かを仕上げてみて。",
+    "焦らなくて大丈夫。ゆっくり進んだ分だけ、丁寧さが伝わる一日になります。",
+    "新しい道具や方法を試すのに向いた日。いつものやり方に、ひとさじの変化を。",
+    "自分を労わることが運気アップに。好きな香りや音楽で、心にやわらかい余白を。",
+    "小さな達成をきちんと喜ぶと、次の扉が開きます。できたことを書き出してみましょう。",
+    "人の話にじっくり耳を傾けると、思いがけないヒントが。聞き役が幸運を運びます。"
+  ];
+
+  var COLORS = [
+    "くすみピンク", "アイボリー", "ラベンダー", "ミントグリーン",
+    "テラコッタ", "スモーキーブルー", "ベージュ", "モーヴ",
+    "オフホワイト", "セージグリーン", "アプリコット", "グレージュ"
+  ];
+
+  var ITEMS = [
+    "お気に入りのマグカップ", "ハンドクリーム", "小さなノート", "リネンのハンカチ",
+    "焼き菓子", "季節の花", "しおり", "アロマオイル",
+    "万年筆", "やわらかいストール", "ハーブティー", "レターセット"
+  ];
+
+  function seedFor(dateStr, signIndex) {
+    var s = dateStr + "-" + signIndex;
+    var h = 0x811c9dc5;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 0x01000193);
+    }
+    h ^= h >>> 16;
+    h = Math.imul(h, 0x85ebca6b);
+    h ^= h >>> 13;
+    h = Math.imul(h, 0xc2b2ae35);
+    h ^= h >>> 16;
+    return h >>> 0;
+  }
+
+  var today = new Date();
+  var dateStr = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+  var dateLabel = today.getFullYear() + "年" + (today.getMonth() + 1) + "月" + today.getDate() + "日の運勢";
+  document.getElementById("horoscope-date").textContent = dateLabel;
+
+  var grid = document.getElementById("zodiac-grid");
+
+  SIGNS.forEach(function (sign, i) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "zodiac-card";
+    btn.innerHTML =
+      '<span class="symbol">' + sign.symbol + '</span>' +
+      '<span class="name">' + sign.name + '</span>' +
+      '<span class="en">' + sign.en + '</span>';
+    btn.addEventListener("click", function () {
+      showResult(i);
+      var selected = grid.querySelector(".is-selected");
+      if (selected) selected.classList.remove("is-selected");
+      btn.classList.add("is-selected");
+    });
+    grid.appendChild(btn);
+  });
+
+  function showResult(i) {
+    var sign = SIGNS[i];
+    var seed = seedFor(dateStr, i);
+    var stars = (seed % 5) + 1;
+    var starText = "";
+    for (var s = 0; s < 5; s++) {
+      starText += s < stars ? "★" : "☆";
+    }
+
+    document.getElementById("result-symbol").textContent = sign.symbol;
+    document.getElementById("result-name").textContent = sign.name + " ／ " + sign.en;
+    document.getElementById("result-period").textContent = sign.period;
+    document.getElementById("result-stars").textContent = starText;
+    document.getElementById("result-message").textContent = MESSAGES[(seed >>> 3) % MESSAGES.length];
+    document.getElementById("result-color").textContent = COLORS[(seed >>> 7) % COLORS.length];
+    document.getElementById("result-item").textContent = ITEMS[(seed >>> 11) % ITEMS.length];
+
+    var result = document.getElementById("horoscope-result");
+    result.hidden = false;
+    result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+})();
+</script>
+
+</body>
+</html>
