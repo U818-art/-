@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astrology - 出生図鑑定 | U818（ユーエイト）</title>
+<meta name="description" content="生年月日・出生時間・出生地から出生図（ネイタルチャート）を作成。10天体の星座とハウス、アスペクトを計算し、詳しい読み解きをお届けする本格占星術ページです。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="site-logo">
+      U818
+      <small>ユーエイト</small>
+    </a>
+    <button class="nav-toggle" aria-label="メニューを開く" onclick="document.getElementById('gnav').classList.toggle('is-open')">≡</button>
+    <nav class="global-nav" id="gnav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="service.html">Service</a></li>
+        <li><a href="works.html">Works</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="horoscope.html">Horoscope</a></li>
+        <li><a href="astrology.html" class="is-active">Astrology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <p class="page-header-en">Natal Chart</p>
+    <h1>出生図鑑定</h1>
+    <p class="lead">
+      生まれた瞬間の空の配置は、あなただけの星の設計図。<br>
+      生年月日・出生時間・出生地から、10天体の位置とハウス、アスペクトを精密に計算し、<br>
+      詳しい読み解きとともにお届けします。
+    </p>
+  </div>
+
+  <section class="section">
+    <div class="section-inner">
+
+      <form class="natal-form" id="natal-form" onsubmit="return false;">
+        <div class="natal-form-grid">
+          <div class="form-group">
+            <label for="nf-name">お名前（任意）</label>
+            <input type="text" id="nf-name" placeholder="例：うさぎ 様">
+          </div>
+          <div class="form-group">
+            <label for="nf-date">生年月日<span class="required">必須</span></label>
+            <input type="date" id="nf-date" required value="1990-01-01" min="1900-01-01" max="2099-12-31">
+          </div>
+          <div class="form-group">
+            <label for="nf-time">出生時間</label>
+            <input type="time" id="nf-time" value="12:00">
+            <label class="checkline"><input type="checkbox" id="nf-unknown"> 出生時間がわからない</label>
+          </div>
+          <div class="form-group">
+            <label for="nf-place">出生地</label>
+            <select id="nf-place"></select>
+          </div>
+          <div class="form-group natal-manual" id="nf-manual" hidden>
+            <label>緯度・経度（東経・北緯を正の値で）</label>
+            <div class="latlon-row">
+              <input type="number" id="nf-lat" step="0.01" min="-89" max="89" placeholder="緯度 例: 35.69">
+              <input type="number" id="nf-lon" step="0.01" min="-180" max="180" placeholder="経度 例: 139.69">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="nf-tz">時差（UTCからの時間差）</label>
+            <input type="number" id="nf-tz" step="0.25" min="-12" max="14" value="9">
+            <p class="field-note">日本生まれの方は「9」のままでOKです。</p>
+          </div>
+        </div>
+        <div class="form-submit">
+          <button type="button" id="nf-submit">出生図を作成する</button>
+        </div>
+      </form>
+
+      <div id="natal-result" hidden>
+
+        <div class="natal-summary" id="ns-head"></div>
+
+        <div class="chart-wrap">
+          <div id="chart-wheel"></div>
+        </div>
+
+        <div class="natal-tables">
+          <div class="natal-table-block">
+            <h3>天体の位置</h3>
+            <table class="natal-table" id="tbl-planets"></table>
+          </div>
+          <div class="natal-table-block" id="blk-cusps">
+            <h3>ハウスカスプ（プラシーダス式）</h3>
+            <table class="natal-table" id="tbl-cusps"></table>
+          </div>
+        </div>
+
+        <div class="natal-table-block">
+          <h3>アスペクト</h3>
+          <table class="natal-table" id="tbl-aspects"></table>
+        </div>
+
+        <div class="natal-balance" id="blk-balance"></div>
+
+        <div class="natal-reading" id="blk-reading"></div>
+
+        <div class="natal-notes">
+          <h3>鑑定メモ（プロ向け注記）</h3>
+          <ul>
+            <li>ハウス分割はプラシーダス式、獣帯はトロピカル方式です。</li>
+            <li>計算精度の目安：太陽・惑星 ±0.1°程度、月 ±0.3°程度。星座やハウスの境界（カスプ）付近の天体は、前後のサイン・ハウスの両方を視野に入れてお読みください。</li>
+            <li>出生時間が不明な場合は正午（12:00）で計算したソーラーチャートです。アセンダント・ハウスは表示されず、月は最大±7°前後の誤差を含みます。</li>
+            <li>1948〜1951年の夏季に日本で生まれた方は、サマータイム実施期間の可能性があります。該当する場合は出生時間から1時間引いてください。</li>
+          </ul>
+          <p class="natal-print"><button type="button" onclick="window.print()">この鑑定書を印刷する</button></p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="section-inner concept">
+      <div class="section-title">
+        <span class="en">Daily</span>
+        <h2>今日の星もようは</h2>
+        <span class="deco"></span>
+      </div>
+      <p>
+        毎日の運勢は、12星座の「今日の星占い」でどうぞ。<br>
+        ラッキーカラーとラッキーアイテムもお届けしています。
+      </p>
+      <p style="margin-top:30px;">
+        <a href="horoscope.html" class="hero-cta">今日の星占いへ</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-logo">U818</div>
+  <div class="footer-tagline">AIと感性で生きていく</div>
+  <ul class="footer-nav">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="service.html">Service</a></li>
+    <li><a href="works.html">Works</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="horoscope.html">Horoscope</a></li>
+    <li><a href="astrology.html">Astrology</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© U818 All Rights Reserved.</div>
+</footer>
+
+<script src="astro-engine.js"></script>
+<script src="astro-data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var D = ASTRO_DATA;
+  var PLANET_ORDER = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"];
+
+  /* ---------- 出生地セレクト ---------- */
+  var placeSel = document.getElementById("nf-place");
+  D.prefectures.forEach(function (p, i) {
+    var opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = p[0];
+    if (p[0].indexOf("東京") === 0) opt.selected = true;
+    placeSel.appendChild(opt);
+  });
+  var otherOpt = document.createElement("option");
+  otherOpt.value = "manual";
+  otherOpt.textContent = "その他（緯度・経度を入力）";
+  placeSel.appendChild(otherOpt);
+
+  placeSel.addEventListener("change", function () {
+    document.getElementById("nf-manual").hidden = placeSel.value !== "manual";
+  });
+
+  document.getElementById("nf-unknown").addEventListener("change", function () {
+    document.getElementById("nf-time").disabled = this.checked;
+  });
+
+  /* ---------- 度数表示 ---------- */
+  function signOf(lon) { return Math.floor(AstroEngine.norm360(lon) / 30); }
+  function fmtDeg(lon) {
+    var inSign = AstroEngine.norm360(lon) % 30;
+    var d = Math.floor(inSign);
+    var m = Math.round((inSign - d) * 60);
+    if (m === 60) { d += 1; m = 0; }
+    return d + "°" + (m < 10 ? "0" : "") + m + "′";
+  }
+  function fmtOrb(orb) {
+    var d = Math.floor(orb);
+    var m = Math.round((orb - d) * 60);
+    if (m === 60) { d += 1; m = 0; }
+    return d + "°" + (m < 10 ? "0" : "") + m + "′";
+  }
+  function signLabel(lon) {
+    var s = D.signs[signOf(lon)];
+    return s.symbol + " " + s.name + " " + fmtDeg(lon);
+  }
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* ---------- チャートホイール描画 ---------- */
+  var ELEMENT_FILL = { "火": "#f4dccf", "地": "#ece2cd", "風": "#f1e9de", "水": "#e7dad9" };
+  var ASPECT_STYLE = {
+    trine:      { color: "#d3a7a0", dash: "" },
+    sextile:    { color: "#d3a7a0", dash: "" },
+    square:     { color: "#a08573", dash: "" },
+    opposition: { color: "#a08573", dash: "" },
+    quincunx:   { color: "#c9b59a", dash: "4 4" }
+  };
+
+  function polar(cx, cy, r, lonDeg, base) {
+    var theta = (180 + (lonDeg - base)) * Math.PI / 180;
+    return { x: cx + r * Math.cos(theta), y: cy - r * Math.sin(theta) };
+  }
+
+  function drawWheel(chart, aspects) {
+    var cx = 320, cy = 320;
+    var base = chart.timeUnknown ? chart.planets.sun.lon : chart.asc;
+    var svg = [];
+    svg.push('<svg viewBox="-18 -18 676 676" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="出生図ホイールチャート">');
+    svg.push('<circle cx="320" cy="320" r="300" fill="#fffdf9" stroke="#d3a7a0" stroke-width="1.5"/>');
+
+    // 獣帯リング
+    for (var s = 0; s < 12; s++) {
+      var a0 = s * 30, a1 = a0 + 30;
+      var p1 = polar(cx, cy, 300, a0, base), p2 = polar(cx, cy, 300, a1, base);
+      var p3 = polar(cx, cy, 258, a1, base), p4 = polar(cx, cy, 258, a0, base);
+      svg.push('<path d="M' + p1.x.toFixed(1) + ' ' + p1.y.toFixed(1) +
+        ' A300 300 0 0 1 ' + p2.x.toFixed(1) + ' ' + p2.y.toFixed(1) +
+        ' L' + p3.x.toFixed(1) + ' ' + p3.y.toFixed(1) +
+        ' A258 258 0 0 0 ' + p4.x.toFixed(1) + ' ' + p4.y.toFixed(1) + ' Z" fill="' +
+        ELEMENT_FILL[D.signs[s].element] + '" stroke="#e5dccc" stroke-width="1"/>');
+      var g = polar(cx, cy, 279, a0 + 15, base);
+      svg.push('<text x="' + g.x.toFixed(1) + '" y="' + g.y.toFixed(1) +
+        '" font-size="20" fill="#8d7466" text-anchor="middle" dominant-baseline="central">' + D.signs[s].symbol + '&#xFE0E;</text>');
+    }
+    svg.push('<circle cx="320" cy="320" r="258" fill="none" stroke="#d3a7a0" stroke-width="1"/>');
+    svg.push('<circle cx="320" cy="320" r="130" fill="#fffdf9" stroke="#e5dccc" stroke-width="1"/>');
+
+    // ハウスカスプ
+    if (!chart.timeUnknown) {
+      for (var h = 1; h <= 12; h++) {
+        var isAngleLine = (h === 1 || h === 4 || h === 7 || h === 10);
+        var q1 = polar(cx, cy, 130, chart.cusps[h], base);
+        var q2 = polar(cx, cy, 258, chart.cusps[h], base);
+        svg.push('<line x1="' + q1.x.toFixed(1) + '" y1="' + q1.y.toFixed(1) +
+          '" x2="' + q2.x.toFixed(1) + '" y2="' + q2.y.toFixed(1) +
+          '" stroke="' + (isAngleLine ? "#b58e7f" : "#dccfbc") + '" stroke-width="' + (isAngleLine ? 2 : 1) + '"/>');
+        var next = chart.cusps[h === 12 ? 1 : h + 1];
+        var span = AstroEngine.norm360(next - chart.cusps[h]);
+        var mid = AstroEngine.norm360(chart.cusps[h] + span / 2);
+        var n = polar(cx, cy, 145, mid, base);
+        svg.push('<text x="' + n.x.toFixed(1) + '" y="' + n.y.toFixed(1) +
+          '" font-size="12" fill="#a89a8c" text-anchor="middle" dominant-baseline="central" font-style="italic">' + h + '</text>');
+      }
+      var ascP = polar(cx, cy, 316, chart.asc, base);
+      svg.push('<text x="' + ascP.x.toFixed(1) + '" y="' + ascP.y.toFixed(1) +
+        '" font-size="12" fill="#b58e7f" text-anchor="middle" dominant-baseline="central" font-style="italic">Asc</text>');
+      var mcP = polar(cx, cy, 316, chart.mc, base);
+      svg.push('<text x="' + mcP.x.toFixed(1) + '" y="' + mcP.y.toFixed(1) +
+        '" font-size="12" fill="#b58e7f" text-anchor="middle" dominant-baseline="central" font-style="italic">MC</text>');
+    }
+
+    // アスペクト線
+    aspects.forEach(function (asp) {
+      if (asp.aspect === "conj") return;
+      var st = ASPECT_STYLE[asp.aspect];
+      if (!st) return;
+      if (asp.a.isAngle || asp.b.isAngle) return;
+      var pA = polar(cx, cy, 130, asp.a.lon, base);
+      var pB = polar(cx, cy, 130, asp.b.lon, base);
+      svg.push('<line x1="' + pA.x.toFixed(1) + '" y1="' + pA.y.toFixed(1) +
+        '" x2="' + pB.x.toFixed(1) + '" y2="' + pB.y.toFixed(1) +
+        '" stroke="' + st.color + '" stroke-width="1"' + (st.dash ? ' stroke-dasharray="' + st.dash + '"' : '') + ' opacity="0.75"/>');
+    });
+
+    // 天体（近接時は表示半径をずらす）
+    var placed = PLANET_ORDER.map(function (k) {
+      return { key: k, lon: chart.planets[k].lon, retro: chart.planets[k].retro };
+    }).sort(function (a, b) { return a.lon - b.lon; });
+
+    var lastLon = null, level = 0;
+    placed.forEach(function (p) {
+      if (lastLon !== null && AstroEngine.angleDiff(p.lon, lastLon) < 9) {
+        level = (level + 1) % 3;
+      } else {
+        level = 0;
+      }
+      lastLon = p.lon;
+      var r = 225 - level * 32;
+      var g = polar(cx, cy, r, p.lon, base);
+      var t1 = polar(cx, cy, 258, p.lon, base);
+      var t2 = polar(cx, cy, 250, p.lon, base);
+      svg.push('<line x1="' + t1.x.toFixed(1) + '" y1="' + t1.y.toFixed(1) +
+        '" x2="' + t2.x.toFixed(1) + '" y2="' + t2.y.toFixed(1) + '" stroke="#b58e7f" stroke-width="1.5"/>');
+      svg.push('<text x="' + g.x.toFixed(1) + '" y="' + g.y.toFixed(1) +
+        '" font-size="22" fill="#4a4038" text-anchor="middle" dominant-baseline="central">' +
+        D.planets[p.key].symbol + '&#xFE0E;' + (p.retro ? '<tspan font-size="10" fill="#b58e7f">R</tspan>' : '') + '</text>');
+      var dg = polar(cx, cy, r - 24, p.lon, base);
+      svg.push('<text x="' + dg.x.toFixed(1) + '" y="' + dg.y.toFixed(1) +
+        '" font-size="10" fill="#a89a8c" text-anchor="middle" dominant-baseline="central">' +
+        Math.floor(AstroEngine.norm360(p.lon) % 30) + '°</text>');
+    });
+
+    svg.push('</svg>');
+    document.getElementById("chart-wheel").innerHTML = svg.join("");
+  }
+
+  /* ---------- テーブル ---------- */
+  function renderPlanetTable(chart) {
+    var rows = ['<tr><th>天体</th><th>星座・度数</th>' + (chart.timeUnknown ? '' : '<th>ハウス</th>') + '<th>逆行</th></tr>'];
+    PLANET_ORDER.forEach(function (k) {
+      var p = chart.planets[k];
+      rows.push('<tr><td>' + D.planets[k].symbol + ' ' + D.planets[k].name + '</td><td>' + signLabel(p.lon) + '</td>' +
+        (chart.timeUnknown ? '' : '<td>第' + p.house + 'ハウス</td>') +
+        '<td>' + (p.retro ? '<span class="retro">R</span>' : '—') + '</td></tr>');
+    });
+    if (!chart.timeUnknown) {
+      rows.push('<tr><td>Asc アセンダント</td><td>' + signLabel(chart.asc) + '</td><td>第1ハウス</td><td>—</td></tr>');
+      rows.push('<tr><td>MC 天頂</td><td>' + signLabel(chart.mc) + '</td><td>第10ハウス</td><td>—</td></tr>');
+    }
+    document.getElementById("tbl-planets").innerHTML = rows.join("");
+  }
+
+  function renderCuspTable(chart) {
+    var blk = document.getElementById("blk-cusps");
+    if (chart.timeUnknown) { blk.hidden = true; return; }
+    blk.hidden = false;
+    var rows = ['<tr><th>ハウス</th><th>カスプ</th><th>テーマ</th></tr>'];
+    for (var h = 1; h <= 12; h++) {
+      rows.push('<tr><td>第' + h + 'ハウス</td><td>' + signLabel(chart.cusps[h]) + '</td><td>' + D.houses[h].theme + '</td></tr>');
+    }
+    document.getElementById("tbl-cusps").innerHTML = rows.join("");
+  }
+
+  function renderAspectTable(aspects) {
+    var rows = ['<tr><th>天体</th><th>アスペクト</th><th>天体</th><th>オーブ</th></tr>'];
+    if (aspects.length === 0) {
+      rows.push('<tr><td colspan="4">主要なアスペクトは見つかりませんでした。</td></tr>');
+    }
+    aspects.forEach(function (asp) {
+      var a = D.aspects[asp.aspect];
+      rows.push('<tr><td>' + D.planets[asp.a.id].symbol + ' ' + D.planets[asp.a.id].name + '</td>' +
+        '<td class="asp-' + a.type + '">' + a.name + '（' + a.angle + '°）</td>' +
+        '<td>' + D.planets[asp.b.id].symbol + ' ' + D.planets[asp.b.id].name + '</td>' +
+        '<td>' + fmtOrb(asp.orb) + '</td></tr>');
+    });
+    document.getElementById("tbl-aspects").innerHTML = rows.join("");
+  }
+
+  /* ---------- バランス ---------- */
+  function renderBalance(chart) {
+    var elems = { "火": 0, "地": 0, "風": 0, "水": 0 };
+    var quals = { "活動": 0, "不動": 0, "柔軟": 0 };
+    PLANET_ORDER.forEach(function (k) {
+      var s = D.signs[signOf(chart.planets[k].lon)];
+      elems[s.element]++;
+      quals[s.quality]++;
+    });
+    var html = ['<h3>エレメント・クオリティバランス</h3><div class="balance-grid">'];
+    ["火", "地", "風", "水"].forEach(function (e) {
+      html.push('<div class="balance-row"><span class="label">' + D.elements[e].name + '</span>' +
+        '<span class="bar"><span class="fill" style="width:' + (elems[e] * 10) + '%"></span></span>' +
+        '<span class="count">' + elems[e] + '</span></div>');
+    });
+    html.push('</div><div class="balance-grid">');
+    ["活動", "不動", "柔軟"].forEach(function (q) {
+      html.push('<div class="balance-row"><span class="label">' + D.qualities[q] + '</span>' +
+        '<span class="bar"><span class="fill" style="width:' + (quals[q] * 10) + '%"></span></span>' +
+        '<span class="count">' + quals[q] + '</span></div>');
+    });
+    html.push('</div>');
+
+    var maxE = "火", minE = "火";
+    ["地", "風", "水"].forEach(function (e) {
+      if (elems[e] > elems[maxE]) maxE = e;
+      if (elems[e] < elems[minE]) minE = e;
+    });
+    html.push('<p class="balance-text">最も豊かなエレメントは<strong>' + D.elements[maxE].name + '</strong>。' + D.elements[maxE].strong + '</p>');
+    if (elems[minE] <= 1) {
+      html.push('<p class="balance-text">' + D.elements[minE].name + 'のエレメントは控えめです。' + D.elements[minE].weak + '</p>');
+    }
+    document.getElementById("blk-balance").innerHTML = html.join("");
+  }
+
+  /* ---------- 読み解き ---------- */
+  function readingSection(title, en, bodyHtml) {
+    return '<div class="reading-block"><h3><span class="en">' + en + '</span>' + title + '</h3>' + bodyHtml + '</div>';
+  }
+
+  function planetHeadline(key, chart) {
+    var p = chart.planets[key];
+    var head = '<p class="reading-pos">' + D.planets[key].symbol + ' ' + D.planets[key].name + '　' + signLabel(p.lon) +
+      (p.retro ? '（逆行）' : '') +
+      (chart.timeUnknown || !p.house ? '' : '　第' + p.house + 'ハウス') + '</p>';
+    return head;
+  }
+
+  function renderReading(chart, aspects) {
+    var html = [];
+
+    // 三大要素
+    var big3 = '';
+    big3 += planetHeadline("sun", chart) + '<p>' + D.planetInSign.sun[signOf(chart.planets.sun.lon)] + '</p>';
+    big3 += planetHeadline("moon", chart) + '<p>' + D.planetInSign.moon[signOf(chart.planets.moon.lon)] + '</p>';
+    if (!chart.timeUnknown) {
+      big3 += '<p class="reading-pos">Asc アセンダント　' + signLabel(chart.asc) + '</p>' +
+        '<p>' + D.planetInSign.asc[signOf(chart.asc)] + '</p>';
+    }
+    html.push(readingSection("三大要素 — 太陽・月・アセンダント", "Big Three", big3));
+
+    // 各天体
+    var body = '';
+    PLANET_ORDER.slice(2).forEach(function (k) {
+      body += planetHeadline(k, chart);
+      body += '<p>' + D.planetInSign[k][signOf(chart.planets[k].lon)];
+      if (!chart.timeUnknown && chart.planets[k].house) {
+        body += '<br>第' + chart.planets[k].house + 'ハウス（' + D.houses[chart.planets[k].house].theme + '）に位置し、' + D.houses[chart.planets[k].house].sentence;
+      }
+      body += '</p>';
+    });
+    if (!chart.timeUnknown) {
+      body += planetHeadline("sun", chart).replace("</p>", "（ハウス）</p>");
+      body += '<p>太陽は第' + chart.planets.sun.house + 'ハウス（' + D.houses[chart.planets.sun.house].theme + '）。' + D.houses[chart.planets.sun.house].sentence +
+        '　月は第' + chart.planets.moon.house + 'ハウス（' + D.houses[chart.planets.moon.house].theme + '）。' + D.houses[chart.planets.moon.house].sentence + '</p>';
+    }
+    html.push(readingSection("各天体の読み解き", "Planets", body));
+
+    // アスペクト
+    var aspBody = '';
+    var shown = 0;
+    aspects.forEach(function (asp) {
+      if (shown >= 12) return;
+      var a = D.aspects[asp.aspect];
+      aspBody += '<p class="reading-pos">' + D.planets[asp.a.id].symbol + ' ' + D.planets[asp.a.id].name +
+        ' × ' + D.planets[asp.b.id].symbol + ' ' + D.planets[asp.b.id].name +
+        '　<span class="asp-' + a.type + '">' + a.name + '（' + a.angle + '°・オーブ' + fmtOrb(asp.orb) + '）</span></p>';
+      aspBody += '<p>「' + D.planets[asp.a.id].theme + '」と「' + D.planets[asp.b.id].theme + '」' + a.text + '</p>';
+      shown++;
+    });
+    if (!aspBody) aspBody = '<p>タイトなアスペクトは見つかりませんでした。天体たちがそれぞれ独立して働く、自由度の高いチャートです。</p>';
+    html.push(readingSection("主要アスペクトの読み解き", "Aspects", aspBody));
+
+    document.getElementById("blk-reading").innerHTML = html.join("");
+  }
+
+  /* ---------- メイン ---------- */
+  document.getElementById("nf-submit").addEventListener("click", function () {
+    var dateVal = document.getElementById("nf-date").value;
+    if (!dateVal) { alert("生年月日を入力してください。"); return; }
+    var parts = dateVal.split("-").map(Number);
+    var timeUnknown = document.getElementById("nf-unknown").checked;
+    var timeVal = document.getElementById("nf-time").value || "12:00";
+    var tParts = timeVal.split(":").map(Number);
+    var tz = parseFloat(document.getElementById("nf-tz").value);
+    if (isNaN(tz)) tz = 9;
+
+    var lat, lon;
+    if (placeSel.value === "manual") {
+      lat = parseFloat(document.getElementById("nf-lat").value);
+      lon = parseFloat(document.getElementById("nf-lon").value);
+      if (isNaN(lat) || isNaN(lon)) { alert("緯度・経度を入力してください。"); return; }
+    } else {
+      var pref = D.prefectures[Number(placeSel.value)];
+      lat = pref[1];
+      lon = pref[2];
+    }
+
+    var chart = AstroEngine.computeChart({
+      year: parts[0], month: parts[1], day: parts[2],
+      hour: tParts[0], minute: tParts[1],
+      tz: tz, lat: lat, lon: lon,
+      timeUnknown: timeUnknown
+    });
+
+    var points = PLANET_ORDER.map(function (k) {
+      return { id: k, name: D.planets[k].name, lon: chart.planets[k].lon, isAngle: false };
+    });
+    if (!chart.timeUnknown) {
+      points.push({ id: "asc", name: "ASC", lon: chart.asc, isAngle: true });
+      points.push({ id: "mc", name: "MC", lon: chart.mc, isAngle: true });
+    }
+    var aspects = AstroEngine.findAspects(points);
+
+    // ヘッダー
+    var name = document.getElementById("nf-name").value.trim();
+    var placeLabel = placeSel.value === "manual"
+      ? "緯度" + lat + "° / 経度" + lon + "°"
+      : D.prefectures[Number(placeSel.value)][0];
+    var head = '<p class="ns-name">' + (name ? esc(name) + ' の出生図' : 'あなたの出生図') + '</p>' +
+      '<p class="ns-data">' + parts[0] + '年' + parts[1] + '月' + parts[2] + '日 ' +
+      (timeUnknown ? '出生時間不明（正午で計算）' : timeVal) +
+      '（UTC' + (tz >= 0 ? '+' : '') + tz + '）　' + esc(placeLabel) + '</p>' +
+      '<p class="ns-big3">☉ ' + D.signs[signOf(chart.planets.sun.lon)].name +
+      '　☽ ' + D.signs[signOf(chart.planets.moon.lon)].name +
+      (chart.timeUnknown ? '' : '　Asc ' + D.signs[signOf(chart.asc)].name) + '</p>';
+    document.getElementById("ns-head").innerHTML = head;
+
+    drawWheel(chart, aspects);
+    renderPlanetTable(chart);
+    renderCuspTable(chart);
+    renderAspectTable(aspects);
+    renderBalance(chart);
+    renderReading(chart, aspects);
+
+    var result = document.getElementById("natal-result");
+    result.hidden = false;
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+})();
+</script>
+
+</body>
+</html>

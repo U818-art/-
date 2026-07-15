@@ -908,6 +908,319 @@ a:hover {
   letter-spacing: 0.06em;
 }
 
+/* ---------- Astrology (Natal Chart) ---------- */
+.natal-form {
+  max-width: 720px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 44px 46px;
+}
+
+.natal-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 28px;
+}
+
+.natal-form .checkline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--color-text-soft);
+  font-family: var(--font-jp-sans);
+  letter-spacing: 0.04em;
+}
+
+.natal-form .checkline input {
+  width: auto;
+}
+
+.natal-form .field-note {
+  font-size: 11.5px;
+  color: var(--color-text-soft);
+  margin: 6px 0 0;
+}
+
+.latlon-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.natal-summary {
+  max-width: 720px;
+  margin: 60px auto 0;
+  text-align: center;
+  padding: 34px 30px;
+  background: linear-gradient(180deg, var(--color-bg-soft) 0%, #fff 100%);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+}
+
+.ns-name {
+  font-family: var(--font-jp-serif);
+  font-size: 20px;
+  letter-spacing: 0.16em;
+  margin: 0 0 10px;
+}
+
+.ns-data {
+  font-size: 13px;
+  color: var(--color-text-soft);
+  margin: 0 0 14px;
+}
+
+.ns-big3 {
+  font-family: var(--font-jp-serif);
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  color: var(--color-pink-deep);
+  margin: 0;
+}
+
+.chart-wrap {
+  max-width: 620px;
+  margin: 40px auto;
+}
+
+.chart-wrap svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.natal-tables {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.natal-table-block {
+  margin-bottom: 30px;
+}
+
+.natal-table-block h3 {
+  font-family: var(--font-jp-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  margin: 0 0 14px;
+  padding-left: 14px;
+  border-left: 3px solid var(--color-pink-deep);
+}
+
+.natal-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  font-size: 13px;
+}
+
+.natal-table th {
+  font-family: var(--font-jp-serif);
+  font-weight: 500;
+  background: var(--color-bg-soft);
+  color: var(--color-text);
+  letter-spacing: 0.1em;
+}
+
+.natal-table th,
+.natal-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+}
+
+.natal-table .retro {
+  color: var(--color-pink-deep);
+  font-weight: 700;
+}
+
+.asp-soft { color: var(--color-pink-deep); }
+.asp-hard { color: #96755f; }
+.asp-major { color: var(--color-accent); }
+.asp-minor { color: var(--color-text-soft); }
+
+.natal-balance {
+  max-width: 720px;
+  margin: 0 auto 40px;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 34px 40px;
+}
+
+.natal-balance h3 {
+  font-family: var(--font-jp-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  margin: 0 0 20px;
+}
+
+.balance-grid {
+  margin-bottom: 18px;
+}
+
+.balance-row {
+  display: grid;
+  grid-template-columns: 170px 1fr 30px;
+  align-items: center;
+  gap: 14px;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.balance-row .bar {
+  height: 8px;
+  background: var(--color-bg-soft);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.balance-row .fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-pink) 0%, var(--color-pink-deep) 100%);
+  border-radius: 6px;
+}
+
+.balance-row .count {
+  text-align: right;
+  font-family: var(--font-en);
+  color: var(--color-pink-deep);
+}
+
+.balance-text {
+  font-size: 13.5px;
+  line-height: 2;
+  color: var(--color-text);
+  margin: 10px 0 0;
+}
+
+.natal-reading {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.reading-block {
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 38px 42px;
+  margin-bottom: 30px;
+}
+
+.reading-block h3 {
+  font-family: var(--font-jp-serif);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  margin: 0 0 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.reading-block h3 .en {
+  display: block;
+  font-family: var(--font-en);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  color: var(--color-pink-deep);
+  margin-bottom: 6px;
+}
+
+.reading-block p {
+  font-size: 13.5px;
+  line-height: 2.1;
+  margin: 0 0 18px;
+  color: var(--color-text);
+}
+
+.reading-pos {
+  font-family: var(--font-jp-serif);
+  font-size: 15px !important;
+  letter-spacing: 0.1em;
+  color: var(--color-accent) !important;
+  margin-bottom: 4px !important;
+}
+
+.natal-notes {
+  max-width: 720px;
+  margin: 10px auto 0;
+  padding: 30px 36px;
+  background: var(--color-bg-soft);
+  border-radius: var(--radius);
+}
+
+.natal-notes h3 {
+  font-family: var(--font-jp-serif);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  margin: 0 0 14px;
+}
+
+.natal-notes ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.natal-notes li {
+  font-size: 12.5px;
+  color: var(--color-text-soft);
+  line-height: 1.9;
+  margin-bottom: 6px;
+}
+
+.natal-print {
+  text-align: center;
+  margin: 24px 0 0;
+}
+
+.natal-print button {
+  padding: 12px 40px;
+  background: var(--color-pink-deep);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-family: var(--font-jp-sans);
+  font-size: 12.5px;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.natal-print button:hover {
+  background: var(--color-accent);
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .natal-form,
+  .natal-print,
+  .page-header,
+  .section.bg-soft {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .section {
+    padding: 0;
+  }
+}
+
 /* ---------- Footer ---------- */
 .site-footer {
   background: var(--color-bg-soft);
@@ -1048,6 +1361,23 @@ a:hover {
 
   .horoscope-result {
     padding: 32px 24px;
+  }
+
+  .natal-form {
+    padding: 32px 24px;
+  }
+
+  .natal-form-grid,
+  .natal-tables {
+    grid-template-columns: 1fr;
+  }
+
+  .reading-block {
+    padding: 28px 22px;
+  }
+
+  .balance-row {
+    grid-template-columns: 120px 1fr 26px;
   }
 
   .contact-form,
