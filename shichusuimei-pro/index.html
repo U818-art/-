@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四柱推命 Pro — プロ鑑定士のための本格命式ソフト（完全オフライン）</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="appbar">
+  <div class="brand">
+    <span class="brand-mark">命</span>
+    <div>
+      <h1>四柱推命 Pro</h1>
+      <p class="tagline">電話占い・対面・オンライン鑑定のための本格四柱推命 — 完全オフライン動作</p>
+    </div>
+  </div>
+  <nav class="tabs" id="mainTabs">
+    <button data-tab="input" class="active">鑑定入力</button>
+    <button data-tab="meishiki">命式</button>
+    <button data-tab="text">鑑定文</button>
+    <button data-tab="unsei">運勢</button>
+    <button data-tab="aishou">相性</button>
+    <button data-tab="customer">顧客管理</button>
+    <button data-tab="tools">ツール</button>
+    <button data-tab="settings">設定・流派</button>
+    <button data-tab="glossary">用語辞典</button>
+  </nav>
+  <button id="aiToggle" class="ai-toggle" title="AIアシスタント">AI</button>
+</header>
+
+<main>
+
+<!-- ============ 鑑定入力 ============ -->
+<section id="tab-input" class="tab active">
+  <div class="card">
+    <h2>鑑定情報の入力</h2>
+    <div class="form-grid">
+      <label>お名前（任意）<input type="text" id="inName" placeholder="例）山田 花子"></label>
+      <label>性別
+        <select id="inGender"><option value="F">女性</option><option value="M">男性</option></select>
+      </label>
+      <label class="cal-switch">入力暦
+        <select id="inCalendar"><option value="g">新暦（グレゴリオ暦）</option><option value="l">旧暦</option></select>
+      </label>
+    </div>
+    <div class="form-grid" id="gregorianInputs">
+      <label>生年月日
+        <span class="date-row">
+          <input type="number" id="inY" min="1900" max="2100" value="1990" style="width:5.5em">年
+          <input type="number" id="inM" min="1" max="12" value="6" style="width:3.5em">月
+          <input type="number" id="inD" min="1" max="31" value="15" style="width:3.5em">日
+        </span>
+      </label>
+    </div>
+    <div class="form-grid hidden" id="lunarInputs">
+      <label>旧暦 生年月日
+        <span class="date-row">
+          <input type="number" id="inLY" min="1900" max="2100" value="1990" style="width:5.5em">年
+          <label class="inline"><input type="checkbox" id="inLeap">閏</label>
+          <input type="number" id="inLM" min="1" max="12" value="5" style="width:3.5em">月
+          <input type="number" id="inLD" min="1" max="30" value="23" style="width:3.5em">日
+        </span>
+      </label>
+      <p class="note">旧暦は天保暦準拠の計算で新暦に変換されます。</p>
+    </div>
+    <div class="form-grid">
+      <label>出生時刻
+        <span class="date-row">
+          <input type="number" id="inHH" min="0" max="23" value="8" style="width:3.5em">時
+          <input type="number" id="inMM" min="0" max="59" value="30" style="width:3.5em">分
+          <label class="inline"><input type="checkbox" id="inTimeUnknown">時刻不明</label>
+        </span>
+      </label>
+      <label>出生地（時刻補正用）
+        <select id="inPref"></select>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="primary big" id="btnBuild">命式を立てる</button>
+      <button id="btnLoadJSON">JSON読込</button>
+      <span class="note" id="schoolNote"></span>
+    </div>
+  </div>
+
+  <div class="card" id="envCard">
+    <h2>PC環境診断</h2>
+    <div id="envReport">診断中…</div>
+  </div>
+</section>
+
+<!-- ============ 命式 ============ -->
+<section id="tab-meishiki" class="tab">
+  <div id="meishikiEmpty" class="empty-note">まず「鑑定入力」から命式を立ててください。</div>
+  <div id="meishikiBody" class="hidden">
+    <div class="card">
+      <h2>命式 <span class="sub" id="msPerson"></span></h2>
+      <div class="table-wrap"><table class="meishiki-table" id="msTable"></table></div>
+      <div class="ms-extra" id="msExtra"></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h2>五行バランス</h2>
+        <canvas id="radarCanvas" class="chart" width="380" height="300"></canvas>
+      </div>
+      <div class="card">
+        <h2>命式関係図（合冲刑害）</h2>
+        <div id="relationSVG"></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h2>身強身弱・格局・用神</h2>
+        <div id="msJudge"></div>
+      </div>
+      <div class="card">
+        <h2>神殺・十二神殺</h2>
+        <div id="msShinsatsu"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>透干・通根</h2>
+      <div id="msToukan"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 鑑定文 ============ -->
+<section id="tab-text" class="tab">
+  <div class="card">
+    <h2>鑑定文エディタ</h2>
+    <div class="toolbar">
+      <label>テーマ
+        <select id="themeSelect">
+          <option value="general">総合</option>
+          <option value="love">恋愛</option>
+          <option value="marriage">結婚</option>
+          <option value="work">仕事</option>
+          <option value="career">転職・独立</option>
+          <option value="health">健康</option>
+          <option value="money">金運</option>
+        </select>
+      </label>
+      <button class="primary" id="btnGenText">鑑定文を生成</button>
+      <span class="sep"></span>
+      <label>AIトーン
+        <select id="aiTone">
+          <option value="polite">丁寧</option>
+          <option value="soft">やわらか</option>
+          <option value="formal">格調</option>
+        </select>
+      </label>
+      <button id="btnPolish">AI文章仕上げ</button>
+      <span class="sep"></span>
+      <button id="btnMailDraft">メール下書き</button>
+      <button class="primary" id="btnPDF">PDF鑑定書</button>
+    </div>
+    <textarea id="textEditor" rows="22" placeholder="「鑑定文を生成」を押すと、表示中の命式からテーマ別の鑑定文が作成されます。自由に編集できます。"></textarea>
+    <p class="note">※ AI文章仕上げは、お使いのPC内で動作する軽量な日本語文章エンジンです。文章が外部に送信されることはありません。</p>
+  </div>
+</section>
+
+<!-- ============ 運勢 ============ -->
+<section id="tab-unsei" class="tab">
+  <div id="unseiEmpty" class="empty-note">まず「鑑定入力」から命式を立ててください。</div>
+  <div id="unseiBody" class="hidden">
+    <div class="card">
+      <h2>大運（10年運）</h2>
+      <div class="table-wrap"><table class="list-table" id="taiunTable"></table></div>
+      <canvas id="taiunCanvas" class="chart wide" width="720" height="220"></canvas>
+    </div>
+    <div class="card">
+      <h2>年運 <span class="sub"><input type="number" id="nenunFrom" style="width:5.5em">年から10年</span></h2>
+      <div class="table-wrap"><table class="list-table" id="nenunTable"></table></div>
+      <canvas id="nenunCanvas" class="chart wide" width="720" height="220"></canvas>
+    </div>
+    <div class="card">
+      <h2>月運 <span class="sub"><input type="number" id="getsuunYear" style="width:5.5em">年（立春起点・節入り区切り）</span></h2>
+      <div class="table-wrap"><table class="list-table" id="getsuunTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>日運カレンダー
+        <span class="sub">
+          <button class="mini" id="calPrev">◀</button>
+          <span id="calLabel"></span>
+          <button class="mini" id="calNext">▶</button>
+        </span>
+      </h2>
+      <div id="calContainer"></div>
+      <p class="note">◎=大吉 ○=吉 ▲=注意 空=空亡日</p>
+    </div>
+    <div class="card">
+      <h2>ライフチャート（0〜100歳 運勢曲線）</h2>
+      <canvas id="lifeCanvas" class="chart wide" width="720" height="260"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 相性 ============ -->
+<section id="tab-aishou" class="tab">
+  <div class="card">
+    <h2>相性鑑定（多人数対応）</h2>
+    <p class="note">2名以上を登録すると、全ペアの相性を鑑定します。</p>
+    <div id="aishouPersons"></div>
+    <div class="actions">
+      <button id="btnAddPerson">＋ 人物を追加</button>
+      <button class="primary" id="btnAishou">相性を鑑定する</button>
+      <button id="btnAishouPDF">PDF鑑定書（相性）</button>
+    </div>
+    <div id="aishouResult"></div>
+  </div>
+</section>
+
+<!-- ============ 顧客管理 ============ -->
+<section id="tab-customer" class="tab">
+  <div class="card" id="lockCard">
+    <h2>顧客データベース（暗号化）</h2>
+    <div id="lockPane"></div>
+  </div>
+  <div id="customerBody" class="hidden">
+    <div class="card">
+      <h2>顧客一覧 <span class="sub"><button class="mini" id="btnLock">ロック</button> <button class="mini" id="btnBackup">バックアップ書出</button> <button class="mini" id="btnRestore">バックアップ読込</button></span></h2>
+      <div class="toolbar">
+        <input type="text" id="custSearch" placeholder="氏名で検索">
+        <button class="primary" id="btnNewCust">＋ 新規顧客</button>
+      </div>
+      <div class="table-wrap"><table class="list-table" id="custTable"></table></div>
+    </div>
+    <div class="card hidden" id="custEditCard">
+      <h2 id="custEditTitle">顧客情報</h2>
+      <div class="form-grid">
+        <label>氏名<input type="text" id="cName"></label>
+        <label>フリガナ<input type="text" id="cKana"></label>
+        <label>性別<select id="cGender"><option value="F">女性</option><option value="M">男性</option></select></label>
+        <label>生年月日
+          <span class="date-row">
+            <input type="number" id="cY" style="width:5.5em">年
+            <input type="number" id="cM" style="width:3.5em">月
+            <input type="number" id="cD" style="width:3.5em">日
+          </span>
+        </label>
+        <label>出生時刻
+          <span class="date-row">
+            <input type="number" id="cHH" style="width:3.5em">時
+            <input type="number" id="cMM" style="width:3.5em">分
+            <label class="inline"><input type="checkbox" id="cTimeUnknown">不明</label>
+          </span>
+        </label>
+        <label>電話<input type="text" id="cTel"></label>
+        <label>メール<input type="email" id="cMail"></label>
+        <label class="wide">メモ（鑑定履歴など）<textarea id="cMemo" rows="3"></textarea></label>
+      </div>
+      <div class="actions">
+        <button class="primary" id="btnSaveCust">保存</button>
+        <button id="btnCustToChart">この顧客で命式を立てる</button>
+        <button class="danger" id="btnDelCust">削除</button>
+        <button id="btnCloseCust">閉じる</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h2>予約</h2>
+        <div class="form-grid">
+          <label>日時<input type="datetime-local" id="rWhen"></label>
+          <label>顧客<select id="rCust"></select></label>
+          <label>内容<input type="text" id="rNote" placeholder="対面60分 など"></label>
+        </div>
+        <div class="actions"><button class="primary" id="btnAddResv">予約を追加</button></div>
+        <div class="table-wrap"><table class="list-table" id="resvTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>売上</h2>
+        <div class="form-grid">
+          <label>日付<input type="date" id="sDate"></label>
+          <label>金額（円）<input type="number" id="sAmount" min="0" step="100"></label>
+          <label>内容<input type="text" id="sNote" placeholder="電話鑑定30分 など"></label>
+        </div>
+        <div class="actions"><button class="primary" id="btnAddSale">売上を記録</button></div>
+        <div class="table-wrap"><table class="list-table" id="salesTable"></table></div>
+        <div id="salesSummary"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ツール ============ -->
+<section id="tab-tools" class="tab">
+  <div class="two-col">
+    <div class="card">
+      <h2>択日（開運日さがし）</h2>
+      <div class="form-grid">
+        <label>目的
+          <select id="tkPurpose">
+            <option value="general">総合開運</option>
+            <option value="contract">契約・開業</option>
+            <option value="money">金運・買い物</option>
+            <option value="love">恋愛・告白</option>
+            <option value="work">就職・昇進祈願</option>
+            <option value="moving">引越し・旅行</option>
+            <option value="health">通院・健康事始め</option>
+          </select>
+        </label>
+        <label>開始日<input type="date" id="tkFrom"></label>
+        <label>期間<select id="tkDays"><option value="30">30日</option><option value="60">60日</option><option value="90">90日</option></select></label>
+      </div>
+      <div class="actions"><button class="primary" id="btnTakujitsu">吉日を探す</button></div>
+      <div class="table-wrap"><table class="list-table" id="tkTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>干支の逆引き</h2>
+      <div class="form-grid">
+        <label>日干支
+          <span class="date-row">
+            <select id="rvStem"></select><select id="rvBranch"></select>
+          </span>
+        </label>
+        <label>検索範囲
+          <span class="date-row">
+            <input type="number" id="rvY1" value="1950" style="width:5.5em">年 〜
+            <input type="number" id="rvY2" value="2030" style="width:5.5em">年
+          </span>
+        </label>
+      </div>
+      <div class="actions"><button class="primary" id="btnReverse">検索</button></div>
+      <div id="rvResult" class="scroll-box"></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h2>命式のJSON入出力</h2>
+      <p class="note">現在の命式（入力値と流派設定）をファイルに保存・復元できます。</p>
+      <div class="actions">
+        <button class="primary" id="btnExportJSON">書き出し</button>
+        <button id="btnImportJSON">読み込み</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>本日の暦</h2>
+      <div id="todayKoyomi"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 設定・流派 ============ -->
+<section id="tab-settings" class="tab">
+  <div class="card">
+    <h2>流派プリセット</h2>
+    <p class="note">プリセットを選んでから、下の各条件を自由に調整できます。調整後は「マイ流派として保存」であなただけの流派になります。</p>
+    <div class="preset-row" id="presetRow"></div>
+  </div>
+  <div class="card">
+    <h2>詳細設定</h2>
+    <div class="form-grid settings-grid">
+      <label>年柱の切替
+        <select id="stYearSwitch">
+          <option value="risshun">立春（標準）</option>
+          <option value="toji">冬至（研究方式）</option>
+          <option value="newyear">元日（1月1日）</option>
+        </select>
+      </label>
+      <label>日柱の切替
+        <select id="stDaySwitch">
+          <option value="midnight">午前0時（標準）</option>
+          <option value="h23">23時から翌日扱い</option>
+        </select>
+      </label>
+      <label>時刻補正
+        <select id="stTimeAdjust">
+          <option value="none">補正なし（標準時）</option>
+          <option value="lmt">地方平均時（経度差補正）</option>
+          <option value="tst">真太陽時（経度差＋均時差）</option>
+        </select>
+      </label>
+      <label>蔵干方式
+        <select id="stZokan">
+          <option value="bunya">月律分野蔵干（節入り日数）</option>
+          <option value="main">本気のみ</option>
+          <option value="all">全蔵干を併記</option>
+        </select>
+      </label>
+      <label>通変星の表記
+        <select id="stTsuhen">
+          <option value="std">標準（偏官・偏印・劫財）</option>
+          <option value="alt">古典（七殺・倒食・敗財）</option>
+        </select>
+      </label>
+      <label>大運の順逆
+        <select id="stTaiunDir">
+          <option value="standard">陽男陰女順行（標準）</option>
+          <option value="allForward">全員順行</option>
+          <option value="allBackward">全員逆行</option>
+        </select>
+      </label>
+      <label>起運の計算
+        <select id="stKiun">
+          <option value="detail">3日＝1年（月数まで算出）</option>
+          <option value="floor">年数切り捨て</option>
+          <option value="round">年数四捨五入</option>
+        </select>
+      </label>
+      <label>身強身弱の判定
+        <select id="stStrength">
+          <option value="score">点数法（標準）</option>
+          <option value="getsurei">月令重視</option>
+        </select>
+      </label>
+      <label>格局の取り方
+        <select id="stKakkyoku">
+          <option value="auto">月支蔵干の透干優先（標準）</option>
+          <option value="hongi">月支本気で固定</option>
+        </select>
+      </label>
+      <label>外格（従格）の採用
+        <select id="stGaikaku">
+          <option value="yes">採用する（標準）</option>
+          <option value="no">内格のみ</option>
+        </select>
+      </label>
+      <label>空亡の呼称
+        <select id="stKubo">
+          <option value="空亡">空亡</option>
+          <option value="天中殺">天中殺</option>
+          <option value="旬空">旬空</option>
+        </select>
+      </label>
+      <label class="wide">神殺の表示
+        <span id="stShinsatsuChecks" class="check-row"></span>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="primary" id="btnSaveSchool">マイ流派として保存</button>
+      <span class="note" id="saveSchoolNote"></span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>PDF鑑定書の設定</h2>
+    <div class="form-grid">
+      <label>鑑定書の種類
+        <select id="pdfKind">
+          <option value="full">標準（命式＋鑑定文＋大運年運）</option>
+          <option value="summary">要約（1〜2枚）</option>
+          <option value="nenun">年運鑑定書</option>
+          <option value="aishou">相性鑑定書</option>
+        </select>
+      </label>
+      <label>鑑定士名（奥付に記載）<input type="text" id="pdfSigner" placeholder="例）鑑定士 ○○"></label>
+    </div>
+    <div class="actions"><button class="primary" id="btnPDF2">PDF鑑定書を作成</button></div>
+    <p class="note">印刷ダイアログで「PDFに保存」を選ぶと保存先を選択できます。書体は明朝体を使用します。</p>
+  </div>
+</section>
+
+<!-- ============ 用語辞典 ============ -->
+<section id="tab-glossary" class="tab">
+  <div class="card">
+    <h2>用語辞典</h2>
+    <input type="text" id="glossarySearch" placeholder="用語を検索（例: 通変星）">
+    <dl id="glossaryList"></dl>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ AIアシスタント ============ -->
+<aside id="aiPanel" class="ai-panel hidden">
+  <div class="ai-head">
+    <strong>AIアシスタント</strong>
+    <span class="note">PC内で動作・外部送信なし</span>
+    <button id="aiClose" class="mini">✕</button>
+  </div>
+  <div id="aiLog" class="ai-log">
+    <div class="ai-msg bot">こんにちは。用語の意味・使い方・表示中の命式について、何でもお尋ねください。</div>
+  </div>
+  <div class="ai-input">
+    <input type="text" id="aiQuestion" placeholder="例）用神とは？ / PDFの作り方">
+    <button id="aiSend" class="primary">送信</button>
+  </div>
+</aside>
+
+<!-- ============ 印刷（PDF鑑定書）領域 ============ -->
+<div id="printArea" class="print-area" aria-hidden="true"></div>
+
+<footer class="appfoot">
+  <span>四柱推命 Pro — すべての計算・AI処理・保存はこのPC内で完結します（インターネット接続不要）</span>
+</footer>
+
+<script src="js/astro.js"></script>
+<script src="js/data.js"></script>
+<script src="js/koyomi.js"></script>
+<script src="js/meishiki.js"></script>
+<script src="js/unsei.js"></script>
+<script src="js/texts.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/store.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
