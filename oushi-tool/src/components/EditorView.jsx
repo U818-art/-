@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { findNG, segmentsWithNG, NG_WORDS } from '../lib/checker.js'
+import { splitChapters } from '../lib/split.js'
 
 function SectionEditor({ section, onChange, onRemove, onMove }) {
   const hits = findNG(section.text)
@@ -52,8 +53,40 @@ function SectionEditor({ section, onChange, onRemove, onMove }) {
   )
 }
 
+function BulkPaste({ setSections, hasContent }) {
+  const [text, setText] = useState('')
+  const apply = () => {
+    const chapters = splitChapters(text)
+    if (chapters.length === 0) return
+    if (hasContent && !confirm('既存の章を置き換えて取り込みます。よろしいですか？')) return
+    setSections(chapters)
+    setText('')
+  }
+  return (
+    <div className="section-block" style={{ background: 'var(--lavender-pale)' }}>
+      <div className="head">
+        <span style={{ fontSize: 13, letterSpacing: '0.15em', color: 'var(--lavender)' }}>
+          まとめて貼り付け（「## 章タイトル」で自動分割）
+        </span>
+      </div>
+      <textarea
+        value={text}
+        placeholder="AIチャットの回答を丸ごとここに貼り付けると、## 見出しごとに章へ自動分割されます"
+        onChange={(e) => setText(e.target.value)}
+        style={{ minHeight: 90 }}
+      />
+      <div style={{ marginTop: 8 }}>
+        <button className="btn-sub btn-gold" onClick={apply} disabled={!text.trim()}>
+          章に分割して取り込む
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function EditorView({ sections, setSections, defaults }) {
   const totalHits = sections.reduce((n, s) => n + findNG(s.text).length, 0)
+  const hasContent = sections.some((s) => s.text.trim())
 
   const update = (idx, next) =>
     setSections((prev) => prev.map((s, i) => (i === idx ? next : s)))
@@ -76,6 +109,7 @@ export default function EditorView({ sections, setSections, defaults }) {
         AIチャットで生成した鑑定文章を章ごとに貼り付けてください。内容は端末内（localStorage）にのみ保存されます。
         禁止用語（{NG_WORDS.map((w) => `「${w.word}」`).join('')}）を自動検出します。
       </p>
+      <BulkPaste setSections={setSections} hasContent={hasContent} />
       <div className={`ng-summary ${totalHits ? 'bad' : 'ok'}`} style={{ marginBottom: 14 }}>
         {totalHits
           ? `⚠ 全体で ${totalHits} 件の禁止用語・断定表現が残っています`

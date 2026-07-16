@@ -3,6 +3,7 @@ import { fmtDeg } from '../lib/astrology.js'
 import { SPREADS, drawSpread } from '../lib/tarot.js'
 import { buildClaudePrompt } from '../lib/prompt.js'
 import { fmtJST, fmtHM } from '../lib/time.js'
+import GeneratePanel from './GeneratePanel.jsx'
 
 const GOGYO_COLORS = { 木: '#9fb28a', 火: '#c99a8e', 土: '#c9b483', 金: '#b8bcc0', 水: '#93a7bd' }
 
@@ -410,7 +411,7 @@ const TABS = [
   ['kyusei', '九星気学'],
 ]
 
-export default function ResultView({ input, results, tarot, setTarot }) {
+export default function ResultView({ input, results, tarot, setTarot, setSections, setView }) {
   const [tab, setTab] = useState('summary')
   const [copyMsg, setCopyMsg] = useState('')
 
@@ -454,6 +455,14 @@ export default function ResultView({ input, results, tarot, setTarot }) {
             `全計算結果＋テーマ「${input.theme}」の深掘り指示＋執筆制約（断定表現・開運/浄化/運気の不使用・人生分析として書く）を含む依頼文をコピーします。${tarot ? `タロット（${tarot.spreadName}）を含みます。` : 'タロットは未ドローのため含まれません。'}`}
         </span>
       </div>
+
+      <GeneratePanel
+        input={input}
+        results={results}
+        tarot={tarot}
+        setSections={setSections}
+        setView={setView}
+      />
 
       <div className="tabs">
         {TABS.map(([key, label]) => (

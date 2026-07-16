@@ -135,7 +135,14 @@ export default function App() {
           <InputForm input={input} setInput={setInput} onCalculate={calculate} />
           {error && <div className="note">⚠ {error}</div>}
           {results && (
-            <ResultView input={input} results={results} tarot={tarot} setTarot={setTarot} />
+            <ResultView
+              input={input}
+              results={results}
+              tarot={tarot}
+              setTarot={setTarot}
+              setSections={setSections}
+              setView={setView}
+            />
           )}
         </>
       )}

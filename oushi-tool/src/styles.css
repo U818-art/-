@@ -158,6 +158,28 @@ table.res .num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .btn-copy:hover { background: var(--lavender); color: #fff; }
 
+/* ---- サイト内生成パネル ---- */
+details.genpanel {
+  background: var(--pearl); border: 1px solid var(--hairline);
+  padding: 12px 20px; margin: 0 0 20px;
+}
+details.genpanel summary {
+  cursor: pointer; font-size: 13px; letter-spacing: 0.15em; color: var(--gold);
+}
+.genbody { padding: 12px 0 6px; }
+.gennote { font-size: 12px; color: var(--ink-soft); line-height: 1.8; margin: 0 0 10px; }
+.genrow { display: flex; gap: 10px; flex-wrap: wrap; }
+.genrow input {
+  flex: 1; min-width: 240px; font-family: var(--serif); font-size: 14px;
+  border: 1px solid var(--hairline); padding: 8px 12px; color: var(--ink); background: #fff;
+}
+.genrow input:focus { outline: none; border-color: var(--lavender); }
+.genpreview {
+  background: var(--ivory); border: 1px dashed var(--hairline); padding: 12px 14px;
+  font-family: var(--serif); font-size: 13px; line-height: 1.9; white-space: pre-wrap;
+  max-height: 260px; overflow-y: auto; margin: 10px 0 0;
+}
+
 /* ---- デバッグ ---- */
 details.debug { margin-top: 20px; font-size: 12px; }
 details.debug summary { cursor: pointer; color: var(--ink-soft); letter-spacing: 0.1em; font-size: 11px; }

@@ -5,4 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: './',
+  build: {
+    // 単一チャンクに固定: file:// 直接オープンや単一HTML化（Artifact配布）を壊さないため
+    rollupOptions: {
+      output: { inlineDynamicImports: true },
+    },
+  },
 })
