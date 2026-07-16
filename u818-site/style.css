@@ -1,7 +1,7 @@
 @charset "UTF-8";
 
 /* =========================================================
-   U818 - Common Stylesheet
+   櫻紫 - Common Stylesheet
    Concept: 元主婦から個人事業主へ。AIと感性で生きていく。
    Tone: ベージュ / オフホワイト / くすみピンク / 上品・シンプル
    ========================================================= */
@@ -84,9 +84,9 @@ a:hover {
 }
 
 .site-logo {
-  font-family: var(--font-en);
+  font-family: var(--font-jp-serif);
   font-size: 26px;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.18em;
   color: var(--color-text);
 }
@@ -762,7 +762,7 @@ a:hover {
 }
 
 .footer-logo {
-  font-family: var(--font-en);
+  font-family: var(--font-jp-serif);
   font-size: 22px;
   letter-spacing: 0.2em;
   color: var(--color-text);
