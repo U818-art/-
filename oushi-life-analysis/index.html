@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>櫻紫 -OUSHI- 人生分析書</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* ============================================================
+   櫻紫 -OUSHI-  人生分析書
+   A4 縦 / 印刷前提 / 書籍品質
+   ============================================================ */
+
+:root{
+  --ivory:      #F7F4EC;
+  --pearl:      #FCFAF4;
+  --lavender:   #E4DDEC;
+  --lavender-d: #CFC5DC;
+  --greige:     #9B9187;
+  --champagne:  #BFA97C;
+  --champagne-d:#A8905F;
+  --amethyst:   #7A688F;
+  --amethyst-d: #5F5175;
+  --ink:        #524B58;
+  --ink-soft:   #6E6675;
+  --hair:       rgba(168,144,95,.42);
+  --hair-soft:  rgba(168,144,95,.26);
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+body{
+  font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+  color:var(--ink);
+  background:#B8B2AB;
+  font-feature-settings:"palt";
+}
+
+.serif-en{ font-family:'Cormorant Garamond','Shippori Mincho',serif; }
+
+/* ---------- ページ共通 ---------- */
+.page{
+  position:relative;
+  width:210mm; height:297mm;
+  background:var(--ivory);
+  overflow:hidden;
+  margin:0 auto;
+}
+@media screen{
+  body{ padding:10mm 0; }
+  .page{ margin:0 auto 10mm; box-shadow:0 2px 24px rgba(60,50,70,.28); }
+}
+@page{ size:A4 portrait; margin:0; }
+@media print{
+  body{ background:none; padding:0; }
+  .page{ margin:0; box-shadow:none; page-break-after:always; }
+  .page:last-child{ page-break-after:auto; }
+}
+
+/* ---------- 紙の質感・光 ---------- */
+.wash{ position:absolute; inset:0; pointer-events:none; }
+.wash-inner{
+  background:
+    radial-gradient(52% 34% at 12% 6%,  rgba(214,203,228,.34), transparent 72%),
+    radial-gradient(46% 30% at 92% 12%, rgba(206,196,220,.20), transparent 70%),
+    radial-gradient(60% 40% at 85% 96%, rgba(226,211,181,.28), transparent 72%),
+    radial-gradient(45% 30% at 6% 92%,  rgba(226,211,181,.16), transparent 70%),
+    linear-gradient(180deg, var(--pearl), var(--ivory) 45%);
+}
+.frame{
+  position:absolute; inset:9mm;
+  border:.35pt solid var(--hair-soft);
+  pointer-events:none;
+}
+.frame::after{
+  content:""; position:absolute; inset:1.4mm;
+  border:.2pt solid rgba(168,144,95,.16);
+}
+
+/* ---------- 角飾り ---------- */
+.corner{ position:absolute; width:17mm; height:17mm; pointer-events:none; }
+.corner svg{ width:100%; height:100%; display:block; }
+.c-tl{ top:11.5mm; left:11.5mm; }
+.c-tr{ top:11.5mm; right:11.5mm; transform:scaleX(-1); }
+.c-bl{ bottom:11.5mm; left:11.5mm; transform:scaleY(-1); }
+.c-br{ bottom:11.5mm; right:11.5mm; transform:scale(-1,-1); }
+
+/* ---------- 章ヘッダー ---------- */
+.content{ position:absolute; inset:0; padding:24mm 26mm 30mm; }
+
+.chapter{ text-align:center; margin-bottom:9mm; }
+.ch-mark{ height:6mm; margin-bottom:2.5mm; }
+.ch-mark svg{ height:100%; }
+.ch-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:8pt; letter-spacing:.42em; text-indent:.42em;
+  color:var(--champagne-d);
+  margin-bottom:2.2mm;
+}
+.ch-title{
+  font-family:'Zen Old Mincho',serif;
+  font-weight:500; font-size:19pt; letter-spacing:.30em; text-indent:.30em;
+  color:var(--ink); margin-bottom:2.4mm;
+}
+.ch-en{
+  font-family:'Cormorant Garamond',serif;
+  font-size:7.5pt; letter-spacing:.5em; text-indent:.5em;
+  color:var(--greige);
+}
+.ch-rule{
+  width:46mm; margin:4.5mm auto 0;
+  display:flex; align-items:center; gap:2.4mm;
+}
+.ch-rule::before,.ch-rule::after{
+  content:""; flex:1; height:.35pt; background:var(--hair);
+}
+.ch-rule .dm{
+  width:1.7mm; height:1.7mm; background:var(--champagne);
+  transform:rotate(45deg); opacity:.75;
+}
+
+/* ---------- フッター ---------- */
+.pfoot{
+  position:absolute; left:0; right:0; bottom:12.5mm;
+  text-align:center;
+}
+.pfoot .frule{
+  width:34mm; margin:0 auto 2.4mm;
+  display:flex; align-items:center; gap:2mm;
+}
+.pfoot .frule::before,.pfoot .frule::after{
+  content:""; flex:1; height:.3pt; background:var(--hair-soft);
+}
+.pfoot .frule svg{ width:2.6mm; height:2.6mm; opacity:.8; }
+.pfoot .fbrand{
+  font-family:'Zen Old Mincho',serif;
+  font-size:8.5pt; letter-spacing:.5em; text-indent:.5em;
+  color:var(--ink-soft);
+}
+.pfoot .fbrand-en{
+  font-family:'Cormorant Garamond',serif;
+  font-size:6.3pt; letter-spacing:.46em; text-indent:.46em;
+  color:var(--champagne-d); margin-top:.9mm;
+}
+.pageno{
+  position:absolute; bottom:13.4mm; right:15mm;
+  font-family:'Cormorant Garamond',serif;
+  font-size:7pt; letter-spacing:.18em; color:var(--greige);
+}
+
+/* ============================================================
+   表紙
+   ============================================================ */
+.cover .content{ padding:22mm 24mm; text-align:center; }
+.cover-brand{ margin-top:8mm; }
+.cover-brand .b-ja{
+  font-family:'Zen Old Mincho',serif; font-weight:500;
+  font-size:13pt; letter-spacing:.62em; text-indent:.62em; color:var(--ink);
+}
+.cover-brand .b-en{
+  font-family:'Cormorant Garamond',serif;
+  font-size:7pt; letter-spacing:.58em; text-indent:.58em;
+  color:var(--champagne-d); margin-top:1.6mm;
+}
+.cover-emblem{ margin:13mm auto 12mm; width:52mm; }
+.cover-emblem svg{ width:100%; display:block; }
+.cover-title{
+  font-family:'Zen Old Mincho',serif; font-weight:600;
+  font-size:34pt; letter-spacing:.34em; text-indent:.34em;
+  color:var(--ink);
+}
+.cover-title-en{
+  font-family:'Cormorant Garamond',serif;
+  font-size:8.5pt; letter-spacing:.62em; text-indent:.62em;
+  color:var(--greige); margin-top:4mm;
+}
+.cover-theme{
+  margin:12mm auto 0; width:96mm;
+  padding:4.6mm 0;
+  border-top:.35pt solid var(--hair);
+  border-bottom:.35pt solid var(--hair);
+}
+.cover-theme .t-label{
+  font-family:'Cormorant Garamond',serif;
+  font-size:6.5pt; letter-spacing:.5em; text-indent:.5em;
+  color:var(--champagne-d); margin-bottom:2.2mm;
+}
+.cover-theme .t-name{
+  font-family:'Zen Old Mincho',serif;
+  font-size:12.5pt; letter-spacing:.28em; text-indent:.28em;
+  color:var(--amethyst-d);
+}
+.cover-client{ margin-top:14mm; }
+.cover-client .c-name{
+  font-family:'Zen Old Mincho',serif;
+  font-size:15pt; letter-spacing:.34em; text-indent:.34em; color:var(--ink);
+}
+.cover-client .c-date{
+  font-size:8pt; letter-spacing:.3em; text-indent:.3em;
+  color:var(--ink-soft); margin-top:5mm;
+}
+.cover-foot{
+  position:absolute; left:0; right:0; bottom:16mm; text-align:center;
+}
+.cover-foot .line{
+  width:20mm; height:.35pt; background:var(--hair);
+  margin:0 auto 3mm;
+}
+.cover-foot .txt{
+  font-family:'Cormorant Garamond',serif;
+  font-size:6.5pt; letter-spacing:.44em; text-indent:.44em; color:var(--greige);
+}
+
+/* ============================================================
+   ごあいさつ
+   ============================================================ */
+.greet .content{ padding-top:46mm; }
+.greet-body{
+  width:114mm; margin:12mm auto 0;
+  font-size:10pt; line-height:2.5; letter-spacing:.09em;
+  text-align:justify;
+}
+.greet-body p+p{ margin-top:6.5mm; }
+.greet-close{
+  width:114mm; margin:11mm auto 0; text-align:right;
+  font-family:'Zen Old Mincho',serif;
+  font-size:9.5pt; letter-spacing:.3em; color:var(--ink-soft);
+}
+.greet-feather{ text-align:center; margin-top:13mm; }
+.greet-feather svg{ width:24mm; opacity:.85; }
+
+/* ============================================================
+   本文共通パーツ
+   ============================================================ */
+.lead{
+  text-align:center;
+  font-size:8.8pt; line-height:2.1; letter-spacing:.08em;
+  color:var(--ink-soft);
+  margin-bottom:7mm;
+}
+
+/* --- 第一章 五つの視点 --- */
+.essence{ margin-top:2mm; }
+.ess-row{
+  display:flex; align-items:flex-start; gap:6mm;
+  padding:5.2mm 1mm;
+  border-top:.3pt solid var(--hair-soft);
+}
+.ess-row:first-child{ border-top:none; }
+.ess-key{ width:41mm; flex:none; padding-top:.6mm; }
+.ess-cat{
+  font-family:'Cormorant Garamond',serif;
+  font-size:6.3pt; letter-spacing:.32em;
+  color:var(--champagne-d); margin-bottom:1.6mm;
+}
+.ess-cat span{
+  font-family:'Shippori Mincho',serif; font-size:7.2pt;
+  letter-spacing:.24em; color:var(--greige);
+}
+.ess-name{
+  font-family:'Zen Old Mincho',serif; font-weight:500;
+  font-size:13.5pt; letter-spacing:.14em; color:var(--amethyst-d);
+}
+.ess-name small{
+  display:block; font-size:6.8pt; letter-spacing:.2em;
+  color:var(--greige); margin-top:1.2mm; font-weight:400;
+}
+.ess-desc{
+  flex:1; font-size:8.7pt; line-height:1.95; letter-spacing:.05em;
+  text-align:justify; padding-top:1mm;
+}
+.ess-desc b{
+  font-weight:500; color:var(--amethyst-d);
+}
+.ess-msg{
+  margin-top:7mm; padding-top:6mm;
+  border-top:.3pt solid var(--hair-soft);
+  text-align:center;
+  font-family:'Zen Old Mincho',serif;
+  font-size:9.6pt; line-height:2.35; letter-spacing:.12em;
+  color:var(--ink);
+}
+.ess-msg em{
+  font-style:normal; color:var(--amethyst-d); letter-spacing:.14em;
+}
+
+/* --- 見出し付きブロック(第二〜四章) --- */
+.blocks{ margin-top:3mm; }
+.blk{
+  display:flex; gap:6.5mm; align-items:flex-start;
+  padding:6.2mm 1mm;
+  border-top:.3pt solid var(--hair-soft);
+}
+.blk:first-child{ border-top:none; }
+.blk-icon{ width:10mm; flex:none; padding-top:1mm; text-align:center; }
+.blk-icon svg{ width:8mm; height:8mm; }
+.blk-main{ flex:1; }
+.blk-title{
+  font-family:'Zen Old Mincho',serif; font-weight:500;
+  font-size:11.5pt; letter-spacing:.2em;
+  color:var(--amethyst-d); margin-bottom:2.8mm;
+}
+.blk-title small{
+  font-family:'Cormorant Garamond',serif; font-weight:400;
+  font-size:6.5pt; letter-spacing:.3em; color:var(--champagne-d);
+  margin-left:3.5mm; vertical-align:.5mm;
+}
+.blk-text{
+  font-size:9pt; line-height:2.05; letter-spacing:.06em; text-align:justify;
+}
+
+/* --- 2×2 グリッド(第三章) --- */
+.grid2{
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:5.5mm; margin-top:5.5mm;
+}
+.gcell{
+  background:rgba(252,250,244,.75);
+  border:.3pt solid var(--hair-soft);
+  padding:5.5mm 5.8mm 5.8mm;
+}
+.gcell .g-title{
+  font-family:'Zen Old Mincho',serif; font-weight:500;
+  font-size:10.5pt; letter-spacing:.22em; color:var(--amethyst-d);
+  text-align:center; margin-bottom:3.2mm;
+}
+.gcell .g-rule{
+  width:12mm; height:.3pt; background:var(--hair);
+  margin:0 auto 3.4mm;
+}
+.gcell .g-text{
+  font-size:8.6pt; line-height:1.95; letter-spacing:.04em; text-align:justify;
+}
+.lead-blk{
+  background:rgba(252,250,244,.75);
+  border:.3pt solid var(--hair-soft);
+  padding:6mm 8mm 6.4mm; margin-top:2mm;
+}
+.lead-blk .g-title{
+  font-family:'Zen Old Mincho',serif; font-weight:500;
+  font-size:11.5pt; letter-spacing:.22em; color:var(--amethyst-d);
+  text-align:center; margin-bottom:3mm;
+}
+.lead-blk .g-rule{
+  width:14mm; height:.3pt; background:var(--hair); margin:0 auto 3.6mm;
+}
+.lead-blk .g-text{
+  font-size:9pt; line-height:2.0; letter-spacing:.05em; text-align:justify;
+}
+
+/* --- 第五章 一年の流れ --- */
+.seasons{ margin-top:4mm; }
+.sea-row{
+  display:flex; gap:7mm; align-items:flex-start;
+  padding:5.6mm 1mm;
+  border-top:.3pt solid var(--hair-soft);
+}
+.sea-row:first-child{ border-top:none; }
+.sea-when{ width:34mm; flex:none; text-align:center; padding-top:.5mm; }
+.sea-when .s-season{
+  font-family:'Zen Old Mincho',serif; font-weight:500;
+  font-size:14pt; letter-spacing:.3em; text-indent:.3em; color:var(--amethyst-d);
+}
+.sea-when .s-months{
+  font-family:'Cormorant Garamond',serif;
+  font-size:7pt; letter-spacing:.16em; color:var(--greige); margin-top:1.4mm;
+}
+.sea-when svg{ width:6mm; height:6mm; margin-top:2.2mm; }
+.sea-main{ flex:1; }
+.sea-title{
+  font-family:'Zen Old Mincho',serif; font-weight:500;
+  font-size:10.5pt; letter-spacing:.16em; color:var(--ink); margin-bottom:2.4mm;
+}
+.sea-text{
+  font-size:8.8pt; line-height:1.95; letter-spacing:.05em; text-align:justify;
+}
+
+/* ============================================================
+   最後のメッセージ
+   ============================================================ */
+.final{ background:var(--ivory); }
+.final .wash-final{
+  background:
+    radial-gradient(70% 46% at 50% -6%,  rgba(205,190,222,.42), transparent 74%),
+    radial-gradient(46% 30% at 14% 22%,  rgba(196,208,205,.26), transparent 70%),
+    radial-gradient(44% 30% at 86% 30%,  rgba(226,208,178,.24), transparent 70%),
+    radial-gradient(80% 50% at 50% 108%, rgba(219,207,232,.35), transparent 75%),
+    linear-gradient(180deg,#FBF9F3, var(--ivory) 50%);
+}
+.final-sky{ position:absolute; top:0; left:0; right:0; height:92mm; pointer-events:none; }
+.final-sky svg{ width:100%; height:100%; display:block; }
+.final .content{ padding-top:69mm; text-align:center; }
+.final-msg{
+  font-family:'Klee One','Shippori Mincho',serif;
+  font-size:10.6pt; line-height:2.6; letter-spacing:.1em;
+  color:var(--ink);
+}
+.final-msg .stanza{ margin-bottom:6.4mm; }
+.final-sign{ margin-top:11mm; }
+.final-sign .seal{ width:17mm; margin:0 auto 4mm; }
+.final-sign .seal svg{ width:100%; display:block; }
+.final-sign .s-ja{
+  font-family:'Klee One',serif; font-weight:600;
+  font-size:13pt; letter-spacing:.5em; text-indent:.5em; color:var(--ink);
+}
+.final-sign .s-en{
+  font-family:'Cormorant Garamond',serif;
+  font-size:7.5pt; letter-spacing:.5em; text-indent:.5em;
+  color:var(--champagne-d); margin-top:1.8mm;
+}
+</style>
+</head>
+<body>
+
+<!-- ========== SVG 定義 ========== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- 四芒の星 -->
+    <symbol id="sparkle" viewBox="0 0 24 24">
+      <path d="M12 1 C13.1 7.3 16.7 10.9 23 12 C16.7 13.1 13.1 16.7 12 23 C10.9 16.7 7.3 13.1 1 12 C7.3 10.9 10.9 7.3 12 1 Z"/>
+    </symbol>
+    <!-- 三日月 -->
+    <symbol id="moon" viewBox="0 0 24 24">
+      <path d="M16.8 2.6 A 10.2 10.2 0 1 0 16.8 21.4 A 8.1 8.1 0 0 1 16.8 2.6 Z"/>
+    </symbol>
+    <!-- 水晶 -->
+    <symbol id="crystal" viewBox="0 0 24 24" fill="none">
+      <path d="M9.2 21 L9.2 9.6 L12 3.4 L14.8 9.6 L14.8 21 Z"/>
+      <path d="M12 3.4 L12 21" stroke-width=".45"/>
+      <path d="M5.6 21 L5.6 13.6 L7.4 10.4 L9.2 13.6"/>
+      <path d="M14.8 13.2 L16.8 10.8 L18.6 13.9 L18.6 21"/>
+      <path d="M4 21 L20 21" stroke-width=".5"/>
+    </symbol>
+    <!-- 満月 -->
+    <symbol id="fullmoon" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="8.6"/>
+      <circle cx="12" cy="12" r="6.1" stroke-dasharray=".2 2.4" stroke-linecap="round"/>
+    </symbol>
+    <!-- 星々(小さな星座) -->
+    <symbol id="stars" viewBox="0 0 48 16">
+      <circle cx="6"  cy="10" r="1"/>
+      <circle cx="17" cy="5"  r="1.4"/>
+      <circle cx="29" cy="9"  r="1"/>
+      <circle cx="41" cy="4"  r="1.3"/>
+      <path d="M6 10 L17 5 L29 9 L41 4" fill="none" stroke-width=".35" opacity=".55"/>
+    </symbol>
+    <!-- 羽根ペン -->
+    <symbol id="feather" viewBox="0 0 90 60" fill="none">
+      <path d="M14 52 C22 34 40 14 72 8 C64 12 60 15 55 20 L61 20 C54 24 50 27 46 31 L52 31.5 C45 36 40 39 35 42 L40 43 C31 48 24 51 14 52 Z"/>
+      <path d="M14 52 C34 40 52 26 72 8" stroke-width=".5"/>
+      <path d="M14 52 C11 54.5 9 56.5 7 59" stroke-width=".7"/>
+    </symbol>
+    <!-- 角飾り -->
+    <symbol id="cornerline" viewBox="0 0 64 64" fill="none">
+      <path d="M2 30 L2 2 L30 2" stroke-width="1"/>
+      <path d="M6 40 L6 6 L40 6" stroke-width=".55" opacity=".55"/>
+      <path d="M47 11 C47.7 14.4 49.6 16.3 53 17 C49.6 17.7 47.7 19.6 47 23 C46.3 19.6 44.4 17.7 41 17 C44.4 16.3 46.3 14.4 47 11 Z" fill="currentColor" stroke="none" opacity=".8"/>
+      <circle cx="58" cy="28" r="1.1" fill="currentColor" stroke="none" opacity=".55"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============================================================
+     表紙
+     ============================================================ -->
+<section class="page cover">
+  <div class="wash wash-inner"></div>
+  <div class="frame"></div>
+  <div class="corner c-tl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-tr" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-bl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-br" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+
+  <div class="content">
+    <div class="cover-brand">
+      <div class="b-ja">櫻 紫</div>
+      <div class="b-en">— OUSHI —</div>
+    </div>
+
+    <div class="cover-emblem">
+      <!-- 天球儀のエンブレム -->
+      <svg viewBox="0 0 140 140" fill="none">
+        <circle cx="70" cy="70" r="56" stroke="#BFA97C" stroke-width=".8"/>
+        <circle cx="70" cy="70" r="51" stroke="#BFA97C" stroke-width=".3" opacity=".55"/>
+        <ellipse cx="70" cy="70" rx="55.5" ry="15" stroke="#A8905F" stroke-width=".4" opacity=".45" transform="rotate(-21 70 70)"/>
+        <path d="M70 14 L70 9 M70 126 L70 131 M14 70 L9 70 M126 70 L131 70" stroke="#BFA97C" stroke-width=".5"/>
+        <path d="M79 47 A 25.5 25.5 0 1 0 79 93 A 20 20 0 0 1 79 47 Z" fill="#D5CCE3"/>
+        <path d="M96 51 C97 55.8 100 58.8 104.8 59.8 C100 60.8 97 63.8 96 68.6 C95 63.8 92 60.8 87.2 59.8 C92 58.8 95 55.8 96 51 Z" fill="#BFA97C"/>
+        <circle cx="104" cy="43" r="1.4" fill="#BFA97C" opacity=".8"/>
+        <circle cx="44" cy="40" r="1.2" fill="#7A688F" opacity=".55"/>
+        <circle cx="40" cy="98" r="1.3" fill="#BFA97C" opacity=".7"/>
+        <circle cx="100" cy="100" r="1" fill="#7A688F" opacity=".45"/>
+      </svg>
+    </div>
+
+    <h1 class="cover-title">人生分析書</h1>
+    <div class="cover-title-en">THE BOOK OF LIFE ANALYSIS</div>
+
+    <div class="cover-theme">
+      <div class="t-label">THEME</div>
+      <div class="t-name">あなたとお金、そして働き方</div>
+    </div>
+
+    <div class="cover-client">
+      <div class="c-name">月島 彩乃 様</div>
+      <div class="c-date">二〇二六年 七月十八日 謹製</div>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <div class="line"></div>
+    <div class="txt">LIFE ANALYSIS&ensp;·&ensp;NOT FORTUNE-TELLING</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     ごあいさつ
+     ============================================================ -->
+<section class="page greet">
+  <div class="wash wash-inner"></div>
+  <div class="frame"></div>
+  <div class="corner c-tl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-tr" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+
+  <div class="content">
+    <header class="chapter">
+      <div class="ch-mark"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#moon"/></svg></div>
+      <h2 class="ch-title">ごあいさつ</h2>
+      <div class="ch-en">GREETING</div>
+      <div class="ch-rule"><span class="dm"></span></div>
+    </header>
+
+    <div class="greet-body">
+      <p>このたびは、櫻紫 -OUSHI- の人生分析書をお手に取りくださり、誠にありがとうございます。</p>
+      <p>この一冊は、あなたの未来を決めつけるためのものではありません。生年月日という星々の記録から、生まれ持った性質や才能を静かにひもとき、あなたが「自分らしく生きる」ためのヒントとしてまとめたものです。</p>
+      <p>迷ったとき、立ち止まったとき、いつでもこのページに帰ってきてください。羅針盤のように、あなたの歩みをそっと照らす一冊であることを願い、一文字ずつ丁寧に綴りました。</p>
+    </div>
+    <div class="greet-close">櫻紫 -OUSHI-</div>
+
+    <div class="greet-feather">
+      <svg viewBox="0 0 90 60" stroke="var(--champagne-d)" stroke-width=".9" fill="none"><use href="#feather"/></svg>
+    </div>
+  </div>
+
+  <footer class="pfoot">
+    <div class="frule"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+    <div class="fbrand">櫻 紫</div>
+    <div class="fbrand-en">— OUSHI —</div>
+  </footer>
+  <div class="pageno">02</div>
+</section>
+
+<!-- ============================================================
+     ① あなたの本質
+     ============================================================ -->
+<section class="page">
+  <div class="wash wash-inner"></div>
+  <div class="frame"></div>
+  <div class="corner c-tl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-br" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+
+  <div class="content">
+    <header class="chapter">
+      <div class="ch-num">CHAPTER I</div>
+      <h2 class="ch-title">あなたの本質</h2>
+      <div class="ch-en">YOUR TRUE NATURE</div>
+      <div class="ch-rule"><span class="dm"></span></div>
+    </header>
+
+    <p class="lead">五つの異なる叡智から、あなたという人を映し出します。<br>それぞれの星が、同じひとつの姿を指し示しています。</p>
+
+    <div class="essence">
+      <div class="ess-row">
+        <div class="ess-key">
+          <div class="ess-cat">SUN SIGN&ensp;<span>太陽星座</span></div>
+          <div class="ess-name">牡牛座<small>人生で目指す方向を示す星</small></div>
+        </div>
+        <p class="ess-desc">太陽星座は「人生で大切にしたい生き方」を表します。牡牛座のあなたは、五感が豊かで、本物の心地よさを見極める<b>審美眼の持ち主</b>。焦らず、確かなものを一歩ずつ積み重ねていく力に恵まれています。</p>
+      </div>
+
+      <div class="ess-row">
+        <div class="ess-key">
+          <div class="ess-cat">MOON SIGN&ensp;<span>月星座</span></div>
+          <div class="ess-name">蟹座<small>素顔のあなた・心の在り方</small></div>
+        </div>
+        <p class="ess-desc">月星座は「ありのままの心」を表します。蟹座の月を持つあなたは、身近な人を深く想う<b>あたたかな愛情の人</b>。安心できる居場所があるほど、才能はのびやかに花開いていきます。</p>
+      </div>
+
+      <div class="ess-row">
+        <div class="ess-key">
+          <div class="ess-cat">NUMEROLOGY&ensp;<span>数秘術</span></div>
+          <div class="ess-name">運命数 8<small>生年月日が導く人生のテーマ</small></div>
+        </div>
+        <p class="ess-desc">生年月日のすべてを足して導かれる数は、人生の大きなテーマを表します。「8」は<b>豊かさと実現の数</b>。想いを現実のかたちに変え、周囲と分かち合うことで、さらに大きな循環を生み出す人です。</p>
+      </div>
+
+      <div class="ess-row">
+        <div class="ess-key">
+          <div class="ess-cat">NINE STAR KI&ensp;<span>九星気学</span></div>
+          <div class="ess-name">六白金星<small>生まれ年が授けた気質</small></div>
+        </div>
+        <p class="ess-desc">生まれ年の「気」は、その人の根の気質を表します。六白金星は<b>天を象徴する星</b>。責任感が強く、約束を守り抜く誠実さが、時間をかけて厚い信頼となって返ってくる星回りです。</p>
+      </div>
+
+      <div class="ess-row">
+        <div class="ess-key">
+          <div class="ess-cat">FOUR PILLARS&ensp;<span>四柱推命</span></div>
+          <div class="ess-name">日主 辛金<small>生まれた日が示す魂の質</small></div>
+        </div>
+        <p class="ess-desc">生まれた日の干支は、魂の質を表すといわれます。「辛金(しんきん)」は<b>磨かれて輝く宝石</b>。経験という研磨を重ねるほど曇りが取れ、あなただけの輝きが静かに増していく質を持っています。</p>
+      </div>
+    </div>
+
+    <div class="ess-msg">
+      五つの星々が指し示すのは、同じひとつの姿。<br>
+      <em>――「確かなものを、丁寧に育てる人」。</em><br>
+      それが、あなたの生まれ持った光です。
+    </div>
+  </div>
+
+  <footer class="pfoot">
+    <div class="frule"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+    <div class="fbrand">櫻 紫</div>
+    <div class="fbrand-en">— OUSHI —</div>
+  </footer>
+  <div class="pageno">03</div>
+</section>
+
+<!-- ============================================================
+     ② あなたとお金の関係
+     ============================================================ -->
+<section class="page">
+  <div class="wash wash-inner"></div>
+  <div class="frame"></div>
+  <div class="corner c-tr" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-bl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+
+  <div class="content">
+    <header class="chapter">
+      <div class="ch-num">CHAPTER II</div>
+      <h2 class="ch-title">あなたとお金の関係</h2>
+      <div class="ch-en">YOU &amp; YOUR PROSPERITY</div>
+      <div class="ch-rule"><span class="dm"></span></div>
+    </header>
+
+    <p class="lead">お金は、あなたの生き方を映す鏡。<br>あなたと豊かさのあいだにある、自然な流れを見ていきましょう。</p>
+
+    <div class="blocks">
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" stroke="var(--champagne-d)" stroke-width=".8" fill="none"><use href="#crystal"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">お金を生み出す才能<small>TALENT</small></h3>
+          <p class="blk-text">本物を見極める審美眼と、決めたことを静かに続ける継続力。この二つが、あなたの富の源泉です。良いものを長く愛し、価値をじっくり育てるあなたの姿勢は、そのまま収入の土台になります。「好き」を深めることが、あなたにとって最良の資産形成です。</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" stroke="var(--champagne-d)" stroke-width=".8" fill="none"><use href="#fullmoon"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">お金が入ってくる流れ<small>FLOW</small></h3>
+          <p class="blk-text">あなたの金運は、一夜で訪れる型ではなく、信頼の積み重ねから静かに満ちていく「満月型」。長く続けた仕事、長く育てたご縁ほど、実りが大きくなります。三年前に蒔いた種が、いま芽を出す――そんな時間差の豊かさを信じてください。</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#moon"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">お金の使い方の特徴<small>SPENDING</small></h3>
+          <p class="blk-text">量より、質。心から納得したものには惜しみなく、そうでないものには財布の紐が固い――美しいメリハリのある使い方です。あなたが選び抜いた上質なものは長持ちし、結果として無駄がありません。その感性は、誇ってよい財産です。</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">気を付けたいポイント<small>GENTLE CAUTION</small></h3>
+          <p class="blk-text">安心を求めるあまりの「ため込みすぎ」と、長い我慢の反動で訪れる衝動買い。この二つの波だけ、そっと意識してみてください。そして、学びや経験など「自分を育てるための支出」は、どうか削らないで。それは消費ではなく、未来のあなたへの投資です。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pfoot">
+    <div class="frule"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+    <div class="fbrand">櫻 紫</div>
+    <div class="fbrand-en">— OUSHI —</div>
+  </footer>
+  <div class="pageno">04</div>
+</section>
+
+<!-- ============================================================
+     ③ あなたに向いている働き方
+     ============================================================ -->
+<section class="page">
+  <div class="wash wash-inner"></div>
+  <div class="frame"></div>
+  <div class="corner c-tl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-br" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+
+  <div class="content">
+    <header class="chapter">
+      <div class="ch-num">CHAPTER III</div>
+      <h2 class="ch-title">あなたに向いている働き方</h2>
+      <div class="ch-en">YOUR WAY OF WORKING</div>
+      <div class="ch-rule"><span class="dm"></span></div>
+    </header>
+
+    <p class="lead">働き方に、正解はひとつではありません。<br>あなたの星が心地よく輝く場所を、ここに記します。</p>
+
+    <div class="lead-blk">
+      <h3 class="g-title">向いている仕事</h3>
+      <div class="g-rule"></div>
+      <p class="g-text">品質・美意識・信頼が、そのまま価値になる仕事があなたの舞台です。たとえば、食や美容、住まいやインテリア、資産や金融にまつわる仕事、伝統や「本物」を扱う仕事。そして何より、一人のお客様と長く深く関わり続けられる仕事。「早さ」を競う場所より、「確かさ」が尊ばれる場所で、あなたは静かに輝きます。</p>
+    </div>
+
+    <div class="grid2">
+      <div class="gcell">
+        <h3 class="g-title">才 能</h3>
+        <div class="g-rule"></div>
+        <p class="g-text">鋭い五感と、揺るがない継続力。そして、相手の気持ちの機微に気づく共感力。この三つが揃う人は、多くありません。</p>
+      </div>
+      <div class="gcell">
+        <h3 class="g-title">活かし方</h3>
+        <div class="g-rule"></div>
+        <p class="g-text">「早く・多く」ではなく「深く・丁寧に」。大勢に浅く届けるより、少数の方と長く信頼を育てる働き方が、最も豊かに実ります。</p>
+      </div>
+      <div class="gcell">
+        <h3 class="g-title">強 み</h3>
+        <div class="g-rule"></div>
+        <p class="g-text">一度身につけた技術を裏切らない、安定感。あなたの「変わらなさ」は、周囲の人にとって何よりの安心であり、選ばれる理由です。</p>
+      </div>
+      <div class="gcell">
+        <h3 class="g-title">伸ばすポイント</h3>
+        <div class="g-rule"></div>
+        <p class="g-text">完璧を待たずに、小さく始めること。八割の完成度で世に出し、育てながら磨いていく。その小さな勇気が、飛躍の鍵になります。</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pfoot">
+    <div class="frule"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+    <div class="fbrand">櫻 紫</div>
+    <div class="fbrand-en">— OUSHI —</div>
+  </footer>
+  <div class="pageno">05</div>
+</section>
+
+<!-- ============================================================
+     ④ 金運アップのヒント
+     ============================================================ -->
+<section class="page">
+  <div class="wash wash-inner"></div>
+  <div class="frame"></div>
+  <div class="corner c-tr" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-bl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+
+  <div class="content">
+    <header class="chapter">
+      <div class="ch-num">CHAPTER IV</div>
+      <h2 class="ch-title">金運アップのヒント</h2>
+      <div class="ch-en">HINTS FOR PROSPERITY</div>
+      <div class="ch-rule"><span class="dm"></span></div>
+    </header>
+
+    <p class="lead">特別なことは、何もいりません。<br>日々の暮らしの中に、豊かさの扉はひらかれています。</p>
+
+    <div class="blocks">
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#moon"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">習 慣<small>HABIT</small></h3>
+          <p class="blk-text">お財布・通帳・仕事道具を、いつも美しく保つこと。お金は、大切に扱われる場所に集まります。そして月に一度、「お金の棚卸しの日」を。心が静まる新月の日に行うのがおすすめです。</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">考え方<small>MINDSET</small></h3>
+          <p class="blk-text">お金は「我慢の対価」ではなく「喜びの循環」。あなたは受け取ることに少し遠慮がちなところがあります。差し出されたご厚意やお代は、感謝とともに、もっと素直に受け取ってよいのです。</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" stroke="var(--champagne-d)" stroke-width=".8" fill="none"><use href="#crystal"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">行 動<small>ACTION</small></h3>
+          <p class="blk-text">学びへの自己投資と、信頼できる方とのご縁を深める投資を、惜しまないこと。そして半年に一度、ご自身の仕事の単価や価格を見直してみてください。あなたの価値は、あなたが思うより高いのです。</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="blk-icon"><svg viewBox="0 0 24 24" stroke="var(--champagne-d)" stroke-width=".8" fill="none"><use href="#fullmoon"/></svg></div>
+        <div class="blk-main">
+          <h3 class="blk-title">開運ポイント<small>LUCKY POINT</small></h3>
+          <p class="blk-text">住まいの西の方角を美しく整えること。上質な革や真鍮の小物、ラベンダー色やアイボリーを身につけること。そして満月の夜には、いま在る豊かさへの感謝を、ひとつ書き出してみてください。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pfoot">
+    <div class="frule"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+    <div class="fbrand">櫻 紫</div>
+    <div class="fbrand-en">— OUSHI —</div>
+  </footer>
+  <div class="pageno">06</div>
+</section>
+
+<!-- ============================================================
+     ⑤ 今後1年間の流れ
+     ============================================================ -->
+<section class="page">
+  <div class="wash wash-inner"></div>
+  <div class="frame"></div>
+  <div class="corner c-tl" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+  <div class="corner c-br" style="color:var(--champagne)"><svg><use href="#cornerline"/></svg></div>
+
+  <div class="content">
+    <header class="chapter">
+      <div class="ch-num">CHAPTER V</div>
+      <h2 class="ch-title">今後一年間の流れ</h2>
+      <div class="ch-en">THE COMING YEAR</div>
+      <div class="ch-rule"><span class="dm"></span></div>
+    </header>
+
+    <p class="lead">これからの一年は、種から花へと向かう一年。<br>季節の流れに寄り添うように、あなたの歩みを進めてください。</p>
+
+    <div class="seasons">
+      <div class="sea-row">
+        <div class="sea-when">
+          <div class="s-season">夏</div>
+          <div class="s-months">2026&ensp;JUL — SEP</div>
+          <svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg>
+        </div>
+        <div class="sea-main">
+          <h3 class="sea-title">種を選ぶ季節</h3>
+          <p class="sea-text">新しい情報や出会いが、いつになく増えるとき。すべてに応えようとせず、「本当に育てたい種」をひとつ選ぶことが、この夏の仕事です。心が静かに「好き」と言うものを、どうぞ信じて。</p>
+        </div>
+      </div>
+
+      <div class="sea-row">
+        <div class="sea-when">
+          <div class="s-season">秋</div>
+          <div class="s-months">2026&ensp;OCT — DEC</div>
+          <svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#moon"/></svg>
+        </div>
+        <div class="sea-main">
+          <h3 class="sea-title">土を耕す季節</h3>
+          <p class="sea-text">学びと準備、環境づくりに最も適した季節です。お金の流れを整理し、暮らしの土台をゆっくり整えてください。ここで耕した土の深さが、来年の実りの大きさを決めていきます。</p>
+        </div>
+      </div>
+
+      <div class="sea-row">
+        <div class="sea-when">
+          <div class="s-season">冬</div>
+          <div class="s-months">2027&ensp;JAN — MAR</div>
+          <svg viewBox="0 0 24 24" stroke="var(--champagne-d)" stroke-width=".8" fill="none"><use href="#crystal"/></svg>
+        </div>
+        <div class="sea-main">
+          <h3 class="sea-title">芽吹きを守る季節</h3>
+          <p class="sea-text">秋までに始めたことが、少しずつ形になり始めます。結果を急がず、小さな芽を寒さから守るように、目の前のことをひとつずつ。休息もまた、大切な仕事のうちと心得てください。</p>
+        </div>
+      </div>
+
+      <div class="sea-row">
+        <div class="sea-when">
+          <div class="s-season">春</div>
+          <div class="s-months">2027&ensp;APR — JUN</div>
+          <svg viewBox="0 0 24 24" stroke="var(--champagne-d)" stroke-width=".8" fill="none"><use href="#fullmoon"/></svg>
+        </div>
+        <div class="sea-main">
+          <h3 class="sea-title">花開く季節</h3>
+          <p class="sea-text">一年の歩みが実を結ぶ、集大成の季節。ご縁が広がり、収入や評価にうれしい変化が訪れやすいときです。受け取った実りは、感謝とともに次の種へ。豊かさの循環が、ここから始まります。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pfoot">
+    <div class="frule"><svg viewBox="0 0 24 24" fill="var(--champagne)"><use href="#sparkle"/></svg></div>
+    <div class="fbrand">櫻 紫</div>
+    <div class="fbrand-en">— OUSHI —</div>
+  </footer>
+  <div class="pageno">07</div>
+</section>
+
+<!-- ============================================================
+     ⑥ 最後のメッセージ
+     ============================================================ -->
+<section class="page final">
+  <div class="wash wash-final"></div>
+
+  <!-- 夜明けの空 : 月と星々 -->
+  <div class="final-sky">
+    <svg viewBox="0 0 210 92" preserveAspectRatio="xMidYMin slice" fill="none">
+      <path d="M32 44 C70 37 110 43 148 38 C168 35 184 38 196 42" stroke="#CBBFDC" stroke-width="2.2" opacity=".24" stroke-linecap="round"/>
+      <path d="M20 51 C60 43 96 49 132 44 C160 40 178 44 194 49" stroke="#CFC5DC" stroke-width="4.6" opacity=".2" stroke-linecap="round"/>
+      <path d="M14 59 C58 49 106 55 146 49 C168 46 184 49 198 54" stroke="#D9CBAE" stroke-width="3.2" opacity=".18" stroke-linecap="round"/>
+      <path d="M113 20 A 15.5 15.5 0 1 0 113 48 A 12.3 12.3 0 0 1 113 20 Z" fill="#D8CFE4" opacity=".92"/>
+      <path d="M104 10 C104.6 13 106.4 14.8 109.4 15.4 C106.4 16 104.6 17.8 104 20.8 C103.4 17.8 101.6 16 98.6 15.4 C101.6 14.8 103.4 13 104 10 Z" fill="#BFA97C" opacity=".85"/>
+      <circle cx="48"  cy="28" r="1.1" fill="#A99BC0"/>
+      <circle cx="70"  cy="15" r=".8"  fill="#BFA97C"/>
+      <circle cx="88"  cy="35" r=".7"  fill="#A99BC0" opacity=".8"/>
+      <circle cx="134" cy="13" r=".9"  fill="#BFA97C" opacity=".9"/>
+      <circle cx="154" cy="30" r="1.2" fill="#A99BC0"/>
+      <circle cx="172" cy="17" r=".7"  fill="#BFA97C" opacity=".8"/>
+      <circle cx="28"  cy="46" r=".8"  fill="#BFA97C" opacity=".7"/>
+      <circle cx="184" cy="44" r=".8"  fill="#A99BC0" opacity=".7"/>
+      <path d="M48 28 L70 15 M134 13 L154 30 L172 17" stroke="#B0A48C" stroke-width=".22" opacity=".5"/>
+    </svg>
+  </div>
+
+  <div class="content">
+    <div class="final-msg">
+      <p class="stanza">星は、未来を決めるものではありません。</p>
+      <p class="stanza">未来を選ぶのは、<br>いつもあなた自身です。</p>
+      <p class="stanza">あなたには、<br>生まれ持った才能があります。</p>
+      <p class="stanza">そしてその才能は、<br>誰かと比べるためではなく、</p>
+      <p class="stanza">あなたらしく人生を歩むために<br>授かったものです。</p>
+      <p class="stanza">この鑑定書が、<br>迷った時に立ち返る一冊となれば幸いです。</p>
+      <p class="stanza">あなたの未来が、<br>穏やかで豊かな光に包まれますように。</p>
+      <p class="stanza">心より願っております。</p>
+    </div>
+
+    <div class="final-sign">
+      <div class="seal">
+        <svg viewBox="0 0 60 60">
+          <circle cx="30" cy="30" r="27" fill="none" stroke="#BFA97C" stroke-width=".9"/>
+          <circle cx="30" cy="30" r="23.6" fill="none" stroke="#BFA97C" stroke-width=".35" opacity=".7"/>
+          <text x="30" y="39.5" text-anchor="middle" font-family="'Zen Old Mincho',serif" font-size="26" fill="#7A688F">櫻</text>
+        </svg>
+      </div>
+      <div class="s-ja">櫻 紫</div>
+      <div class="s-en">— OUSHI —</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

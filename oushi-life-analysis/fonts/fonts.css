@@ -1,0 +1,38 @@
+/* 櫻紫 -OUSHI- 人生分析書 : サブセット済みフォント */
+
+@font-face{
+  font-family:'Zen Old Mincho'; font-weight:400; font-style:normal;
+  font-display:swap; src:url('zenoldmincho-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Zen Old Mincho'; font-weight:500; font-style:normal;
+  font-display:swap; src:url('zenoldmincho-500.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Zen Old Mincho'; font-weight:600; font-style:normal;
+  font-display:swap; src:url('zenoldmincho-600.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Shippori Mincho'; font-weight:400; font-style:normal;
+  font-display:swap; src:url('shipporimincho-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Shippori Mincho'; font-weight:500; font-style:normal;
+  font-display:swap; src:url('shipporimincho-500.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Klee One'; font-weight:400; font-style:normal;
+  font-display:swap; src:url('kleeone-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Klee One'; font-weight:600; font-style:normal;
+  font-display:swap; src:url('kleeone-600.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Cormorant Garamond'; font-weight:300 700; font-style:normal;
+  font-display:swap; src:url('cormorant-wght.woff2') format('woff2-variations');
+}
+@font-face{
+  font-family:'Cormorant Garamond'; font-weight:300 700; font-style:italic;
+  font-display:swap; src:url('cormorant-italic-wght.woff2') format('woff2-variations');
+}
