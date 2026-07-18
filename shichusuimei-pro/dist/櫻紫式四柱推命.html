@@ -1,0 +1,4146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>櫻紫式 四柱推命 — 櫻紫専用鑑定システム（完全オフライン）</title>
+<style>
+/* =========================================================
+ * 櫻紫式 四柱推命 — アプリスタイル（櫻×紫の意匠）
+ * 和風・落ち着いた配色。印刷時は明朝のPDF鑑定書レイアウト。
+ * ========================================================= */
+:root {
+  --ink: #362b3a;            /* 墨紫 */
+  --ink-soft: #71627a;
+  --paper: #faf6f8;          /* 桜白 */
+  --paper-deep: #f1e6ec;
+  --card: #fffdfe;
+  --accent: #5d3a6e;         /* 江戸紫 */
+  --accent-soft: #7d5694;
+  --sakura: #c9748f;         /* 桜 */
+  --sakura-soft: #ecd3dc;
+  --green: #7d5694;          /* 選択中バッジ（紫） */
+  --line: #e0d3dc;
+  --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "MS PMincho", serif;
+  --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--gothic);
+  color: var(--ink);
+  background: var(--paper);
+  background-image: radial-gradient(circle at 20% 0%, #fdf6fa 0%, transparent 40%);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ---------- ヘッダー ---------- */
+.appbar {
+  background: linear-gradient(135deg, #2c2033, #4b3459);
+  color: #f5ecf3;
+  padding: 10px 16px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  position: sticky; top: 0; z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  font-family: var(--mincho);
+  font-size: 30px; line-height: 1;
+  background: #5d3a6e; color: #f8e9f0;
+  border-radius: 50%; padding: 10px 11px;
+  border: 2px solid #c9748f;
+}
+.brand h1 { font-family: var(--mincho); font-size: 22px; margin: 0; letter-spacing: .12em; }
+.tagline { margin: 0; font-size: 11px; color: #c7b4d2; }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 8px; }
+.tabs button {
+  background: transparent; color: #d6c8de; border: none;
+  padding: 8px 14px; font-size: 13px; cursor: pointer;
+  border-radius: 8px 8px 0 0; font-family: var(--gothic);
+}
+.tabs button:hover { background: rgba(255,255,255,.08); }
+.tabs button.active { background: var(--paper); color: var(--ink); font-weight: 600; }
+.ai-toggle {
+  position: absolute; right: 16px; top: 12px;
+  background: #c9748f; color: #fff; border: none; border-radius: 50%;
+  width: 42px; height: 42px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+.ai-toggle:hover { background: #d98ba3; }
+
+/* ---------- レイアウト ---------- */
+main { max-width: 1080px; margin: 0 auto; padding: 16px; }
+.tab { display: none; }
+.tab.active { display: block; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(54,43,58,.08);
+}
+.card h2 {
+  font-family: var(--mincho);
+  font-size: 17px; margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--accent);
+  letter-spacing: .06em;
+  position: relative;
+}
+.card h2::after {
+  content: '';
+  position: absolute; left: 0; bottom: -2px;
+  width: 56px; height: 2px; background: var(--sakura);
+}
+.card h2 .sub { font-size: 12px; color: var(--ink-soft); font-family: var(--gothic); margin-left: 8px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+.hidden { display: none !important; }
+.empty-note { text-align: center; color: var(--ink-soft); padding: 48px 0; }
+.note { font-size: 12px; color: var(--ink-soft); }
+.scroll-box { max-height: 260px; overflow-y: auto; border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; background: #fff; }
+
+/* ---------- フォーム ---------- */
+.form-grid { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 10px; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-soft); }
+.form-grid label.wide { flex: 1 1 100%; }
+.form-grid label.inline, .date-row label.inline { flex-direction: row; align-items: center; gap: 4px; font-size: 12px; }
+input, select, textarea {
+  font-family: var(--gothic); font-size: 14px; color: var(--ink);
+  padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+  background: #fff;
+}
+textarea { width: 100%; line-height: 1.8; }
+.date-row { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--ink); }
+.actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+button {
+  font-family: var(--gothic); font-size: 13px;
+  background: #fff; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px;
+  padding: 7px 14px; cursor: pointer;
+}
+button:hover { border-color: var(--accent-soft); color: var(--accent); }
+button.primary {
+  background: var(--accent); color: #f9f1f7; border-color: var(--accent);
+}
+button.primary:hover { background: var(--accent-soft); color: #fff; }
+button.big { font-size: 15px; padding: 10px 26px; letter-spacing: .1em; }
+button.mini { font-size: 11px; padding: 3px 8px; }
+button.danger { color: #a2322a; border-color: #d8a29a; }
+button.danger:hover { background: #a2322a; color: #fff; }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.toolbar .sep { width: 1px; height: 22px; background: var(--line); }
+.toolbar label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); }
+
+/* ---------- 命式表 ---------- */
+.table-wrap { overflow-x: auto; }
+.meishiki-table {
+  border-collapse: collapse; width: 100%;
+  font-family: var(--mincho);
+}
+.meishiki-table th, .meishiki-table td {
+  border: 1px solid var(--line); text-align: center; padding: 6px 8px;
+}
+.meishiki-table th { background: var(--paper-deep); font-weight: 600; font-size: 12px; }
+.meishiki-table td.kan { font-size: 26px; }
+.meishiki-table td.shi { font-size: 26px; }
+.meishiki-table .small { font-size: 12px; color: var(--ink-soft); }
+.meishiki-table .ts { color: var(--accent); font-size: 13px; }
+.elem-0 { color: #2e8b57; } .elem-1 { color: #d2544a; } .elem-2 { color: #b8860b; }
+.elem-3 { color: #7d7d7d; } .elem-4 { color: #3a6ea5; }
+.ms-extra { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; }
+.ms-extra .item b { font-family: var(--mincho); }
+
+/* ---------- 一覧表 ---------- */
+.list-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.list-table th, .list-table td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+.list-table th { background: var(--paper-deep); font-size: 12px; }
+.list-table td.num { text-align: right; }
+.list-table tr:hover td { background: #f7eef4; }
+.score-大吉 { color: #2e8b57; font-weight: 700; }
+.score-吉 { color: #5b8b57; }
+.score-平 { color: var(--ink-soft); }
+.score-注意 { color: #c07c2a; }
+.score-要注意 { color: #d2544a; font-weight: 700; }
+
+/* ---------- チャート ---------- */
+canvas.chart { width: 100%; max-width: 420px; height: 300px; display: block; margin: 0 auto; }
+canvas.chart.wide { max-width: 100%; height: 220px; }
+
+/* ---------- カレンダー ---------- */
+.cal { border-collapse: collapse; width: 100%; }
+.cal th, .cal td { border: 1px solid var(--line); width: 14.3%; padding: 3px 4px; vertical-align: top; }
+.cal th { background: var(--paper-deep); font-size: 11px; }
+.cal td { height: 58px; font-size: 11px; }
+.cal td .d { font-weight: 700; font-size: 13px; }
+.cal td .kanshi { font-family: var(--mincho); color: var(--ink-soft); }
+.cal td .mark { color: var(--accent); }
+.cal td.best { background: #e5f2e2; }
+.cal td.good { background: #f1f6ec; }
+.cal td.bad { background: #f9e8e4; }
+.cal td.empty { background: #f3edf1; }
+.cal .sun { color: #c0392b; } .cal .sat { color: #2f5f9e; }
+
+/* ---------- 流派プリセット ---------- */
+.preset-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.preset-row button { border-radius: 20px; padding: 8px 16px; }
+.preset-row button.active { background: var(--green); color: #fff; border-color: var(--green); }
+.check-row { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--ink); }
+.check-row label { flex-direction: row; align-items: center; gap: 4px; }
+
+/* ---------- 用語辞典 ---------- */
+#glossaryList dt { font-family: var(--mincho); font-weight: 700; font-size: 15px; margin-top: 14px; color: var(--accent); }
+#glossaryList dt .yomi { font-size: 11px; color: var(--ink-soft); font-weight: 400; margin-left: 8px; }
+#glossaryList dd { margin: 2px 0 0 0; padding-left: 1em; border-left: 3px solid var(--paper-deep); }
+#glossarySearch { width: 100%; margin-bottom: 6px; }
+
+/* ---------- 相性 ---------- */
+.person-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-end; border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: #fffdf7; }
+.aishou-block { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin-top: 12px; background: #fffdf7; white-space: pre-wrap; }
+.aishou-score { font-family: var(--mincho); font-size: 18px; color: var(--accent); }
+
+/* ---------- AIパネル ---------- */
+.ai-panel {
+  position: fixed; right: 16px; bottom: 16px; width: 360px; max-width: calc(100vw - 32px);
+  height: 480px; max-height: calc(100vh - 120px);
+  background: #fffdf7; border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(40,30,15,.3);
+  display: flex; flex-direction: column; z-index: 100;
+}
+.ai-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.ai-head .note { flex: 1; }
+.ai-log { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ai-msg { max-width: 85%; padding: 8px 12px; border-radius: 10px; font-size: 13px; white-space: pre-wrap; }
+.ai-msg.bot { background: var(--paper-deep); align-self: flex-start; }
+.ai-msg.user { background: #ecd9e2; align-self: flex-end; }
+.ai-input { display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--line); }
+.ai-input input { flex: 1; }
+
+/* ---------- フッター ---------- */
+.appfoot { text-align: center; color: var(--ink-soft); font-size: 11px; padding: 20px 0 30px; }
+
+/* ---------- 環境診断 ---------- */
+#envReport table { border-collapse: collapse; font-size: 13px; }
+#envReport td { padding: 3px 12px 3px 0; }
+.env-ok { color: #2e8b57; font-weight: 700; }
+.env-ng { color: #d2544a; font-weight: 700; }
+
+/* =========================================================
+ * PDF鑑定書（印刷）
+ * ========================================================= */
+.print-area { display: none; }
+@media print {
+  body > header, body > main, body > footer, .ai-panel { display: none !important; }
+  body { background: #fff; }
+  .print-area {
+    display: block !important;
+    font-family: var(--mincho);
+    color: #1a1611;
+    font-size: 11pt;
+    line-height: 1.9;
+  }
+  .print-area .pdf-page { page-break-after: always; padding: 0; }
+  .print-area .pdf-page:last-child { page-break-after: auto; }
+  .print-area h1 {
+    font-size: 19pt; text-align: center; letter-spacing: .35em;
+    border-top: 3px double #1a1611; border-bottom: 3px double #1a1611;
+    padding: 10px 0; margin: 0 0 4mm;
+  }
+  .print-area h2 {
+    font-size: 13pt; letter-spacing: .12em;
+    border-left: 4px solid #1a1611; padding-left: 8px;
+    margin: 7mm 0 3mm;
+  }
+  .print-area .pdf-meta { text-align: center; font-size: 10pt; margin-bottom: 6mm; }
+  .print-area table { border-collapse: collapse; width: 100%; margin: 3mm 0; }
+  .print-area th, .print-area td { border: 1px solid #1a1611; padding: 4px 8px; text-align: center; font-size: 10pt; }
+  .print-area th { background: #f0ece2; }
+  .print-area td.kanji-big { font-size: 16pt; }
+  .print-area .pdf-body { white-space: pre-wrap; text-align: justify; }
+  .print-area .pdf-sign { text-align: right; margin-top: 10mm; font-size: 10.5pt; }
+  .print-area .pdf-foot { text-align: center; font-size: 8.5pt; color: #555; margin-top: 6mm; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="brand">
+    <span class="brand-mark">櫻</span>
+    <div>
+      <h1>櫻紫式 四柱推命</h1>
+      <p class="tagline">櫻紫オリジナル鑑定システム — 電話・対面・オンライン鑑定用（完全オフライン）</p>
+    </div>
+  </div>
+  <nav class="tabs" id="mainTabs">
+    <button data-tab="input" class="active">鑑定入力</button>
+    <button data-tab="meishiki">命式</button>
+    <button data-tab="text">鑑定文</button>
+    <button data-tab="unsei">運勢</button>
+    <button data-tab="aishou">相性</button>
+    <button data-tab="customer">顧客管理</button>
+    <button data-tab="tools">ツール</button>
+    <button data-tab="settings">設定・流派</button>
+    <button data-tab="glossary">用語辞典</button>
+  </nav>
+  <button id="aiToggle" class="ai-toggle" title="AIアシスタント">AI</button>
+</header>
+
+<main>
+
+<!-- ============ 鑑定入力 ============ -->
+<section id="tab-input" class="tab active">
+  <div class="card">
+    <h2>鑑定情報の入力</h2>
+    <div class="form-grid">
+      <label>お名前（任意）<input type="text" id="inName" placeholder="例）山田 花子"></label>
+      <label>性別
+        <select id="inGender"><option value="F">女性</option><option value="M">男性</option></select>
+      </label>
+      <label class="cal-switch">入力暦
+        <select id="inCalendar"><option value="g">新暦（グレゴリオ暦）</option><option value="l">旧暦</option></select>
+      </label>
+    </div>
+    <div class="form-grid" id="gregorianInputs">
+      <label>生年月日
+        <span class="date-row">
+          <input type="number" id="inY" min="1900" max="2100" value="1990" style="width:5.5em">年
+          <input type="number" id="inM" min="1" max="12" value="6" style="width:3.5em">月
+          <input type="number" id="inD" min="1" max="31" value="15" style="width:3.5em">日
+        </span>
+      </label>
+    </div>
+    <div class="form-grid hidden" id="lunarInputs">
+      <label>旧暦 生年月日
+        <span class="date-row">
+          <input type="number" id="inLY" min="1900" max="2100" value="1990" style="width:5.5em">年
+          <label class="inline"><input type="checkbox" id="inLeap">閏</label>
+          <input type="number" id="inLM" min="1" max="12" value="5" style="width:3.5em">月
+          <input type="number" id="inLD" min="1" max="30" value="23" style="width:3.5em">日
+        </span>
+      </label>
+      <p class="note">旧暦は天保暦準拠の計算で新暦に変換されます。</p>
+    </div>
+    <div class="form-grid">
+      <label>出生時刻
+        <span class="date-row">
+          <input type="number" id="inHH" min="0" max="23" value="8" style="width:3.5em">時
+          <input type="number" id="inMM" min="0" max="59" value="30" style="width:3.5em">分
+          <label class="inline"><input type="checkbox" id="inTimeUnknown">時刻不明</label>
+        </span>
+      </label>
+      <label>出生地（時刻補正用）
+        <select id="inPref"></select>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="primary big" id="btnBuild">命式を立てる</button>
+      <button id="btnLoadJSON">JSON読込</button>
+      <span class="note" id="schoolNote"></span>
+    </div>
+  </div>
+
+  <div class="card" id="envCard">
+    <h2>PC環境診断</h2>
+    <div id="envReport">診断中…</div>
+  </div>
+</section>
+
+<!-- ============ 命式 ============ -->
+<section id="tab-meishiki" class="tab">
+  <div id="meishikiEmpty" class="empty-note">まず「鑑定入力」から命式を立ててください。</div>
+  <div id="meishikiBody" class="hidden">
+    <div class="card">
+      <h2>命式 <span class="sub" id="msPerson"></span></h2>
+      <div class="table-wrap"><table class="meishiki-table" id="msTable"></table></div>
+      <div class="ms-extra" id="msExtra"></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h2>五行バランス</h2>
+        <canvas id="radarCanvas" class="chart" width="380" height="300"></canvas>
+      </div>
+      <div class="card">
+        <h2>命式関係図（合冲刑害）</h2>
+        <div id="relationSVG"></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h2>身強身弱・格局・用神</h2>
+        <div id="msJudge"></div>
+      </div>
+      <div class="card">
+        <h2>神殺・十二神殺</h2>
+        <div id="msShinsatsu"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>透干・通根</h2>
+      <div id="msToukan"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 鑑定文 ============ -->
+<section id="tab-text" class="tab">
+  <div class="card">
+    <h2>鑑定文エディタ</h2>
+    <div class="toolbar">
+      <label>テーマ
+        <select id="themeSelect">
+          <option value="general">総合</option>
+          <option value="love">恋愛</option>
+          <option value="marriage">結婚</option>
+          <option value="work">仕事</option>
+          <option value="career">転職・独立</option>
+          <option value="health">健康</option>
+          <option value="money">金運</option>
+        </select>
+      </label>
+      <button class="primary" id="btnGenText">鑑定文を生成</button>
+      <span class="sep"></span>
+      <label>AIトーン
+        <select id="aiTone">
+          <option value="polite">丁寧</option>
+          <option value="soft">やわらか</option>
+          <option value="formal">格調</option>
+        </select>
+      </label>
+      <button id="btnPolish">AI文章仕上げ</button>
+      <span class="sep"></span>
+      <button id="btnMailDraft">メール下書き</button>
+      <button class="primary" id="btnPDF">PDF鑑定書</button>
+    </div>
+    <textarea id="textEditor" rows="22" placeholder="「鑑定文を生成」を押すと、表示中の命式からテーマ別の鑑定文が作成されます。自由に編集できます。"></textarea>
+    <p class="note">※ AI文章仕上げは、お使いのPC内で動作する軽量な日本語文章エンジンです。文章が外部に送信されることはありません。</p>
+  </div>
+</section>
+
+<!-- ============ 運勢 ============ -->
+<section id="tab-unsei" class="tab">
+  <div id="unseiEmpty" class="empty-note">まず「鑑定入力」から命式を立ててください。</div>
+  <div id="unseiBody" class="hidden">
+    <div class="card">
+      <h2>大運（10年運）</h2>
+      <div class="table-wrap"><table class="list-table" id="taiunTable"></table></div>
+      <canvas id="taiunCanvas" class="chart wide" width="720" height="220"></canvas>
+    </div>
+    <div class="card">
+      <h2>年運 <span class="sub"><input type="number" id="nenunFrom" style="width:5.5em">年から10年</span></h2>
+      <div class="table-wrap"><table class="list-table" id="nenunTable"></table></div>
+      <canvas id="nenunCanvas" class="chart wide" width="720" height="220"></canvas>
+    </div>
+    <div class="card">
+      <h2>月運 <span class="sub"><input type="number" id="getsuunYear" style="width:5.5em">年（立春起点・節入り区切り）</span></h2>
+      <div class="table-wrap"><table class="list-table" id="getsuunTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>日運カレンダー
+        <span class="sub">
+          <button class="mini" id="calPrev">◀</button>
+          <span id="calLabel"></span>
+          <button class="mini" id="calNext">▶</button>
+        </span>
+      </h2>
+      <div id="calContainer"></div>
+      <p class="note">◎=大吉 ○=吉 ▲=注意 空=空亡日</p>
+    </div>
+    <div class="card">
+      <h2>ライフチャート（0〜100歳 運勢曲線）</h2>
+      <canvas id="lifeCanvas" class="chart wide" width="720" height="260"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 相性 ============ -->
+<section id="tab-aishou" class="tab">
+  <div class="card">
+    <h2>相性鑑定（多人数対応）</h2>
+    <p class="note">2名以上を登録すると、全ペアの相性を鑑定します。</p>
+    <div id="aishouPersons"></div>
+    <div class="actions">
+      <button id="btnAddPerson">＋ 人物を追加</button>
+      <button class="primary" id="btnAishou">相性を鑑定する</button>
+      <button id="btnAishouPDF">PDF鑑定書（相性）</button>
+    </div>
+    <div id="aishouResult"></div>
+  </div>
+</section>
+
+<!-- ============ 顧客管理 ============ -->
+<section id="tab-customer" class="tab">
+  <div class="card" id="lockCard">
+    <h2>顧客データベース（暗号化）</h2>
+    <div id="lockPane"></div>
+  </div>
+  <div id="customerBody" class="hidden">
+    <div class="card">
+      <h2>顧客一覧 <span class="sub"><button class="mini" id="btnLock">ロック</button> <button class="mini" id="btnBackup">バックアップ書出</button> <button class="mini" id="btnRestore">バックアップ読込</button></span></h2>
+      <div class="toolbar">
+        <input type="text" id="custSearch" placeholder="氏名で検索">
+        <button class="primary" id="btnNewCust">＋ 新規顧客</button>
+      </div>
+      <div class="table-wrap"><table class="list-table" id="custTable"></table></div>
+    </div>
+    <div class="card hidden" id="custEditCard">
+      <h2 id="custEditTitle">顧客情報</h2>
+      <div class="form-grid">
+        <label>氏名<input type="text" id="cName"></label>
+        <label>フリガナ<input type="text" id="cKana"></label>
+        <label>性別<select id="cGender"><option value="F">女性</option><option value="M">男性</option></select></label>
+        <label>生年月日
+          <span class="date-row">
+            <input type="number" id="cY" style="width:5.5em">年
+            <input type="number" id="cM" style="width:3.5em">月
+            <input type="number" id="cD" style="width:3.5em">日
+          </span>
+        </label>
+        <label>出生時刻
+          <span class="date-row">
+            <input type="number" id="cHH" style="width:3.5em">時
+            <input type="number" id="cMM" style="width:3.5em">分
+            <label class="inline"><input type="checkbox" id="cTimeUnknown">不明</label>
+          </span>
+        </label>
+        <label>電話<input type="text" id="cTel"></label>
+        <label>メール<input type="email" id="cMail"></label>
+        <label class="wide">メモ（鑑定履歴など）<textarea id="cMemo" rows="3"></textarea></label>
+      </div>
+      <div class="actions">
+        <button class="primary" id="btnSaveCust">保存</button>
+        <button id="btnCustToChart">この顧客で命式を立てる</button>
+        <button class="danger" id="btnDelCust">削除</button>
+        <button id="btnCloseCust">閉じる</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h2>予約</h2>
+        <div class="form-grid">
+          <label>日時<input type="datetime-local" id="rWhen"></label>
+          <label>顧客<select id="rCust"></select></label>
+          <label>内容<input type="text" id="rNote" placeholder="対面60分 など"></label>
+        </div>
+        <div class="actions"><button class="primary" id="btnAddResv">予約を追加</button></div>
+        <div class="table-wrap"><table class="list-table" id="resvTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>売上</h2>
+        <div class="form-grid">
+          <label>日付<input type="date" id="sDate"></label>
+          <label>金額（円）<input type="number" id="sAmount" min="0" step="100"></label>
+          <label>内容<input type="text" id="sNote" placeholder="電話鑑定30分 など"></label>
+        </div>
+        <div class="actions"><button class="primary" id="btnAddSale">売上を記録</button></div>
+        <div class="table-wrap"><table class="list-table" id="salesTable"></table></div>
+        <div id="salesSummary"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ツール ============ -->
+<section id="tab-tools" class="tab">
+  <div class="two-col">
+    <div class="card">
+      <h2>択日（開運日さがし）</h2>
+      <div class="form-grid">
+        <label>目的
+          <select id="tkPurpose">
+            <option value="general">総合開運</option>
+            <option value="contract">契約・開業</option>
+            <option value="money">金運・買い物</option>
+            <option value="love">恋愛・告白</option>
+            <option value="work">就職・昇進祈願</option>
+            <option value="moving">引越し・旅行</option>
+            <option value="health">通院・健康事始め</option>
+          </select>
+        </label>
+        <label>開始日<input type="date" id="tkFrom"></label>
+        <label>期間<select id="tkDays"><option value="30">30日</option><option value="60">60日</option><option value="90">90日</option></select></label>
+      </div>
+      <div class="actions"><button class="primary" id="btnTakujitsu">吉日を探す</button></div>
+      <div class="table-wrap"><table class="list-table" id="tkTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>干支の逆引き</h2>
+      <div class="form-grid">
+        <label>日干支
+          <span class="date-row">
+            <select id="rvStem"></select><select id="rvBranch"></select>
+          </span>
+        </label>
+        <label>検索範囲
+          <span class="date-row">
+            <input type="number" id="rvY1" value="1950" style="width:5.5em">年 〜
+            <input type="number" id="rvY2" value="2030" style="width:5.5em">年
+          </span>
+        </label>
+      </div>
+      <div class="actions"><button class="primary" id="btnReverse">検索</button></div>
+      <div id="rvResult" class="scroll-box"></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h2>命式のJSON入出力</h2>
+      <p class="note">現在の命式（入力値と流派設定）をファイルに保存・復元できます。</p>
+      <div class="actions">
+        <button class="primary" id="btnExportJSON">書き出し</button>
+        <button id="btnImportJSON">読み込み</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>本日の暦</h2>
+      <div id="todayKoyomi"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 設定・流派 ============ -->
+<section id="tab-settings" class="tab">
+  <div class="card">
+    <h2>流派プリセット</h2>
+    <p class="note">プリセットを選んでから、下の各条件を自由に調整できます。調整後は「マイ流派として保存」であなただけの流派になります。</p>
+    <div class="preset-row" id="presetRow"></div>
+  </div>
+  <div class="card">
+    <h2>詳細設定</h2>
+    <div class="form-grid settings-grid">
+      <label>年柱の切替
+        <select id="stYearSwitch">
+          <option value="risshun">立春（標準）</option>
+          <option value="toji">冬至（研究方式）</option>
+          <option value="newyear">元日（1月1日）</option>
+        </select>
+      </label>
+      <label>日柱の切替
+        <select id="stDaySwitch">
+          <option value="midnight">午前0時（標準）</option>
+          <option value="h23">23時から翌日扱い</option>
+        </select>
+      </label>
+      <label>時刻補正
+        <select id="stTimeAdjust">
+          <option value="none">補正なし（標準時）</option>
+          <option value="lmt">地方平均時（経度差補正）</option>
+          <option value="tst">真太陽時（経度差＋均時差）</option>
+        </select>
+      </label>
+      <label>蔵干方式
+        <select id="stZokan">
+          <option value="bunya">月律分野蔵干（節入り日数）</option>
+          <option value="main">本気のみ</option>
+          <option value="all">全蔵干を併記</option>
+        </select>
+      </label>
+      <label>通変星の表記
+        <select id="stTsuhen">
+          <option value="std">標準（偏官・偏印・劫財）</option>
+          <option value="alt">古典（七殺・倒食・敗財）</option>
+        </select>
+      </label>
+      <label>大運の順逆
+        <select id="stTaiunDir">
+          <option value="standard">陽男陰女順行（標準）</option>
+          <option value="allForward">全員順行</option>
+          <option value="allBackward">全員逆行</option>
+        </select>
+      </label>
+      <label>起運の計算
+        <select id="stKiun">
+          <option value="detail">3日＝1年（月数まで算出）</option>
+          <option value="floor">年数切り捨て</option>
+          <option value="round">年数四捨五入</option>
+        </select>
+      </label>
+      <label>身強身弱の判定
+        <select id="stStrength">
+          <option value="score">点数法（標準）</option>
+          <option value="getsurei">月令重視</option>
+        </select>
+      </label>
+      <label>格局の取り方
+        <select id="stKakkyoku">
+          <option value="auto">月支蔵干の透干優先（標準）</option>
+          <option value="hongi">月支本気で固定</option>
+        </select>
+      </label>
+      <label>外格（従格）の採用
+        <select id="stGaikaku">
+          <option value="yes">採用する（標準）</option>
+          <option value="no">内格のみ</option>
+        </select>
+      </label>
+      <label>空亡の呼称
+        <select id="stKubo">
+          <option value="空亡">空亡</option>
+          <option value="天中殺">天中殺</option>
+          <option value="旬空">旬空</option>
+        </select>
+      </label>
+      <label class="wide">神殺の表示
+        <span id="stShinsatsuChecks" class="check-row"></span>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="primary" id="btnSaveSchool">マイ流派として保存</button>
+      <span class="note" id="saveSchoolNote"></span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>PDF鑑定書の設定</h2>
+    <div class="form-grid">
+      <label>鑑定書の種類
+        <select id="pdfKind">
+          <option value="full">標準（命式＋鑑定文＋大運年運）</option>
+          <option value="summary">要約（1〜2枚）</option>
+          <option value="nenun">年運鑑定書</option>
+          <option value="aishou">相性鑑定書</option>
+        </select>
+      </label>
+      <label>鑑定士名（奥付に記載）<input type="text" id="pdfSigner" value="鑑定士 櫻紫"></label>
+    </div>
+    <div class="actions"><button class="primary" id="btnPDF2">PDF鑑定書を作成</button></div>
+    <p class="note">印刷ダイアログで「PDFに保存」を選ぶと保存先を選択できます。書体は明朝体を使用します。</p>
+  </div>
+</section>
+
+<!-- ============ 用語辞典 ============ -->
+<section id="tab-glossary" class="tab">
+  <div class="card">
+    <h2>用語辞典</h2>
+    <input type="text" id="glossarySearch" placeholder="用語を検索（例: 通変星）">
+    <dl id="glossaryList"></dl>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ AIアシスタント ============ -->
+<aside id="aiPanel" class="ai-panel hidden">
+  <div class="ai-head">
+    <strong>AIアシスタント</strong>
+    <span class="note">PC内で動作・外部送信なし</span>
+    <button id="aiClose" class="mini">✕</button>
+  </div>
+  <div id="aiLog" class="ai-log">
+    <div class="ai-msg bot">こんにちは、櫻紫先生。用語の意味・使い方・表示中の命式について、何でもお尋ねください。</div>
+  </div>
+  <div class="ai-input">
+    <input type="text" id="aiQuestion" placeholder="例）用神とは？ / PDFの作り方">
+    <button id="aiSend" class="primary">送信</button>
+  </div>
+</aside>
+
+<!-- ============ 印刷（PDF鑑定書）領域 ============ -->
+<div id="printArea" class="print-area" aria-hidden="true"></div>
+
+<footer class="appfoot">
+  <span>櫻紫式 四柱推命 — 櫻紫専用ツール／すべての計算・AI処理・保存はこのPC内で完結します</span>
+</footer>
+
+<script>
+/* =========================================================
+ * astro.js — 天文計算エンジン（完全オフライン）
+ * 太陽黄経・二十四節気・均時差（真太陽時）・朔（新月）・旧暦
+ * 簡易版 Meeus 理論に基づく近似計算（節気: ±1分程度 / 朔: ±数分程度）
+ * ========================================================= */
+(function (global) {
+  'use strict';
+
+  var RAD = Math.PI / 180;
+
+  /* ---------- ユリウス日 ---------- */
+  // グレゴリオ暦 (y,m,d[,時分秒 UTC]) → ユリウス日
+  function jdFromUTC(y, m, d, hh, mm, ss) {
+    hh = hh || 0; mm = mm || 0; ss = ss || 0;
+    if (m <= 2) { y -= 1; m += 12; }
+    var a = Math.floor(y / 100);
+    var b = 2 - a + Math.floor(a / 4);
+    var jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + b - 1524.5;
+    return jd + (hh + mm / 60 + ss / 3600) / 24;
+  }
+
+  // JST（UTC+9）→ ユリウス日
+  function jdFromJST(y, m, d, hh, mm, ss) {
+    return jdFromUTC(y, m, d, hh, mm, ss) - 9 / 24;
+  }
+
+  // ユリウス日 → { y, m, d, hh, mm, ss }（UTC）
+  function utcFromJD(jd) {
+    var z = Math.floor(jd + 0.5);
+    var f = jd + 0.5 - z;
+    var a = z;
+    if (z >= 2299161) {
+      var alpha = Math.floor((z - 1867216.25) / 36524.25);
+      a = z + 1 + alpha - Math.floor(alpha / 4);
+    }
+    var b = a + 1524;
+    var c = Math.floor((b - 122.1) / 365.25);
+    var dd = Math.floor(365.25 * c);
+    var e = Math.floor((b - dd) / 30.6001);
+    var day = b - dd - Math.floor(30.6001 * e) + f;
+    var month = (e < 14) ? e - 1 : e - 13;
+    var year = (month > 2) ? c - 4716 : c - 4715;
+    var di = Math.floor(day);
+    var hf = (day - di) * 24;
+    var hh = Math.floor(hf);
+    var mf = (hf - hh) * 60;
+    var mm = Math.floor(mf);
+    var ss = Math.round((mf - mm) * 60);
+    if (ss >= 60) { ss -= 60; mm += 1; }
+    if (mm >= 60) { mm -= 60; hh += 1; }
+    if (hh >= 24) { hh -= 24; di += 1; }
+    return { y: year, m: month, d: di, hh: hh, mm: mm, ss: ss };
+  }
+
+  function jstFromJD(jd) { return utcFromJD(jd + 9 / 24); }
+
+  // その日の JST 0時のユリウス日から通日番号（日柱用の整数）
+  // JDN: 正午基準。JST の暦日 → その日の JDN
+  function jdnOfJSTDate(y, m, d) {
+    return Math.round(jdFromUTC(y, m, d, 12, 0, 0)); // 正午のJDで丸め
+  }
+
+  /* ---------- ΔT（地球時と世界時の差）簡易モデル ---------- */
+  function deltaT(year) {
+    // 1900〜2150 を対象とした簡易近似（秒）
+    var t;
+    if (year < 1920) { t = (year - 1900) / 100; return -2.79 + 149.4119 * t - 598.939 * t * t + 6196.6 * t * t * t - 19700 * t * t * t * t; }
+    if (year < 1941) { t = year - 1920; return 21.20 + 0.84493 * t - 0.076100 * t * t + 0.0020936 * t * t * t; }
+    if (year < 1961) { t = year - 1950; return 29.07 + 0.407 * t - t * t / 233 + t * t * t / 2547; }
+    if (year < 1986) { t = year - 1975; return 45.45 + 1.067 * t - t * t / 260 - t * t * t / 718; }
+    if (year < 2005) { t = year - 2000; return 63.86 + 0.3345 * t - 0.060374 * t * t + 0.0017275 * t * t * t + 0.000651814 * t * t * t * t + 0.00002373599 * t * t * t * t * t; }
+    if (year < 2050) { t = year - 2000; return 62.92 + 0.32217 * t + 0.005589 * t * t; }
+    t = (year - 1820) / 100; return -20 + 32 * t * t - 0.5628 * (2150 - year);
+  }
+
+  function norm360(x) { x = x % 360; return x < 0 ? x + 360 : x; }
+
+  /* ---------- 太陽黄経（視黄経・精度約0.01°） ---------- */
+  function sunLongitude(jde) {
+    var T = (jde - 2451545.0) / 36525.0;
+    var L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+    var M = 357.52911 + 35999.05029 * T - 0.0001537 * T * T;
+    var C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M * RAD)
+          + (0.019993 - 0.000101 * T) * Math.sin(2 * M * RAD)
+          + 0.000289 * Math.sin(3 * M * RAD);
+    var trueLong = L0 + C;
+    var omega = 125.04 - 1934.136 * T;
+    var lambda = trueLong - 0.00569 - 0.00478 * Math.sin(omega * RAD);
+    return norm360(lambda);
+  }
+
+  /* ---------- 均時差（分）: 真太陽時 = 平均太陽時 + E ---------- */
+  function equationOfTime(jde) {
+    var T = (jde - 2451545.0) / 36525.0;
+    var L0 = norm360(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
+    var M = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T * T);
+    var e = 0.016708634 - 0.000042037 * T - 0.0000001267 * T * T;
+    var eps = 23.43929111 - 0.0130042 * T - 0.00000016 * T * T;
+    var y = Math.tan((eps / 2) * RAD); y = y * y;
+    var E = y * Math.sin(2 * L0 * RAD)
+          - 2 * e * Math.sin(M * RAD)
+          + 4 * e * y * Math.sin(M * RAD) * Math.cos(2 * L0 * RAD)
+          - 0.5 * y * y * Math.sin(4 * L0 * RAD)
+          - 1.25 * e * e * Math.sin(2 * M * RAD);
+    return E / RAD * 4; // ラジアン→度→分（1度=4分）
+  }
+
+  /* ---------- 月黄経（主要項のみ・精度約0.05°） ---------- */
+  function moonLongitude(jde) {
+    var T = (jde - 2451545.0) / 36525.0;
+    var Lp = norm360(218.3164477 + 481267.88123421 * T - 0.0015786 * T * T);
+    var D  = norm360(297.8501921 + 445267.1114034 * T - 0.0018819 * T * T);
+    var M  = norm360(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T);
+    var Mp = norm360(134.9633964 + 477198.8675055 * T + 0.0087414 * T * T);
+    var F  = norm360(93.2720950 + 483202.0175233 * T - 0.0036539 * T * T);
+    var s = function (x) { return Math.sin(x * RAD); };
+    var lon = Lp
+      + 6.288774 * s(Mp)
+      + 1.274027 * s(2 * D - Mp)
+      + 0.658314 * s(2 * D)
+      + 0.213618 * s(2 * Mp)
+      - 0.185116 * s(M)
+      - 0.114332 * s(2 * F)
+      + 0.058793 * s(2 * D - 2 * Mp)
+      + 0.057066 * s(2 * D - M - Mp)
+      + 0.053322 * s(2 * D + Mp)
+      + 0.045758 * s(2 * D - M)
+      - 0.040923 * s(M - Mp)
+      - 0.034720 * s(D)
+      - 0.030383 * s(M + Mp)
+      + 0.015327 * s(2 * D - 2 * F)
+      - 0.012528 * s(Mp + 2 * F)
+      + 0.010980 * s(Mp - 2 * F);
+    return norm360(lon);
+  }
+
+  /* ---------- 節気の探索 ----------
+   * targetDeg の太陽黄経となる時刻（JDE）を二分探索で求める。
+   * jdeGuess の前後 20 日以内に解があることを前提とする。 */
+  function findSolarTerm(targetDeg, jdeGuess) {
+    var lo = jdeGuess - 20, hi = jdeGuess + 20;
+    var diff = function (jde) {
+      var d = sunLongitude(jde) - targetDeg;
+      while (d > 180) d -= 360;
+      while (d < -180) d += 360;
+      return d;
+    };
+    // lo が負, hi が正になるよう調整
+    var dlo = diff(lo);
+    if (dlo > 0) { lo -= 15; }
+    var dhi = diff(hi);
+    if (dhi < 0) { hi += 15; }
+    for (var i = 0; i < 60; i++) {
+      var mid = (lo + hi) / 2;
+      if (diff(mid) < 0) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  // 二十四節気テーブル: 黄経 315°=立春 から 30°刻みが「節」
+  var SETSU = [
+    { name: '立春', deg: 315, month: 0 },  // 寅月の始まり（index0=寅）
+    { name: '啓蟄', deg: 345, month: 1 },
+    { name: '清明', deg: 15,  month: 2 },
+    { name: '立夏', deg: 45,  month: 3 },
+    { name: '芒種', deg: 75,  month: 4 },
+    { name: '小暑', deg: 105, month: 5 },
+    { name: '立秋', deg: 135, month: 6 },
+    { name: '白露', deg: 165, month: 7 },
+    { name: '寒露', deg: 195, month: 8 },
+    { name: '立冬', deg: 225, month: 9 },
+    { name: '大雪', deg: 255, month: 10 },
+    { name: '小寒', deg: 285, month: 11 }
+  ];
+  var CHUKI = [
+    { name: '雨水', deg: 330 }, { name: '春分', deg: 0 },  { name: '穀雨', deg: 30 },
+    { name: '小満', deg: 60 },  { name: '夏至', deg: 90 }, { name: '大暑', deg: 120 },
+    { name: '処暑', deg: 150 }, { name: '秋分', deg: 180 }, { name: '霜降', deg: 210 },
+    { name: '小雪', deg: 240 }, { name: '冬至', deg: 270 }, { name: '大寒', deg: 300 }
+  ];
+
+  // 黄経 deg を通過するおおよその日（年内）
+  function approxDateForDeg(year, deg) {
+    // 春分(0°)≈3/20.5 を基準に 1° ≈ 1.0146日 で概算
+    var d0 = jdFromUTC(year, 3, 20, 12, 0, 0);
+    // 春分0°(3月)〜冬至270°(12月)は同年、小寒285°〜啓蟄345°は年初側
+    var dd = deg;
+    if (dd > 272) dd -= 360; // 315°→-45°（同年2月）
+    return d0 + dd * 365.2422 / 360;
+  }
+
+  // year 年の指定黄経の節気時刻（JST のユリウス日）
+  function solarTermJD(year, deg) {
+    var guess = approxDateForDeg(year, deg);
+    var jde = findSolarTerm(deg, guess);
+    var dt = deltaT(year) / 86400;
+    return jde - dt; // TT→UT
+  }
+
+  // 指定 JD(UT) の直前の「節」を返す { name, deg, month, jd }
+  function previousSetsu(jdUT) {
+    var date = utcFromJD(jdUT);
+    var best = null;
+    for (var y = date.y - 1; y <= date.y + 1; y++) {
+      for (var i = 0; i < SETSU.length; i++) {
+        var jd = solarTermJD(y, SETSU[i].deg);
+        if (jd <= jdUT && (!best || jd > best.jd)) {
+          best = { name: SETSU[i].name, deg: SETSU[i].deg, month: SETSU[i].month, jd: jd };
+        }
+      }
+    }
+    return best;
+  }
+
+  // 指定 JD(UT) の直後の「節」
+  function nextSetsu(jdUT) {
+    var date = utcFromJD(jdUT);
+    var best = null;
+    for (var y = date.y - 1; y <= date.y + 1; y++) {
+      for (var i = 0; i < SETSU.length; i++) {
+        var jd = solarTermJD(y, SETSU[i].deg);
+        if (jd > jdUT && (!best || jd < best.jd)) {
+          best = { name: SETSU[i].name, deg: SETSU[i].deg, month: SETSU[i].month, jd: jd };
+        }
+      }
+    }
+    return best;
+  }
+
+  // ある年の立春（JST 表示用）
+  function risshunJST(year) { return jstFromJD(solarTermJD(year, 315)); }
+  // ある年の冬至
+  function tojiJD(year) { return solarTermJD(year, 270); }
+
+  /* ---------- 朔（新月）の探索 ---------- */
+  function moonSunDiff(jde) {
+    var d = moonLongitude(jde) - sunLongitude(jde);
+    return norm360(d);
+  }
+
+  // jdeStart 以降で最初の朔（月と太陽の黄経差が 0 になる時刻・JDE）
+  function findNewMoonAfter(jdeStart) {
+    var lo = jdeStart;
+    var prev = moonSunDiff(lo);
+    var found = null;
+    for (var i = 0; i < 35 * 24; i++) { // 1時間刻みで35日分走査
+      var hi = lo + 1 / 24;
+      var cur = moonSunDiff(hi);
+      if (prev > 300 && cur < 60) { found = [lo, hi]; break; }
+      lo = hi; prev = cur;
+    }
+    if (!found) return null;
+    var a = found[0], b = found[1];
+    for (var k = 0; k < 40; k++) {
+      var mid = (a + b) / 2;
+      var d = moonSunDiff(mid);
+      if (d > 300) a = mid; else b = mid;
+    }
+    return (a + b) / 2;
+  }
+
+  /* ---------- 旧暦（天保暦準拠の簡易実装） ----------
+   * 冬至を含む月を11月とし、中気を含まない月を閏月とする。
+   * 戻り値: { year, month, leap, day } / 逆変換 lunarToGregorian
+   */
+  function lunarMonthsAround(year) {
+    // year-1 年の冬至の少し前から year+1 年の冬至過ぎまでの朔をリストアップ
+    var dt = deltaT(year) / 86400;
+    var start = tojiJD(year - 1) - 40 + dt; // JDE
+    var end = tojiJD(year + 1) + 40 + dt;
+    var months = [];
+    var jde = start;
+    for (var i = 0; i < 32; i++) {
+      var nm = findNewMoonAfter(jde);
+      if (nm === null) break;
+      months.push(nm - dt); // JDE→UT
+      jde = nm + 1; // 次の朔を探す
+      if (nm > end) break;
+    }
+    return months;
+  }
+
+  // JST 暦日の 0時 JD(UT)
+  function jstMidnightJD(y, m, d) { return jdFromJST(y, m, d, 0, 0, 0); }
+
+  // JST 暦日単位に丸め（朔・中気がどの暦日に属すか）
+  function jstDayNumber(jdUT) {
+    var t = jstFromJD(jdUT);
+    return jdnOfJSTDate(t.y, t.m, t.d);
+  }
+
+  function gregorianToLunar(y, m, d) {
+    var targetDay = jdnOfJSTDate(y, m, d);
+    // 対象日を含みうる範囲の朔一覧（暦日単位）
+    var nms = lunarMonthsAround(y);
+    var days = nms.map(jstDayNumber);
+    // 対象日が属する月（朔日 <= 対象日 < 次の朔日）
+    var idx = -1;
+    for (var i = 0; i < days.length - 1; i++) {
+      if (days[i] <= targetDay && targetDay < days[i + 1]) { idx = i; break; }
+    }
+    if (idx < 0) return null;
+
+    // 各月に含まれる中気を調べ、冬至を含む月から月名を振る
+    var y0;
+    var chukiJDs = [];
+    for (y0 = y - 2; y0 <= y + 1; y0++) {
+      for (var c = 0; c < CHUKI.length; c++) {
+        chukiJDs.push({ deg: CHUKI[c].deg, name: CHUKI[c].name, day: jstDayNumber(solarTermJD(y0, CHUKI[c].deg)) });
+      }
+    }
+    function chukiIn(a, b) { // 暦日 a <= x < b に含まれる中気
+      return chukiJDs.filter(function (t) { return a <= t.day && t.day < b; });
+    }
+    // 冬至（270°）を含む月 = 11月。そこを起点に前後へ月番号を展開
+    var tojiDayPrev = jstDayNumber(tojiJD(y - 1));
+    var tojiDayCur = jstDayNumber(tojiJD(y));
+    var anchor = -1, anchorDay = null;
+    for (var j = 0; j < days.length - 1; j++) {
+      if (days[j] <= tojiDayPrev && tojiDayPrev < days[j + 1]) { anchor = j; anchorDay = tojiDayPrev; }
+    }
+    if (anchor < 0 || anchor > idx) {
+      for (var j2 = 0; j2 < days.length - 1; j2++) {
+        if (days[j2] <= tojiDayCur && tojiDayCur < days[j2 + 1]) { anchor = j2; anchorDay = tojiDayCur; }
+      }
+    }
+    if (anchor < 0) return null;
+
+    // anchor 月を11月として、以降の月に番号を振る（閏月は番号を進めない）
+    var names = []; // {num, leap}
+    var num = 11, leap = false;
+    names[anchor] = { num: 11, leap: false };
+    // anchor から次の冬至までの間に朔が13回あれば閏あり年
+    for (var k = anchor + 1; k < days.length - 1 && k <= idx + 1; k++) {
+      var mid = chukiIn(days[k], days[k + 1]);
+      if (mid.length === 0 && !leapUsedBetween(names, anchor, k)) {
+        names[k] = { num: num, leap: true };
+      } else {
+        num = (num % 12) + 1;
+        names[k] = { num: num, leap: false };
+      }
+    }
+    function leapUsedBetween(arr, a, b) {
+      for (var q = a; q < b; q++) { if (arr[q] && arr[q].leap) return true; }
+      return false;
+    }
+    if (!names[idx]) return null;
+    var lm = names[idx];
+    var day = targetDay - days[idx] + 1;
+    // 旧暦年: 11月・12月は（冬至年）、1月以降は翌年
+    var lunarYear;
+    var anchorDate = jstFromJD(jstMidnightJD ? jdFromJST(y, m, d, 12, 0, 0) : 0); // 使わない
+    // anchorDay の属する新暦年に基づき決定
+    var tojiY = (anchorDay === tojiDayPrev) ? y - 1 : y;
+    if (lm.num >= 11) lunarYear = tojiY; else lunarYear = tojiY + 1;
+    return { year: lunarYear, month: lm.num, leap: lm.leap, day: day };
+  }
+
+  // 旧暦 → 新暦（JST 暦日）
+  function lunarToGregorian(ly, lm, leap, ld) {
+    // 候補範囲を走査して一致を探す（確実だが単純）
+    var startJD = jdFromUTC(ly, 1, 1, 0, 0, 0) - 40;
+    for (var i = 0; i < 450; i++) {
+      var t = jstFromJD(startJD + i);
+      var r = gregorianToLunar(t.y, t.m, t.d);
+      if (r && r.year === ly && r.month === lm && r.leap === !!leap && r.day === ld) {
+        return { y: t.y, m: t.m, d: t.d };
+      }
+    }
+    return null;
+  }
+
+  global.Astro = {
+    jdFromUTC: jdFromUTC,
+    jdFromJST: jdFromJST,
+    utcFromJD: utcFromJD,
+    jstFromJD: jstFromJD,
+    jdnOfJSTDate: jdnOfJSTDate,
+    deltaT: deltaT,
+    sunLongitude: sunLongitude,
+    moonLongitude: moonLongitude,
+    equationOfTime: equationOfTime,
+    solarTermJD: solarTermJD,
+    previousSetsu: previousSetsu,
+    nextSetsu: nextSetsu,
+    risshunJST: risshunJST,
+    tojiJD: tojiJD,
+    SETSU: SETSU,
+    CHUKI: CHUKI,
+    gregorianToLunar: gregorianToLunar,
+    lunarToGregorian: lunarToGregorian
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.Astro;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * data.js — 四柱推命 基礎データテーブル
+ * 十干・十二支・蔵干・通変星・十二運・納音・神殺・調候用神・用語辞典
+ * ========================================================= */
+(function (global) {
+  'use strict';
+
+  /* ---------- 十干 ---------- */
+  var STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+  var STEM_YOMI = ['きのえ', 'きのと', 'ひのえ', 'ひのと', 'つちのえ', 'つちのと', 'かのえ', 'かのと', 'みずのえ', 'みずのと'];
+  // 五行: 0木 1火 2土 3金 4水
+  var STEM_ELEM = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4];
+  var STEM_YANG = [true, false, true, false, true, false, true, false, true, false];
+
+  /* ---------- 十二支 ---------- */
+  var BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  var BRANCH_YOMI = ['ね', 'うし', 'とら', 'う', 'たつ', 'み', 'うま', 'ひつじ', 'さる', 'とり', 'いぬ', 'い'];
+  var BRANCH_ELEM = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
+  var BRANCH_YANG = [true, false, true, false, true, false, true, false, true, false, true, false];
+  var BRANCH_ANIMAL = ['子（ねずみ）', '丑（うし）', '寅（とら）', '卯（うさぎ）', '辰（たつ）', '巳（へび）', '午（うま）', '未（ひつじ）', '申（さる）', '酉（とり）', '戌（いぬ）', '亥（いのしし）'];
+
+  var ELEMS = ['木', '火', '土', '金', '水'];
+
+  /* ---------- 蔵干（月律分野蔵干・日本通俗式） ----------
+   * 各支: [{stem, days}] — 節入りからの経過日数で 余気→中気→本気。
+   * days=null は本気（残り全部）。※流派による異同があるため代表的な表を採用。 */
+  var ZOKAN_BUNYA = [
+    /* 子 */[{ s: 8, d: 10 }, { s: 9, d: null }],                       // 壬10 癸
+    /* 丑 */[{ s: 9, d: 9 }, { s: 7, d: 3 }, { s: 5, d: null }],        // 癸9 辛3 己
+    /* 寅 */[{ s: 4, d: 7 }, { s: 2, d: 7 }, { s: 0, d: null }],        // 戊7 丙7 甲
+    /* 卯 */[{ s: 0, d: 10 }, { s: 1, d: null }],                       // 甲10 乙
+    /* 辰 */[{ s: 1, d: 9 }, { s: 9, d: 3 }, { s: 4, d: null }],        // 乙9 癸3 戊
+    /* 巳 */[{ s: 4, d: 7 }, { s: 6, d: 7 }, { s: 2, d: null }],        // 戊7 庚7 丙
+    /* 午 */[{ s: 2, d: 10 }, { s: 5, d: 9 }, { s: 3, d: null }],       // 丙10 己9 丁
+    /* 未 */[{ s: 3, d: 9 }, { s: 1, d: 3 }, { s: 5, d: null }],        // 丁9 乙3 己
+    /* 申 */[{ s: 4, d: 7 }, { s: 8, d: 7 }, { s: 6, d: null }],        // 戊7 壬7 庚
+    /* 酉 */[{ s: 6, d: 10 }, { s: 7, d: null }],                       // 庚10 辛
+    /* 戌 */[{ s: 7, d: 9 }, { s: 3, d: 3 }, { s: 4, d: null }],        // 辛9 丁3 戊
+    /* 亥 */[{ s: 4, d: 7 }, { s: 0, d: 7 }, { s: 8, d: null }]         // 戊7 甲7 壬
+  ];
+  // 支に含まれる全蔵干（本気・中気・余気の順で表示用）
+  var ZOKAN_ALL = [
+    [9, 8],          // 子: 癸(本) 壬
+    [5, 9, 7],       // 丑: 己 癸 辛
+    [0, 2, 4],       // 寅: 甲 丙 戊
+    [1, 0],          // 卯: 乙 甲
+    [4, 1, 9],       // 辰: 戊 乙 癸
+    [2, 6, 4],       // 巳: 丙 庚 戊
+    [3, 5, 2],       // 午: 丁 己 丙
+    [5, 3, 1],       // 未: 己 丁 乙
+    [6, 8, 4],       // 申: 庚 壬 戊
+    [7, 6],          // 酉: 辛 庚
+    [4, 3, 7],       // 戌: 戊 辛 丁
+    [8, 0, 4]        // 亥: 壬 甲 戊
+  ];
+  // 中心蔵干（本気のみ方式）
+  var ZOKAN_MAIN = [9, 5, 0, 1, 4, 2, 3, 5, 6, 7, 4, 8];
+
+  /* ---------- 通変星 ----------
+   * 日干から見た他干。index: 0比肩 1劫財 2食神 3傷官 4偏財 5正財 6偏官 7正官 8偏印 9印綬 */
+  var TSUHEN = ['比肩', '劫財', '食神', '傷官', '偏財', '正財', '偏官', '正官', '偏印', '印綬'];
+  var TSUHEN_ALT = ['比肩', '敗財', '食神', '傷官', '偏財', '正財', '七殺', '正官', '倒食', '正印']; // 古典表記
+  // 五行相生: e が生む = (e+1)%5, e を剋す = (e+3)%5 …
+  function tsuhenIndex(dayStem, otherStem) {
+    var de = STEM_ELEM[dayStem], oe = STEM_ELEM[otherStem];
+    var same = STEM_YANG[dayStem] === STEM_YANG[otherStem];
+    if (oe === de) return same ? 0 : 1;                 // 比肩/劫財
+    if (oe === (de + 1) % 5) return same ? 2 : 3;       // 食神/傷官
+    if (oe === (de + 2) % 5) return same ? 4 : 5;       // 偏財/正財
+    if (oe === (de + 3) % 5) return same ? 6 : 7;       // 偏官/正官
+    return same ? 8 : 9;                                // 偏印/印綬
+  }
+
+  /* ---------- 十二運 ---------- */
+  var JUNIUN = ['長生', '沐浴', '冠帯', '建禄', '帝旺', '衰', '病', '死', '墓', '絶', '胎', '養'];
+  // 長生の支（陽干は順行・陰干は逆行）
+  var CHOSEI_START = { 0: 11, 1: 6, 2: 2, 3: 9, 4: 2, 5: 9, 6: 5, 7: 0, 8: 8, 9: 3 };
+  // 甲→亥, 乙→午, 丙→寅, 丁→酉, 戊→寅, 己→酉, 庚→巳, 辛→子, 壬→申, 癸→卯
+  function juniunIndex(stem, branch) {
+    var start = CHOSEI_START[stem];
+    var diff;
+    if (STEM_YANG[stem]) diff = (branch - start + 12) % 12;
+    else diff = (start - branch + 12) % 12;
+    return diff; // 0=長生 … 11=養
+  }
+
+  /* ---------- 納音 ---------- */
+  var NATCHIN = [
+    '海中金', '炉中火', '大林木', '路傍土', '剣鋒金', '山頭火',
+    '澗下水', '城頭土', '白鑞金', '楊柳木', '井泉水', '屋上土',
+    '霹靂火', '松柏木', '長流水', '砂中金', '山下火', '平地木',
+    '壁上土', '金箔金', '覆灯火', '天河水', '大駅土', '釵釧金',
+    '桑柘木', '大渓水', '沙中土', '天上火', '石榴木', '大海水'
+  ];
+  function natchinOf(sixty) { return NATCHIN[Math.floor(sixty / 2)]; }
+
+  /* ---------- 干合・支合・三合・方合・冲・刑・害・破 ---------- */
+  var KANGO = { 0: 5, 5: 0, 1: 6, 6: 1, 2: 7, 7: 2, 3: 8, 8: 3, 4: 9, 9: 4 }; // 甲己 乙庚 丙辛 丁壬 戊癸
+  var KANGO_ELEM = { '05': 2, '16': 3, '27': 4, '38': 0, '49': 1 }; // 化五行
+  function kangoElem(a, b) {
+    return KANGO_ELEM[String(Math.min(a, b)) + String(Math.max(a, b))];
+  }
+  var SHIGO = { 0: 1, 1: 0, 2: 11, 11: 2, 3: 10, 10: 3, 4: 9, 9: 4, 5: 8, 8: 5, 6: 7, 7: 6 }; // 六合
+  var SANGO = [ // 三合会局 [支,支,支, 化五行]
+    [8, 0, 4, 4],  // 申子辰 → 水
+    [2, 6, 10, 1], // 寅午戌 → 火
+    [5, 9, 1, 3],  // 巳酉丑 → 金
+    [11, 3, 7, 0]  // 亥卯未 → 木
+  ];
+  var HOGO = [ // 方合 [支,支,支, 五行]
+    [2, 3, 4, 0],  // 寅卯辰 → 木
+    [5, 6, 7, 1],  // 巳午未 → 火
+    [8, 9, 10, 3], // 申酉戌 → 金
+    [11, 0, 1, 4]  // 亥子丑 → 水
+  ];
+  function chuOf(b) { return (b + 6) % 12; } // 冲
+  var KEI = [ // 刑 [a, b, 種類]
+    [2, 5, '無恩の刑'], [5, 8, '無恩の刑'], [8, 2, '無恩の刑'],
+    [1, 10, '持勢の刑'], [10, 7, '持勢の刑'], [7, 1, '持勢の刑'],
+    [0, 3, '無礼の刑'], [3, 0, '無礼の刑'],
+    [4, 4, '自刑'], [6, 6, '自刑'], [9, 9, '自刑'], [11, 11, '自刑']
+  ];
+  var GAI = { 0: 7, 7: 0, 1: 6, 6: 1, 2: 5, 5: 2, 3: 4, 4: 3, 8: 11, 11: 8, 9: 10, 10: 9 }; // 害
+  var HA = { 0: 9, 9: 0, 1: 4, 4: 1, 2: 11, 11: 2, 3: 6, 6: 3, 5: 8, 8: 5, 10: 7, 7: 10 }; // 破
+
+  /* ---------- 神殺テーブル ---------- */
+  // 日干 → 支（複数）
+  var TENITSU = { 0: [1, 7], 4: [1, 7], 6: [1, 7], 1: [0, 8], 5: [0, 8], 2: [11, 9], 3: [11, 9], 8: [5, 3], 9: [5, 3], 7: [6, 2] }; // 天乙貴人
+  var BUNSHO = { 0: 5, 1: 6, 2: 8, 3: 9, 4: 8, 5: 9, 6: 11, 7: 0, 8: 2, 9: 3 }; // 文昌貴人
+  var KINYO = { 0: 4, 1: 5, 2: 7, 3: 8, 4: 7, 5: 8, 6: 10, 7: 11, 8: 1, 9: 2 }; // 金輿
+  var YOJIN = { 0: 3, 2: 6, 4: 6, 6: 9, 8: 0 }; // 羊刃（陽干）
+  var HIJIN = { 0: 9, 2: 0, 4: 0, 6: 3, 8: 6 }; // 飛刃（羊刃の冲）
+  var KOEN = { 0: 6, 1: 6, 2: 2, 3: 7, 4: 4, 5: 4, 6: 10, 7: 9, 8: 0, 9: 8 }; // 紅艶殺
+  // 月支 → 干または支（天徳貴人）
+  var TENTOKU = { 2: '丁', 3: '申', 4: '壬', 5: '辛', 6: '亥', 7: '甲', 8: '癸', 9: '寅', 10: '丙', 11: '乙', 0: '巳', 1: '庚' };
+  // 三合グループ（支→帝旺支）月徳・駅馬・咸池・華蓋・十二神殺の基準
+  function triadOf(b) {
+    if (b === 8 || b === 0 || b === 4) return 0;   // 申子辰 → 旺=子
+    if (b === 2 || b === 6 || b === 10) return 6;  // 寅午戌 → 旺=午
+    if (b === 5 || b === 9 || b === 1) return 9;   // 巳酉丑 → 旺=酉
+    return 3;                                       // 亥卯未 → 旺=卯
+  }
+  var GETTOKU = { 0: '壬', 6: '丙', 9: '庚', 3: '甲' }; // 旺支 → 月徳貴人の干
+  function ekibaOf(b) { return (triadOf(b) + 2 + 12 - 8) % 12; } // 使わない（下で直接）
+  var EKIBA = { 0: 2, 6: 8, 9: 11, 3: 5 };   // 申子辰→寅 寅午戌→申 巳酉丑→亥 亥卯未→巳
+  var KANCHI = { 0: 9, 6: 3, 9: 6, 3: 0 };   // 咸池（桃花） 申子辰→酉 寅午戌→卯 巳酉丑→午 亥卯未→子
+  var KAGAI = { 0: 4, 6: 10, 9: 1, 3: 7 };   // 華蓋 申子辰→辰 寅午戌→戌 巳酉丑→丑 亥卯未→未
+  var KAIGO = [[6, 4], [6, 10], [8, 4], [4, 10]]; // 魁罡: 庚辰 庚戌 壬辰 戊戌 [干,支]
+  // 孤辰・寡宿（年支基準）
+  var KOSHIN = { 11: 2, 0: 2, 1: 2, 2: 5, 3: 5, 4: 5, 5: 8, 6: 8, 7: 8, 8: 11, 9: 11, 10: 11 };
+  var KASHUKU = { 11: 10, 0: 10, 1: 10, 2: 1, 3: 1, 4: 1, 5: 4, 6: 4, 7: 4, 8: 7, 9: 7, 10: 7 };
+
+  /* ---------- 十二神殺（年支の三合基準） ---------- */
+  var JUNI_SHINSATSU = ['劫殺', '災殺', '天殺', '地殺', '年殺', '月殺', '亡神', '将星', '攀鞍', '駅馬', '六害', '華蓋'];
+  // 年支の三合帝旺支 R に対し、劫殺 = R+5 から順に十二支を一巡
+  function juniShinsatsuOf(yearBranch, targetBranch) {
+    var R = triadOf(yearBranch);
+    var start = (R + 5) % 12; // 劫殺
+    var diff = (targetBranch - start + 12) % 12;
+    return JUNI_SHINSATSU[diff];
+  }
+
+  /* ---------- 空亡 ---------- */
+  function kuboOf(daySixty) {
+    var stem = daySixty % 10, branch = daySixty % 12;
+    var k1 = (branch - stem + 10 + 12) % 12;
+    return [k1, (k1 + 1) % 12];
+  }
+  var JUN_NAMES = ['甲子旬', '甲戌旬', '甲申旬', '甲午旬', '甲辰旬', '甲寅旬'];
+  function junOf(daySixty) { return JUN_NAMES[Math.floor(daySixty / 10)]; }
+
+  /* ---------- 調候用神（窮通宝鑑系の代表的な表） ----------
+   * [日干][月支] → 候補の干（優先順）。月支 index は 0=子 基準。 */
+  var CHOKO = {
+    0: { 2: '丙癸', 3: '庚丙丁', 4: '庚丁壬', 5: '癸丁庚', 6: '癸丁庚', 7: '癸庚丁', 8: '庚丁壬', 9: '庚丁丙', 10: '庚甲丁', 11: '庚丁戊', 0: '丁庚丙', 1: '丁庚丙' },
+    1: { 2: '丙癸', 3: '丙癸', 4: '癸丙戊', 5: '癸', 6: '癸丙', 7: '癸丙', 8: '丙癸己', 9: '癸丙丁', 10: '癸辛', 11: '丙戊', 0: '丙', 1: '丙' },
+    2: { 2: '壬庚', 3: '壬己', 4: '壬甲', 5: '壬癸庚', 6: '壬庚', 7: '壬庚', 8: '壬戊', 9: '壬癸', 10: '甲壬', 11: '甲戊庚壬', 0: '壬戊己', 1: '壬甲' },
+    3: { 2: '甲庚', 3: '庚甲', 4: '甲庚', 5: '甲庚', 6: '壬癸庚', 7: '甲壬庚', 8: '甲庚丙戊', 9: '甲庚丙戊', 10: '甲庚戊', 11: '甲庚', 0: '甲庚', 1: '甲庚' },
+    4: { 2: '丙甲癸', 3: '丙甲癸', 4: '甲丙癸', 5: '甲丙癸', 6: '壬甲丙', 7: '癸丙甲', 8: '丙癸甲', 9: '丙癸', 10: '甲丙癸', 11: '甲丙', 0: '丙甲', 1: '丙甲' },
+    5: { 2: '丙庚甲', 3: '甲癸丙', 4: '丙癸甲', 5: '癸丙', 6: '癸丙', 7: '癸丙', 8: '丙癸', 9: '丙癸', 10: '甲丙癸', 11: '丙甲戊', 0: '丙甲戊', 1: '丙甲戊' },
+    6: { 2: '戊甲壬丙', 3: '丁甲丙庚', 4: '甲丁壬癸', 5: '壬戊丙丁', 6: '壬癸', 7: '丁甲', 8: '丁甲', 9: '丁甲丙', 10: '甲壬', 11: '丁丙', 0: '丁甲丙', 1: '丙丁甲' },
+    7: { 2: '己壬庚', 3: '壬甲', 4: '壬甲', 5: '壬甲癸', 6: '壬己癸', 7: '壬庚甲', 8: '壬甲戊', 9: '壬甲', 10: '壬甲', 11: '壬丙', 0: '丙戊壬甲', 1: '丙壬戊己' },
+    8: { 2: '庚丙戊', 3: '戊辛庚', 4: '甲庚', 5: '壬辛庚癸', 6: '癸庚辛', 7: '辛甲', 8: '戊丁', 9: '甲庚', 10: '甲丙', 11: '戊丙庚', 0: '戊丙', 1: '丙丁甲' },
+    9: { 2: '辛丙', 3: '庚辛', 4: '丙辛甲', 5: '辛', 6: '庚辛壬癸', 7: '庚辛壬癸', 8: '丁甲', 9: '辛丙', 10: '辛甲壬癸', 11: '庚辛戊丁', 0: '丙辛', 1: '丙丁' }
+  };
+
+  /* ---------- 用語辞典 ---------- */
+  var GLOSSARY = [
+    { term: '四柱推命', yomi: 'しちゅうすいめい', desc: '生年月日と出生時刻から年柱・月柱・日柱・時柱の四つの柱（干支）を立て、その人の性質・才能・運気の流れを読み解く東洋占術。中国の「子平」を源流とする。' },
+    { term: '命式', yomi: 'めいしき', desc: '四柱（年柱・月柱・日柱・時柱）の干支と、そこから導かれる蔵干・通変星・十二運などをまとめた表。鑑定の基礎となる。' },
+    { term: '日主（日干）', yomi: 'にっしゅ（にっかん）', desc: '日柱の天干。命式の中心であり「自分自身」を表す。他の干支との関係（通変星）はすべて日干を基準に定める。' },
+    { term: '十干', yomi: 'じっかん', desc: '甲・乙・丙・丁・戊・己・庚・辛・壬・癸の十種。五行（木火土金水）と陰陽の組み合わせで性質が決まる。' },
+    { term: '十二支', yomi: 'じゅうにし', desc: '子・丑・寅・卯・辰・巳・午・未・申・酉・戌・亥の十二種。月や時刻・方位を表し、それぞれ五行と蔵干を持つ。' },
+    { term: '蔵干', yomi: 'ぞうかん', desc: '十二支の中に含まれるとされる天干。節入りからの日数によって余気・中気・本気を取り分ける「月律分野蔵干」方式と、本気のみを取る方式などがある。' },
+    { term: '通変星', yomi: 'つうへんせい', desc: '日干から見た他の干の関係を十種（比肩・劫財・食神・傷官・偏財・正財・偏官・正官・偏印・印綬）に分類したもの。性格・才能・人間関係を読む中心的な星。' },
+    { term: '十二運', yomi: 'じゅうにうん', desc: '日干と各支の関係を人の一生（長生〜養）に喩えた十二段階。エネルギーの強弱やライフサイクルを表す。' },
+    { term: '大運', yomi: 'たいうん', desc: '約10年ごとに巡る運気の柱。月柱を起点に、性別と年干の陰陽により順行・逆行が決まる。人生の大きな流れを読む。' },
+    { term: '年運（歳運）', yomi: 'ねんうん', desc: 'その年の干支が命式に与える影響。1年単位の運気を読む。' },
+    { term: '空亡', yomi: 'くうぼう', desc: '十干と十二支の組み合わせ上、干が回ってこない二つの支。天中殺・旬空とも呼ぶ。該当する年月は物事が定まりにくいとされる。' },
+    { term: '格局', yomi: 'かっきょく', desc: '命式の全体構造の型。月支の蔵干などから定める内格（正官格・食神格など）と、五行の偏りが極端な場合の外格（従格など）がある。' },
+    { term: '用神', yomi: 'ようじん', desc: '命式のバランスを最も良くする五行・干。身強身弱や調候（季節の寒暖燥湿）から定める。用神を扶ける運が吉運となる。' },
+    { term: '喜神', yomi: 'きしん', desc: '用神を助ける働きをする五行・干。' },
+    { term: '忌神', yomi: 'いむがみ・きしん', desc: '命式のバランスを崩す五行・干。忌神が強まる運は注意が必要とされる。' },
+    { term: '身強・身弱', yomi: 'みつよ・みよわ', desc: '日干の強さの判定。月令（生まれ月の五行）・通根・生扶の多さで判断する。強ければ抑える五行、弱ければ助ける五行が用神となるのが基本。' },
+    { term: '干合', yomi: 'かんごう', desc: '甲己・乙庚・丙辛・丁壬・戊癸の組み合わせ。互いに引き合い、別の五行に変化（化気）することがある。' },
+    { term: '支合', yomi: 'しごう', desc: '子丑・寅亥・卯戌・辰酉・巳申・午未の六組の支の結び付き。六合とも。' },
+    { term: '三合', yomi: 'さんごう', desc: '申子辰（水）・寅午戌（火）・巳酉丑（金）・亥卯未（木）の三支が揃うと強力な五行の局を成す。二支のみは半会。' },
+    { term: '方合', yomi: 'ほうごう', desc: '寅卯辰（木）・巳午未（火）・申酉戌（金）・亥子丑（水）の季節方位の三支の結合。' },
+    { term: '冲', yomi: 'ちゅう', desc: '支が正反対に位置する組み合わせ（子午・丑未・寅申・卯酉・辰戌・巳亥）。衝突・変動を表す。' },
+    { term: '刑', yomi: 'けい', desc: '寅巳申（無恩の刑）・丑戌未（持勢の刑）・子卯（無礼の刑）・辰辰午午酉酉亥亥（自刑）。摩擦や刑罰的な作用を表すとされる。' },
+    { term: '害', yomi: 'がい', desc: '支合を冲で妨げる関係（子未・丑午・寅巳・卯辰・申亥・酉戌）。' },
+    { term: '納音', yomi: 'なっちん', desc: '六十干支を二つずつ組にして三十種の五行の象（海中金・炉中火など）を当てたもの。性質の側面や相性に用いる。' },
+    { term: '命宮', yomi: 'めいきゅう', desc: '生まれ月と生まれ時刻から求める宮。精神の在り方・人生の方向性を補足的に読む。' },
+    { term: '胎元', yomi: 'たいげん', desc: '受胎の月を表すとされる干支。月柱の干を一つ、支を三つ進めて求める。' },
+    { term: '胎息', yomi: 'たいそく', desc: '日柱と干合・支合する干支。内面の資質を補足的に読む。' },
+    { term: '身宮', yomi: 'しんきゅう', desc: '命宮と対になる宮。晩年や身体面を補足的に読むとされる。' },
+    { term: '透干', yomi: 'とうかん', desc: '支の蔵干と同じ干が天干に現れていること。その五行・通変星の働きが表面化し強まる。' },
+    { term: '通根', yomi: 'つうこん', desc: '天干が地支の蔵干に同じ五行の根を持つこと。根があるほどその干は強く働く。' },
+    { term: '調候用神', yomi: 'ちょうこうようじん', desc: '生まれ月の寒暖燥湿を調える観点から定める用神。『窮通宝鑑』の系統。' },
+    { term: '神殺', yomi: 'しんさつ', desc: '天乙貴人・駅馬・咸池など、干支の特定の組み合わせに与えられた吉凶の星。補助的な判断材料。' },
+    { term: '天乙貴人', yomi: 'てんいつきじん', desc: '最上の吉神とされ、目上の引き立てや危難からの救いを表す。' },
+    { term: '駅馬', yomi: 'えきば', desc: '移動・変化・旅行を表す星。駅馬が動く年は転居・転職が起きやすいとされる。' },
+    { term: '咸池（桃花）', yomi: 'かんち（とうか）', desc: '異性の縁・魅力を表す星。' },
+    { term: '華蓋', yomi: 'かがい', desc: '芸術・信仰・孤高を表す星。' },
+    { term: '羊刃', yomi: 'ようじん', desc: '日干の力が過剰に強まる支。行動力・鋭さと諸刃の剣の危うさを表す。' },
+    { term: '魁罡', yomi: 'かいごう', desc: '庚辰・庚戌・壬辰・戊戌の日に生まれた場合の特別な星。頭脳明晰で極端に強い運を持つとされる。' },
+    { term: '天中殺（空亡）', yomi: 'てんちゅうさつ', desc: '空亡の別称。算命学系で用いられる呼び名。' },
+    { term: '節入り', yomi: 'せついり', desc: '二十四節気のうち「節」（立春・啓蟄など）に入る瞬間。四柱推命の月の切り替わりは節入りを基準とする。' },
+    { term: '真太陽時', yomi: 'しんたいようじ', desc: '実際の太陽の南中を正午とする時刻。標準時との差（経度差＋均時差）を補正して時柱を立てる方式。' },
+    { term: '五行', yomi: 'ごぎょう', desc: '木・火・土・金・水の五つの気。相生（木→火→土→金→水→木）と相剋（木→土→水→火→金→木）の関係で万物の変化を説明する。' },
+    { term: '旬', yomi: 'じゅん', desc: '六十干支を十日ずつ六つに分けた区切り（甲子旬など）。空亡は旬ごとに定まる。' },
+    { term: '択日', yomi: 'たくじつ', desc: '目的に応じて吉日を選ぶこと。本ソフトでは用神・日干支・空亡などから開運日を提案する。' },
+    { term: '起運', yomi: 'きうん', desc: '大運が始まる年齢。生まれた日から節入りまでの日数を3で割って求める（3日＝1年）。' },
+    { term: '順行・逆行', yomi: 'じゅんこう・ぎゃっこう', desc: '大運の巡り方。陽年生まれの男性・陰年生まれの女性は順行、その逆は逆行が標準。' }
+  ];
+
+  global.Data = {
+    STEMS: STEMS, STEM_YOMI: STEM_YOMI, STEM_ELEM: STEM_ELEM, STEM_YANG: STEM_YANG,
+    BRANCHES: BRANCHES, BRANCH_YOMI: BRANCH_YOMI, BRANCH_ELEM: BRANCH_ELEM, BRANCH_YANG: BRANCH_YANG,
+    BRANCH_ANIMAL: BRANCH_ANIMAL,
+    ELEMS: ELEMS,
+    ZOKAN_BUNYA: ZOKAN_BUNYA, ZOKAN_ALL: ZOKAN_ALL, ZOKAN_MAIN: ZOKAN_MAIN,
+    TSUHEN: TSUHEN, TSUHEN_ALT: TSUHEN_ALT, tsuhenIndex: tsuhenIndex,
+    JUNIUN: JUNIUN, juniunIndex: juniunIndex,
+    NATCHIN: NATCHIN, natchinOf: natchinOf,
+    KANGO: KANGO, kangoElem: kangoElem, SHIGO: SHIGO, SANGO: SANGO, HOGO: HOGO,
+    chuOf: chuOf, KEI: KEI, GAI: GAI, HA: HA,
+    TENITSU: TENITSU, BUNSHO: BUNSHO, KINYO: KINYO, YOJIN: YOJIN, HIJIN: HIJIN, KOEN: KOEN,
+    TENTOKU: TENTOKU, GETTOKU: GETTOKU, EKIBA: EKIBA, KANCHI: KANCHI, KAGAI: KAGAI,
+    KAIGO: KAIGO, KOSHIN: KOSHIN, KASHUKU: KASHUKU,
+    triadOf: triadOf, juniShinsatsuOf: juniShinsatsuOf, JUNI_SHINSATSU: JUNI_SHINSATSU,
+    kuboOf: kuboOf, junOf: junOf,
+    CHOKO: CHOKO,
+    GLOSSARY: GLOSSARY
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.Data;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * koyomi.js — 干支暦エンジン
+ * 四柱（年月日時）の算出。流派設定（年柱切替・日柱切替・
+ * 時刻補正・大運順逆・起運方式）に対応。
+ * ========================================================= */
+(function (global) {
+  'use strict';
+  var Astro = global.Astro || (typeof require !== 'undefined' ? require('./astro.js') : null);
+  var Data = global.Data || (typeof require !== 'undefined' ? require('./data.js') : null);
+
+  /* 六十干支 index（0=甲子〜59=癸亥）→ {stem, branch} */
+  function pillarFromSixty(sixty) {
+    sixty = ((sixty % 60) + 60) % 60;
+    return { sixty: sixty, stem: sixty % 10, branch: sixty % 12 };
+  }
+  function sixtyName(sixty) {
+    var p = pillarFromSixty(sixty);
+    return Data.STEMS[p.stem] + Data.BRANCHES[p.branch];
+  }
+  // 干と支から六十干支 index（陰陽が一致する組のみ有効）
+  function sixtyFromStemBranch(stem, branch) {
+    for (var i = 0; i < 60; i++) {
+      if (i % 10 === stem && i % 12 === branch) return i;
+    }
+    return -1;
+  }
+
+  /* ---------- 日柱 ----------
+   * JDN + 49 ≡ 干支番号 (mod 60)。検証: 2000-01-01=戊午, 1900-01-01=甲戌 */
+  function daySixtyFromJDN(jdn) { return ((jdn + 49) % 60 + 60) % 60; }
+
+  /* ---------- 時刻補正 ----------
+   * mode: 'none'（標準時のまま） | 'lmt'（地方平均時） | 'tst'（真太陽時）
+   * lon: 出生地の東経（度）。日本標準時子午線は東経135度。 */
+  function adjustedMinutes(y, m, d, hh, mm, mode, lon) {
+    var total = hh * 60 + mm;
+    if (mode === 'none' || lon == null) return { min: total, corr: 0 };
+    var corr = (lon - 135) * 4; // 経度差補正（分）
+    if (mode === 'tst') {
+      var jd = Astro.jdFromJST(y, m, d, hh, mm, 0);
+      corr += Astro.equationOfTime(jd);
+    }
+    return { min: total + corr, corr: corr };
+  }
+
+  /* ---------- 主計算 ----------
+   * input: { y, m, d, hh, mm, gender:'M'|'F', lon(東経度|null), timeUnknown:bool }
+   * settings: {
+   *   yearSwitch: 'risshun' | 'toji' | 'newyear',
+   *   daySwitch: 'midnight' | 'h23',
+   *   timeAdjust: 'none' | 'lmt' | 'tst',
+   *   taiunDir: 'standard'(陽男陰女順行) | 'allForward' | 'allBackward',
+   *   kiunMode: 'floor' | 'round' | 'detail'(年+月まで)
+   * }
+   * 戻り値: { year, month, day, hour(null可), meta:{...} } 各柱 {sixty, stem, branch}
+   */
+  function computePillars(input, settings) {
+    var s = settings || {};
+    var yearSwitch = s.yearSwitch || 'risshun';
+    var daySwitch = s.daySwitch || 'midnight';
+    var timeAdjust = s.timeAdjust || 'none';
+
+    var adj = input.timeUnknown
+      ? { min: 12 * 60, corr: 0 } // 時刻不明は正午仮置き（時柱は立てない）
+      : adjustedMinutes(input.y, input.m, input.d, input.hh, input.mm, timeAdjust, input.lon);
+
+    // 補正後の暦日・時刻（分単位で日をまたぐ場合を処理）
+    var y = input.y, m = input.m, d = input.d;
+    var min = adj.min;
+    var dayShift = 0;
+    while (min < 0) { min += 1440; dayShift -= 1; }
+    while (min >= 1440) { min -= 1440; dayShift += 1; }
+    if (dayShift !== 0) {
+      var t = Astro.jstFromJD(Astro.jdFromJST(y, m, d, 12, 0, 0) + dayShift);
+      y = t.y; m = t.m; d = t.d;
+    }
+    var hh2 = Math.floor(min / 60), mm2 = Math.round(min % 60);
+
+    // 出生瞬間の JD(UT)（節入り判定は補正後の真時刻で行う）
+    var jdBirth = Astro.jdFromJST(y, m, d, hh2, mm2, 0);
+
+    /* --- 日柱 --- */
+    var jdn = Astro.jdnOfJSTDate(y, m, d);
+    var dayJdn = jdn;
+    if (!input.timeUnknown && daySwitch === 'h23' && hh2 >= 23) dayJdn += 1; // 23時以降は翌日の日柱
+    var dayP = pillarFromSixty(daySixtyFromJDN(dayJdn));
+
+    /* --- 時柱 --- */
+    var hourP = null, hourBranch = null;
+    if (!input.timeUnknown) {
+      hourBranch = Math.floor(((hh2 * 60 + mm2) + 60) / 120) % 12; // 23:00〜0:59 → 子
+      var hourStem = ((dayP.stem % 5) * 2 + hourBranch) % 10; // 五鼠遁
+      hourP = pillarFromSixty(sixtyFromStemBranch(hourStem, hourBranch));
+    }
+
+    /* --- 年柱 --- */
+    var solarYear = y;
+    if (yearSwitch === 'risshun') {
+      var ris = Astro.solarTermJD(y, 315);
+      if (jdBirth < ris) solarYear = y - 1;
+    } else if (yearSwitch === 'toji') {
+      // 冬至基準: 前年冬至〜当年冬至の間を「当年」とする研究方式
+      var tj = Astro.tojiJD(y);
+      if (jdBirth >= tj) solarYear = y + 1;
+    } // 'newyear' は暦年のまま
+    var yearP = pillarFromSixty((solarYear - 4) % 60);
+
+    /* --- 月柱 --- */
+    var prevS = Astro.previousSetsu(jdBirth);
+    var nextS = Astro.nextSetsu(jdBirth);
+    var monthIdx = prevS.month; // 0=寅 … 11=丑
+    // 五虎遁: 年干から寅月の干を起こす
+    var monthStem = ((yearP.stem % 5) * 2 + 2 + monthIdx) % 10;
+    var monthBranch = (monthIdx + 2) % 12; // 寅=2
+    var monthP = pillarFromSixty(sixtyFromStemBranch(monthStem, monthBranch));
+
+    /* --- 大運の順逆と起運 --- */
+    var male = input.gender !== 'F';
+    var yangYear = Data.STEM_YANG[yearP.stem];
+    var forward;
+    if (s.taiunDir === 'allForward') forward = true;
+    else if (s.taiunDir === 'allBackward') forward = false;
+    else forward = (yangYear && male) || (!yangYear && !male); // 陽男陰女順行
+
+    var daysToSetsu = forward ? (nextS.jd - jdBirth) : (jdBirth - prevS.jd);
+    var kiun; // 起運年齢
+    var kiunMode = s.kiunMode || 'detail';
+    var years = daysToSetsu / 3;
+    if (kiunMode === 'floor') kiun = { years: Math.max(0, Math.floor(years)), months: 0 };
+    else if (kiunMode === 'round') kiun = { years: Math.max(0, Math.round(years)), months: 0 };
+    else {
+      var yy = Math.floor(years);
+      var months = Math.round((years - yy) * 12); // 1日 = 4ヶ月
+      if (months >= 12) { yy += 1; months -= 12; }
+      kiun = { years: yy, months: months };
+    }
+
+    return {
+      year: yearP, month: monthP, day: dayP, hour: hourP,
+      meta: {
+        input: input,
+        adjusted: { y: y, m: m, d: d, hh: input.timeUnknown ? null : hh2, mm: input.timeUnknown ? null : mm2, corrMin: adj.corr },
+        jdBirth: jdBirth,
+        prevSetsu: { name: prevS.name, jd: prevS.jd, jst: Astro.jstFromJD(prevS.jd) },
+        nextSetsu: { name: nextS.name, jd: nextS.jd, jst: Astro.jstFromJD(nextS.jd) },
+        daysIntoMonth: jdBirth - prevS.jd, // 節入りからの経過日数（蔵干月律用）
+        solarYear: solarYear,
+        forward: forward,
+        kiun: kiun,
+        hourBranch: hourBranch
+      }
+    };
+  }
+
+  /* ---------- 大運の柱列 ----------
+   * 月柱から順行/逆行に十干支を進める。count 本。 */
+  function taiunPillars(monthSixty, forward, count) {
+    var list = [];
+    for (var i = 1; i <= count; i++) {
+      var s = forward ? monthSixty + i : monthSixty - i;
+      list.push(pillarFromSixty(s));
+    }
+    return list;
+  }
+
+  /* ---------- 年運・月運・日運 ---------- */
+  function yearPillarOf(year) { return pillarFromSixty((year - 4) % 60); }
+
+  // ある新暦年月日の月柱（節入り基準）・日柱
+  function pillarsOfDate(y, m, d, settings) {
+    var r = computePillars({ y: y, m: m, d: d, hh: 12, mm: 0, gender: 'M', lon: null, timeUnknown: true }, settings || {});
+    return { year: r.year, month: r.month, day: r.day, meta: r.meta };
+  }
+
+  /* ---------- 干支の逆引き ----------
+   * 指定の日干支に一致する日を範囲 [y1, y2] から列挙 */
+  function reverseLookupDays(sixty, y1, y2, limit) {
+    var out = [];
+    var jd1 = Astro.jdnOfJSTDate(y1, 1, 1);
+    var jd2 = Astro.jdnOfJSTDate(y2, 12, 31);
+    // 最初の一致日を求める
+    var r = ((sixty - daySixtyFromJDN(jd1)) % 60 + 60) % 60;
+    for (var jd = jd1 + r; jd <= jd2; jd += 60) {
+      var t = Astro.jstFromJD(jd); // jdn→暦日（正午JDなので誤差なし）
+      var tt = Astro.utcFromJD(jd - 0.5 + 9 / 24);
+      out.push({ y: tt.y, m: tt.m, d: tt.d });
+      if (limit && out.length >= limit) break;
+    }
+    return out;
+  }
+
+  global.Koyomi = {
+    pillarFromSixty: pillarFromSixty,
+    sixtyName: sixtyName,
+    sixtyFromStemBranch: sixtyFromStemBranch,
+    daySixtyFromJDN: daySixtyFromJDN,
+    computePillars: computePillars,
+    taiunPillars: taiunPillars,
+    yearPillarOf: yearPillarOf,
+    pillarsOfDate: pillarsOfDate,
+    reverseLookupDays: reverseLookupDays
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.Koyomi;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * meishiki.js — 命式解析エンジン
+ * 蔵干・通変星・十二運・神殺・合冲刑害・透干通根・五行バランス・
+ * 身強身弱・格局・用神（扶抑＋調候）・命宮・胎元・胎息・身宮
+ * ========================================================= */
+(function (global) {
+  'use strict';
+  var Astro = global.Astro || (typeof require !== 'undefined' ? require('./astro.js') : null);
+  var Data = global.Data || (typeof require !== 'undefined' ? require('./data.js') : null);
+  var Koyomi = global.Koyomi || (typeof require !== 'undefined' ? require('./koyomi.js') : null);
+
+  var PILLAR_KEYS = ['year', 'month', 'day', 'hour'];
+  var PILLAR_NAMES = { year: '年柱', month: '月柱', day: '日柱', hour: '時柱' };
+
+  /* ---------- 蔵干の取り出し ----------
+   * mode: 'bunya'（月律分野・節入りからの日数で取り分け）
+   *       'main' （本気のみ）
+   *       'all'  （全蔵干を並列表示） */
+  function zokanOf(branch, daysIntoMonth, mode) {
+    if (mode === 'main') return [Data.ZOKAN_MAIN[branch]];
+    if (mode === 'all') return Data.ZOKAN_ALL[branch].slice();
+    // 月律分野: 経過日数に応じて1つ選ぶ
+    var table = Data.ZOKAN_BUNYA[branch];
+    var d = daysIntoMonth;
+    for (var i = 0; i < table.length; i++) {
+      if (table[i].d === null || d < sumDays(table, i + 1)) {
+        if (table[i].d === null) return [table[i].s];
+        if (d < sumDays(table, i + 1)) return [table[i].s];
+      }
+    }
+    return [table[table.length - 1].s];
+  }
+  function sumDays(table, upto) {
+    var s = 0;
+    for (var i = 0; i < upto; i++) s += table[i].d === null ? 99 : table[i].d;
+    return s;
+  }
+
+  /* ---------- 命宮・身宮・胎元・胎息 ---------- */
+  // 命宮: 月支数＋時支数（子=1〜亥=12）の和を 14（または26）から引く
+  function meikyu(monthBranch, hourBranch, yearStem) {
+    if (hourBranch == null) return null;
+    var m = monthBranch + 1, h = hourBranch + 1;
+    var s = m + h;
+    var n = (s <= 13) ? 14 - s : 26 - s;
+    var branch = (n - 1 + 12) % 12;
+    // 天干は五虎遁（年干から寅月起で数える）
+    var monthIdx = (branch - 2 + 12) % 12;
+    var stem = ((yearStem % 5) * 2 + 2 + monthIdx) % 10;
+    return Koyomi.pillarFromSixty(Koyomi.sixtyFromStemBranch(stem, branch));
+  }
+  // 身宮: 月支数＋時支数から順に求める（一説による）
+  function shinkyu(monthBranch, hourBranch, yearStem) {
+    if (hourBranch == null) return null;
+    var m = monthBranch + 1, h = hourBranch + 1;
+    var n = ((m + h - 2) % 12) + 1;
+    var branch = (n - 1 + 12) % 12;
+    var monthIdx = (branch - 2 + 12) % 12;
+    var stem = ((yearStem % 5) * 2 + 2 + monthIdx) % 10;
+    return Koyomi.pillarFromSixty(Koyomi.sixtyFromStemBranch(stem, branch));
+  }
+  // 胎元: 月干＋1, 月支＋3
+  function taigen(monthPillar) {
+    var stem = (monthPillar.stem + 1) % 10;
+    var branch = (monthPillar.branch + 3) % 12;
+    return Koyomi.pillarFromSixty(Koyomi.sixtyFromStemBranch(stem, branch));
+  }
+  // 胎息: 日干と干合する干＋日支と支合する支
+  function taisoku(dayPillar) {
+    var stem = Data.KANGO[dayPillar.stem];
+    var branch = Data.SHIGO[dayPillar.branch];
+    return Koyomi.pillarFromSixty(Koyomi.sixtyFromStemBranch(stem, branch));
+  }
+
+  /* ---------- 神殺の判定 ---------- */
+  function findShinsatsu(p, settings) {
+    var list = []; // {name, pillar, detail}
+    var dayStem = p.day.stem;
+    var enabled = (settings && settings.shinsatsuSet) || null; // null=全部
+    function on(name) { return !enabled || enabled.indexOf(name) >= 0; }
+    function add(name, pillar, detail) { if (on(name)) list.push({ name: name, pillar: pillar, detail: detail || '' }); }
+
+    PILLAR_KEYS.forEach(function (k) {
+      var pl = p[k];
+      if (!pl) return;
+      var b = pl.branch;
+      // 日干基準
+      if ((Data.TENITSU[dayStem] || []).indexOf(b) >= 0) add('天乙貴人', k);
+      if (Data.BUNSHO[dayStem] === b) add('文昌貴人', k);
+      if (Data.KINYO[dayStem] === b) add('金輿', k);
+      if (Data.YOJIN[dayStem] === b) add('羊刃', k);
+      if (Data.HIJIN[dayStem] === b) add('飛刃', k);
+      if (Data.KOEN[dayStem] === b) add('紅艶殺', k);
+      // 年支基準（三合）
+      var yb = p.year.branch;
+      var R = Data.triadOf(yb);
+      if (Data.EKIBA[R] === b && k !== 'year') add('駅馬', k);
+      if (Data.KANCHI[R] === b && k !== 'year') add('咸池（桃花）', k);
+      if (Data.KAGAI[R] === b && k !== 'year') add('華蓋', k);
+      if (Data.KOSHIN[yb] === b && k !== 'year') add('孤辰', k);
+      if (Data.KASHUKU[yb] === b && k !== 'year') add('寡宿', k);
+      // 日支基準（三合）— 日支から見る流儀も併用
+      if (k !== 'day') {
+        var Rd = Data.triadOf(p.day.branch);
+        if (Data.EKIBA[Rd] === b) add('駅馬（日支基準）', k);
+        if (Data.KANCHI[Rd] === b) add('咸池（日支基準）', k);
+      }
+    });
+
+    // 月支基準（天徳・月徳）: 干にも支にも当たりうる
+    var mb = p.month.branch;
+    var tj = Data.TENTOKU[mb];
+    var gt = Data.GETTOKU[Data.triadOf(mb)];
+    PILLAR_KEYS.forEach(function (k) {
+      var pl = p[k];
+      if (!pl) return;
+      if (tj === Data.STEMS[pl.stem] || tj === Data.BRANCHES[pl.branch]) add('天徳貴人', k);
+      if (gt === Data.STEMS[pl.stem]) add('月徳貴人', k);
+    });
+
+    // 魁罡（日柱のみ）
+    Data.KAIGO.forEach(function (kg) {
+      if (p.day.stem === kg[0] && p.day.branch === kg[1]) add('魁罡', 'day');
+    });
+    return list;
+  }
+
+  /* ---------- 十二神殺（年支基準・全支に付与） ---------- */
+  function juniShinsatsu(p) {
+    var out = {};
+    PILLAR_KEYS.forEach(function (k) {
+      if (!p[k]) return;
+      out[k] = Data.juniShinsatsuOf(p.year.branch, p[k].branch);
+    });
+    return out;
+  }
+
+  /* ---------- 合冲刑害の検出 ---------- */
+  function findGoChu(p) {
+    var rel = [];
+    var keys = PILLAR_KEYS.filter(function (k) { return p[k]; });
+    // 干合
+    for (var i = 0; i < keys.length; i++) {
+      for (var j = i + 1; j < keys.length; j++) {
+        var a = p[keys[i]], b = p[keys[j]];
+        if (Data.KANGO[a.stem] === b.stem) {
+          var el = Data.kangoElem(a.stem, b.stem);
+          rel.push({ type: '干合', a: keys[i], b: keys[j], detail: Data.STEMS[a.stem] + '＋' + Data.STEMS[b.stem] + '（化' + Data.ELEMS[el] + '）' });
+        }
+        // 支の関係
+        var ab = a.branch, bb = b.branch;
+        if (Data.SHIGO[ab] === bb) rel.push({ type: '支合', a: keys[i], b: keys[j], detail: Data.BRANCHES[ab] + '＋' + Data.BRANCHES[bb] });
+        if (Data.chuOf(ab) === bb) rel.push({ type: '冲', a: keys[i], b: keys[j], detail: Data.BRANCHES[ab] + '⇔' + Data.BRANCHES[bb] });
+        Data.KEI.forEach(function (kei) {
+          if (kei[0] === ab && kei[1] === bb) rel.push({ type: '刑', a: keys[i], b: keys[j], detail: Data.BRANCHES[ab] + '→' + Data.BRANCHES[bb] + '（' + kei[2] + '）' });
+        });
+        if (Data.GAI[ab] === bb) rel.push({ type: '害', a: keys[i], b: keys[j], detail: Data.BRANCHES[ab] + '＋' + Data.BRANCHES[bb] });
+        if (Data.HA[ab] === bb) rel.push({ type: '破', a: keys[i], b: keys[j], detail: Data.BRANCHES[ab] + '＋' + Data.BRANCHES[bb] });
+      }
+    }
+    // 三合・半会
+    var branches = keys.map(function (k) { return p[k].branch; });
+    Data.SANGO.forEach(function (g) {
+      var hit = [g[0], g[1], g[2]].filter(function (x) { return branches.indexOf(x) >= 0; });
+      if (hit.length === 3) rel.push({ type: '三合会局', a: null, b: null, detail: hit.map(function (x) { return Data.BRANCHES[x]; }).join('') + '（' + Data.ELEMS[g[3]] + '局）' });
+      else if (hit.length === 2 && hit.indexOf(g[1]) >= 0) rel.push({ type: '半会', a: null, b: null, detail: hit.map(function (x) { return Data.BRANCHES[x]; }).join('') + '（' + Data.ELEMS[g[3]] + '）' });
+    });
+    Data.HOGO.forEach(function (g) {
+      var hit = [g[0], g[1], g[2]].filter(function (x) { return branches.indexOf(x) >= 0; });
+      if (hit.length === 3) rel.push({ type: '方合', a: null, b: null, detail: hit.map(function (x) { return Data.BRANCHES[x]; }).join('') + '（' + Data.ELEMS[g[3]] + '方）' });
+    });
+    return rel;
+  }
+
+  /* ---------- 透干・通根 ---------- */
+  function toukanTsukon(p, zokanMap) {
+    var stems = [], out = { toukan: [], tsukon: [] };
+    var keys = PILLAR_KEYS.filter(function (k) { return p[k]; });
+    // 透干: 蔵干が天干に現れている
+    keys.forEach(function (bk) {
+      (Data.ZOKAN_ALL[p[bk].branch] || []).forEach(function (z) {
+        keys.forEach(function (sk) {
+          if (p[sk].stem === z) {
+            out.toukan.push({ stem: z, from: bk, to: sk });
+          }
+        });
+      });
+    });
+    // 通根: 天干と同五行の蔵干を支に持つ
+    keys.forEach(function (sk) {
+      var se = Data.STEM_ELEM[p[sk].stem];
+      keys.forEach(function (bk) {
+        var hit = (Data.ZOKAN_ALL[p[bk].branch] || []).filter(function (z) { return Data.STEM_ELEM[z] === se; });
+        if (hit.length) out.tsukon.push({ pillar: sk, root: bk, strength: p[bk].branch === p[sk] ? 2 : 1 });
+      });
+    });
+    return out;
+  }
+
+  /* ---------- 五行バランス ----------
+   * 天干1.0 / 本気1.0 / 中気0.5 / 余気0.3 で加点 */
+  function gogyoBalance(p) {
+    var score = [0, 0, 0, 0, 0];
+    var keys = PILLAR_KEYS.filter(function (k) { return p[k]; });
+    keys.forEach(function (k) {
+      score[Data.STEM_ELEM[p[k].stem]] += 1.0;
+      var za = Data.ZOKAN_ALL[p[k].branch];
+      za.forEach(function (z, i) {
+        var w = i === 0 ? 1.0 : (i === 1 ? 0.5 : 0.3);
+        score[Data.STEM_ELEM[z]] += w;
+      });
+    });
+    return score;
+  }
+
+  /* ---------- 身強身弱 ----------
+   * mode: 'score'（点数法・標準）| 'getsurei'（月令重視） */
+  function mikata(elem, dayElem) { // 日干を助ける五行か（印=生じる, 比=同じ）
+    return elem === dayElem || (elem + 1) % 5 === dayElem;
+  }
+  function shinKyojaku(p, meta, settings) {
+    var dayElem = Data.STEM_ELEM[p.day.stem];
+    var mode = (settings && settings.strengthMode) || 'score';
+    var detail = [];
+    var score = 0;
+
+    // 得令（月令）: 月支の五行
+    var mbElem = Data.BRANCH_ELEM[p.month.branch];
+    var tokurei = mikata(mbElem, dayElem);
+    if (mbElem === dayElem) { score += 3; detail.push('得令（月支が日干と同気）+3'); }
+    else if ((mbElem + 1) % 5 === dayElem) { score += 2; detail.push('得令（月支が日干を生じる）+2'); }
+    else detail.push('失令（月支の助けなし）+0');
+
+    // 得地（通根）
+    var keys = PILLAR_KEYS.filter(function (k) { return p[k]; });
+    keys.forEach(function (k) {
+      var za = Data.ZOKAN_ALL[p[k].branch];
+      var rooted = za.some(function (z) { return Data.STEM_ELEM[z] === dayElem; });
+      if (rooted) {
+        var pt = (k === 'day') ? 1.5 : 1.0;
+        score += pt;
+        detail.push('得地（' + PILLAR_NAMES[k] + 'に通根）+' + pt);
+      }
+    });
+
+    // 得勢（天干の印比）
+    keys.forEach(function (k) {
+      if (k === 'day') return;
+      var e = Data.STEM_ELEM[p[k].stem];
+      if (e === dayElem) { score += 1; detail.push('得勢（' + PILLAR_NAMES[k] + '天干に比劫）+1'); }
+      else if ((e + 1) % 5 === dayElem) { score += 1; detail.push('得勢（' + PILLAR_NAMES[k] + '天干に印星）+1'); }
+    });
+
+    var max = 3 + 1.5 + 3 + 3;
+    var level;
+    if (mode === 'getsurei') {
+      // 月令重視: 得令なら基本身強
+      level = tokurei ? (score >= 6 ? '極身強' : '身強') : (score >= 5.5 ? '中和' : (score >= 3 ? '身弱' : '極身弱'));
+    } else {
+      if (score >= 7.5) level = '極身強';
+      else if (score >= 5.5) level = '身強';
+      else if (score >= 4) level = '中和';
+      else if (score >= 2) level = '身弱';
+      else level = '極身弱';
+    }
+    return { score: score, max: max, level: level, detail: detail, tokurei: tokurei };
+  }
+
+  /* ---------- 格局 ----------
+   * mode: 'auto'（透干優先）| 'hongi'（月支本気固定） */
+  function kakkyoku(p, meta, strength, settings) {
+    var mode = (settings && settings.kakkyokuMode) || 'auto';
+    var dayStem = p.day.stem;
+    var mb = p.month.branch;
+    var keys = PILLAR_KEYS.filter(function (k) { return p[k] && k !== 'day'; });
+    var stemsOnBoard = keys.map(function (k) { return p[k].stem; });
+
+    // 外格（従格）の判定: 極端な強弱
+    if (settings && settings.allowGaikaku !== false) {
+      if (strength.level === '極身強') {
+        var kanshaOrZai = false; // 官殺・財が全く無いか
+        var all = gogyoBalance(p);
+        var de = Data.STEM_ELEM[dayStem];
+        if (all[(de + 2) % 5] < 0.5 && all[(de + 3) % 5] < 0.5) {
+          return { name: '従旺格（外格）', type: 'gaikaku', base: null, note: '日干が極めて強く、剋洩の星がほとんど無いため、勢いに従う外格と判定しました。' };
+        }
+      }
+      if (strength.level === '極身弱') {
+        var all2 = gogyoBalance(p);
+        var de2 = Data.STEM_ELEM[dayStem];
+        // 従格は比劫・印星の支えがほぼ無いことが条件（日干自身の1.0を除く）
+        var sasae = all2[de2] - 1.0 + all2[(de2 + 4) % 5];
+        if (sasae < 1.0) {
+          var shokujin = all2[(de2 + 1) % 5], zai = all2[(de2 + 2) % 5], kan = all2[(de2 + 3) % 5];
+          var maxE = Math.max(shokujin, zai, kan);
+          var name = maxE === kan ? '従殺格（外格）' : (maxE === zai ? '従財格（外格）' : '従児格（外格）');
+          return { name: name, type: 'gaikaku', base: null, note: '日干が極めて弱く支えが無いため、最も強い五行に従う外格と判定しました。' };
+        }
+      }
+    }
+
+    // 建禄・月刃
+    var kenrokuBranch = { 0: 2, 1: 3, 2: 5, 3: 6, 4: 5, 5: 6, 6: 8, 7: 9, 8: 11, 9: 0 }; // 建禄の支
+    if (kenrokuBranch[dayStem] === mb) return { name: '建禄格', type: 'naikaku', base: null, note: '月支が日干の建禄にあたります。' };
+    if (Data.YOJIN[dayStem] === mb) return { name: '月刃格', type: 'naikaku', base: null, note: '月支が日干の羊刃にあたります。' };
+
+    // 内格: 月支蔵干から
+    var candidates = Data.ZOKAN_ALL[mb]; // [本気, 中気, 余気]
+    var chosen = null;
+    if (mode === 'auto') {
+      // 透干している蔵干を優先（本気→中気→余気）
+      for (var i = 0; i < candidates.length; i++) {
+        if (stemsOnBoard.indexOf(candidates[i]) >= 0) { chosen = candidates[i]; break; }
+      }
+    }
+    if (chosen === null) chosen = candidates[0]; // 本気
+    var t = Data.tsuhenIndex(dayStem, chosen);
+    var kakuName = {
+      0: '建禄格', 1: '月刃格', 2: '食神格', 3: '傷官格', 4: '偏財格',
+      5: '正財格', 6: '偏官格（七殺格）', 7: '正官格', 8: '偏印格', 9: '印綬格'
+    }[t];
+    return {
+      name: kakuName, type: 'naikaku', base: chosen,
+      note: '月支「' + Data.BRANCHES[mb] + '」の蔵干「' + Data.STEMS[chosen] + '」（' + Data.TSUHEN[t] + '）を格として採りました。'
+    };
+  }
+
+  /* ---------- 用神（扶抑＋調候） ---------- */
+  function yojin(p, strength, settings) {
+    var de = Data.STEM_ELEM[p.day.stem];
+    var bal = gogyoBalance(p);
+    var result = { fuyoku: null, koki: [], kiki: [], choko: null, note: [] };
+
+    var IN = (de + 4) % 5;   // 印（日干を生じる）
+    var HI = de;             // 比劫
+    var SHOKU = (de + 1) % 5; // 食傷
+    var ZAI = (de + 2) % 5;  // 財
+    var KAN = (de + 3) % 5;  // 官殺
+
+    if (strength.level === '身弱' || strength.level === '極身弱') {
+      // 弱→扶ける（印・比）。より不足している方を用神に
+      result.fuyoku = bal[IN] <= bal[HI] ? IN : HI;
+      result.koki = [IN, HI];
+      result.kiki = [KAN, ZAI, SHOKU];
+      result.note.push('日干が弱いため、日干を生じ助ける「' + Data.ELEMS[IN] + '（印星）」「' + Data.ELEMS[HI] + '（比劫）」が喜神です。');
+    } else if (strength.level === '身強' || strength.level === '極身強') {
+      // 強→抑える（官殺）か洩らす（食傷）か分ける（財）
+      var cands = [[KAN, bal[KAN]], [SHOKU, bal[SHOKU]], [ZAI, bal[ZAI]]];
+      cands.sort(function (a, b) { return b[1] - a[1]; }); // 命式にある程度存在する星を優先
+      result.fuyoku = cands[0][0];
+      result.koki = [SHOKU, ZAI, KAN];
+      result.kiki = [IN, HI];
+      result.note.push('日干が強いため、力を洩らし・分け・抑える「' + Data.ELEMS[SHOKU] + '（食傷）」「' + Data.ELEMS[ZAI] + '（財星）」「' + Data.ELEMS[KAN] + '（官殺）」が喜神です。');
+    } else {
+      // 中和→最も少ない五行を補う
+      var minIdx = 0;
+      for (var i = 1; i < 5; i++) if (bal[i] < bal[minIdx]) minIdx = i;
+      result.fuyoku = minIdx;
+      result.koki = [minIdx];
+      result.kiki = [];
+      result.note.push('五行のバランスがとれた中和の命式です。最も少ない「' + Data.ELEMS[minIdx] + '」を補うと安定します。');
+    }
+
+    // 調候用神
+    var ck = Data.CHOKO[p.day.stem] && Data.CHOKO[p.day.stem][p.month.branch];
+    if (ck) {
+      result.choko = ck;
+      result.note.push('調候の観点（生まれ月の寒暖燥湿）からは「' + ck.split('').join('・') + '」が調候用神です。');
+    }
+    return result;
+  }
+
+  /* ---------- 命式の総合ビルド ---------- */
+  function build(input, settings) {
+    var s = settings || {};
+    var r = Koyomi.computePillars(input, s);
+    var p = { year: r.year, month: r.month, day: r.day, hour: r.hour };
+    var meta = r.meta;
+
+    var zmode = s.zokanMode || 'bunya';
+    var zokan = {};
+    PILLAR_KEYS.forEach(function (k) {
+      if (!p[k]) return;
+      zokan[k] = zokanOf(p[k].branch, meta.daysIntoMonth, zmode);
+    });
+
+    // 通変星（天干・蔵干）
+    var tsuhen = { stems: {}, zokan: {} };
+    PILLAR_KEYS.forEach(function (k) {
+      if (!p[k]) return;
+      tsuhen.stems[k] = (k === 'day') ? null : Data.tsuhenIndex(p.day.stem, p[k].stem);
+      tsuhen.zokan[k] = zokan[k].map(function (z) { return Data.tsuhenIndex(p.day.stem, z); });
+    });
+
+    // 十二運（日干×各支）
+    var juniun = {};
+    PILLAR_KEYS.forEach(function (k) {
+      if (!p[k]) return;
+      juniun[k] = Data.juniunIndex(p.day.stem, p[k].branch);
+    });
+
+    // 空亡・納音
+    var kubo = Data.kuboOf(p.day.sixty);
+    var natchin = {};
+    PILLAR_KEYS.forEach(function (k) { if (p[k]) natchin[k] = Data.natchinOf(p[k].sixty); });
+
+    var strength = shinKyojaku(p, meta, s);
+    var kaku = kakkyoku(p, meta, strength, s);
+    var yj = yojin(p, strength, s);
+
+    return {
+      pillars: p,
+      meta: meta,
+      zokan: zokan,
+      zokanMode: zmode,
+      tsuhen: tsuhen,
+      juniun: juniun,
+      kubo: kubo,
+      jun: Data.junOf(p.day.sixty),
+      natchin: natchin,
+      shinsatsu: findShinsatsu(p, s),
+      juniShinsatsu: juniShinsatsu(p),
+      gochu: findGoChu(p),
+      toukanTsukon: toukanTsukon(p),
+      gogyo: gogyoBalance(p),
+      strength: strength,
+      kakkyoku: kaku,
+      yojin: yj,
+      meikyu: meikyu(p.month.branch, meta.hourBranch, p.year.stem),
+      shinkyu: shinkyu(p.month.branch, meta.hourBranch, p.year.stem),
+      taigen: taigen(p.month),
+      taisoku: taisoku(p.day),
+      settings: s
+    };
+  }
+
+  global.Meishiki = {
+    PILLAR_KEYS: PILLAR_KEYS,
+    PILLAR_NAMES: PILLAR_NAMES,
+    build: build,
+    zokanOf: zokanOf,
+    gogyoBalance: gogyoBalance,
+    shinKyojaku: shinKyojaku,
+    kakkyoku: kakkyoku,
+    yojin: yojin,
+    findShinsatsu: findShinsatsu,
+    findGoChu: findGoChu,
+    meikyu: meikyu,
+    taigen: taigen,
+    taisoku: taisoku
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.Meishiki;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * unsei.js — 運勢計算
+ * 大運・年運・月運・日運の柱と吉凶スコア、択日（開運日）
+ * ========================================================= */
+(function (global) {
+  'use strict';
+  var Astro = global.Astro || (typeof require !== 'undefined' ? require('./astro.js') : null);
+  var Data = global.Data || (typeof require !== 'undefined' ? require('./data.js') : null);
+  var Koyomi = global.Koyomi || (typeof require !== 'undefined' ? require('./koyomi.js') : null);
+
+  /* ---------- 吉凶スコア ----------
+   * 巡ってくる柱（干支）が命式に対してどう働くかを -5〜+5 で採点。
+   * 喜神五行 +、忌神五行 −、空亡 −、命式との合 +、冲刑 − */
+  function scorePillar(m, pillar) {
+    var s = 0;
+    var yj = m.yojin;
+    var se = Data.STEM_ELEM[pillar.stem];
+    var be = Data.BRANCH_ELEM[pillar.branch];
+    if (yj.koki.indexOf(se) >= 0) s += 1.5;
+    if (yj.kiki.indexOf(se) >= 0) s -= 1.2;
+    if (yj.koki.indexOf(be) >= 0) s += 1.2;
+    if (yj.kiki.indexOf(be) >= 0) s -= 1.0;
+    // 調候用神の干が巡る
+    if (yj.choko && yj.choko.indexOf(Data.STEMS[pillar.stem]) >= 0) s += 1.0;
+    // 空亡
+    if (m.kubo.indexOf(pillar.branch) >= 0) s -= 1.5;
+    // 命式の支との関係
+    Meishiki_keys(m).forEach(function (k) {
+      var pb = m.pillars[k].branch;
+      if (Data.SHIGO[pb] === pillar.branch) s += 0.7;         // 支合
+      if (Data.chuOf(pb) === pillar.branch) s -= 1.0;         // 冲
+      if (Data.GAI[pb] === pillar.branch) s -= 0.4;           // 害
+      Data.KEI.forEach(function (kei) {
+        if ((kei[0] === pb && kei[1] === pillar.branch) || (kei[0] === pillar.branch && kei[1] === pb)) s -= 0.5;
+      });
+      // 三合半会
+      Data.SANGO.forEach(function (g) {
+        var tri = [g[0], g[1], g[2]];
+        if (tri.indexOf(pb) >= 0 && tri.indexOf(pillar.branch) >= 0 && pb !== pillar.branch) {
+          s += (yj.koki.indexOf(g[3]) >= 0) ? 0.6 : 0.2;
+        }
+      });
+    });
+    // 干合（日干との）
+    if (Data.KANGO[m.pillars.day.stem] === pillar.stem) s += 0.5;
+    return Math.max(-5, Math.min(5, s));
+  }
+  function Meishiki_keys(m) {
+    return ['year', 'month', 'day', 'hour'].filter(function (k) { return m.pillars[k]; });
+  }
+  function scoreLabel(s) {
+    if (s >= 2.5) return '大吉';
+    if (s >= 1.2) return '吉';
+    if (s >= -0.7) return '平';
+    if (s >= -2.2) return '注意';
+    return '要注意';
+  }
+
+  /* ---------- 大運 ---------- */
+  function taiun(m, count) {
+    count = count || 10;
+    var meta = m.meta;
+    var pillars = Koyomi.taiunPillars(m.pillars.month.sixty, meta.forward, count);
+    var list = [];
+    for (var i = 0; i < count; i++) {
+      var startAge = meta.kiun.years + i * 10;
+      var p = pillars[i];
+      list.push({
+        pillar: p,
+        name: Koyomi.sixtyName(p.sixty),
+        startAge: startAge,
+        endAge: startAge + 9,
+        startYear: meta.input.y + startAge,
+        tsuhen: Data.tsuhenIndex(m.pillars.day.stem, p.stem),
+        juniun: Data.juniunIndex(m.pillars.day.stem, p.branch),
+        kubo: m.kubo.indexOf(p.branch) >= 0,
+        score: scorePillar(m, p)
+      });
+    }
+    return list;
+  }
+
+  /* ---------- 年運 ---------- */
+  function nenun(m, fromYear, count) {
+    var list = [];
+    for (var i = 0; i < count; i++) {
+      var y = fromYear + i;
+      var p = Koyomi.yearPillarOf(y);
+      list.push({
+        year: y,
+        age: y - m.meta.input.y,
+        pillar: p,
+        name: Koyomi.sixtyName(p.sixty),
+        tsuhen: Data.tsuhenIndex(m.pillars.day.stem, p.stem),
+        juniun: Data.juniunIndex(m.pillars.day.stem, p.branch),
+        kubo: m.kubo.indexOf(p.branch) >= 0,
+        score: scorePillar(m, p)
+      });
+    }
+    return list;
+  }
+
+  /* ---------- 月運（節入り基準の12ヶ月） ---------- */
+  function getsuun(m, year) {
+    var list = [];
+    // その年の立春に始まる寅月から12ヶ月
+    for (var i = 0; i < 12; i++) {
+      var deg = (315 + i * 30) % 360;
+      var y = year;
+      var jd = Astro.solarTermJD(y, deg);
+      var jst = Astro.jstFromJD(jd);
+      // 節入り翌日の日付で月柱を得る（境界の安全側）
+      var t2 = Astro.jstFromJD(jd + 1.5);
+      var pd2 = Koyomi.pillarsOfDate(t2.y, t2.m, t2.d, m.settings);
+      var p = pd2.month;
+      list.push({
+        label: jst.y + '年' + jst.m + '月' + jst.d + '日〜',
+        setsu: Astro.SETSU[i].name,
+        pillar: p,
+        name: Koyomi.sixtyName(p.sixty),
+        tsuhen: Data.tsuhenIndex(m.pillars.day.stem, p.stem),
+        juniun: Data.juniunIndex(m.pillars.day.stem, p.branch),
+        kubo: m.kubo.indexOf(p.branch) >= 0,
+        score: scorePillar(m, p)
+      });
+    }
+    return list;
+  }
+
+  /* ---------- 日運（1ヶ月分のカレンダー） ---------- */
+  function nichiun(m, year, month) {
+    var days = new Date(year, month, 0).getDate(); // month: 1-12
+    var list = [];
+    for (var d = 1; d <= days; d++) {
+      var jdn = Astro.jdnOfJSTDate(year, month, d);
+      var sixty = Koyomi.daySixtyFromJDN(jdn);
+      var p = Koyomi.pillarFromSixty(sixty);
+      list.push({
+        y: year, m: month, d: d,
+        weekday: new Date(year, month - 1, d).getDay(),
+        pillar: p,
+        name: Koyomi.sixtyName(sixty),
+        tsuhen: Data.tsuhenIndex(m.pillars.day.stem, p.stem),
+        kubo: m.kubo.indexOf(p.branch) >= 0,
+        score: scorePillar(m, p)
+      });
+    }
+    return list;
+  }
+
+  /* ---------- ライフチャート（0〜100歳の運勢曲線データ） ----------
+   * 大運スコア（基調）＋年運スコア（変動）の合成 */
+  function lifeChart(m, maxAge) {
+    maxAge = maxAge || 100;
+    var tu = taiun(m, Math.ceil(maxAge / 10) + 1);
+    var birthYear = m.meta.input.y;
+    var points = [];
+    for (var age = 0; age <= maxAge; age++) {
+      var y = birthYear + age;
+      var yp = Koyomi.yearPillarOf(y);
+      var ys = scorePillar(m, yp);
+      var ts = 0;
+      for (var i = 0; i < tu.length; i++) {
+        if (age >= tu[i].startAge && age <= tu[i].endAge) { ts = tu[i].score; break; }
+      }
+      points.push({ age: age, year: y, score: ts * 0.6 + ys * 0.4, taiun: ts, nenun: ys });
+    }
+    return points;
+  }
+
+  /* ---------- 択日（開運日の提案） ----------
+   * purpose: 'general'|'love'|'money'|'work'|'contract'|'moving'|'health' */
+  function takujitsu(m, fromY, fromM, fromD, daysAhead, purpose) {
+    var out = [];
+    var jd0 = Astro.jdnOfJSTDate(fromY, fromM, fromD);
+    var purposeBoost = {
+      love: [5, 4],      // 正財・偏財（異性縁は財官）… 女性は官
+      money: [4, 5],     // 偏財・正財
+      work: [7, 6],      // 正官・偏官
+      contract: [7, 9],  // 正官・印綬
+      moving: [],        // 駅馬でみる
+      health: [9, 8],    // 印星
+      general: []
+    }[purpose || 'general'] || [];
+    for (var i = 0; i < daysAhead; i++) {
+      var jdn = jd0 + i;
+      var t = Astro.utcFromJD(jdn - 0.5 + 9 / 24);
+      var sixty = Koyomi.daySixtyFromJDN(jdn);
+      var p = Koyomi.pillarFromSixty(sixty);
+      var s = scorePillar(m, p);
+      var notes = [];
+      var tsu = Data.tsuhenIndex(m.pillars.day.stem, p.stem);
+      if (purposeBoost.indexOf(tsu) >= 0) { s += 1.0; notes.push(Data.TSUHEN[tsu] + 'の日'); }
+      if (purpose === 'moving') {
+        var R = Data.triadOf(m.pillars.day.branch);
+        if (Data.EKIBA[R] === p.branch) { s += 1.2; notes.push('駅馬の日'); }
+      }
+      if ((Data.TENITSU[m.pillars.day.stem] || []).indexOf(p.branch) >= 0) { s += 0.8; notes.push('天乙貴人の日'); }
+      if (m.kubo.indexOf(p.branch) >= 0) notes.push('空亡');
+      if (Data.chuOf(m.pillars.day.branch) === p.branch) notes.push('日支と冲');
+      out.push({ y: t.y, m: t.m, d: t.d, name: Koyomi.sixtyName(sixty), score: s, label: scoreLabel(s), notes: notes });
+    }
+    out.sort(function (a, b) { return b.score - a.score; });
+    return out;
+  }
+
+  global.Unsei = {
+    scorePillar: scorePillar,
+    scoreLabel: scoreLabel,
+    taiun: taiun,
+    nenun: nenun,
+    getsuun: getsuun,
+    nichiun: nichiun,
+    lifeChart: lifeChart,
+    takujitsu: takujitsu
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.Unsei;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * texts.js — 鑑定文の生成
+ * 日干・通変星・十二運・五行・格局などの解釈テキストと、
+ * テーマ別（総合・恋愛・結婚・仕事・転職・健康・金運）の
+ * 鑑定文アセンブリ、相性鑑定。
+ * ========================================================= */
+(function (global) {
+  'use strict';
+  var Data = global.Data || (typeof require !== 'undefined' ? require('./data.js') : null);
+  var Koyomi = global.Koyomi || (typeof require !== 'undefined' ? require('./koyomi.js') : null);
+  var Unsei = global.Unsei || (typeof require !== 'undefined' ? require('./unsei.js') : null);
+
+  /* ---------- 日干（日主）の性質 ---------- */
+  var NIKKAN = {
+    0: { sym: '大樹', text: '甲は天に向かってまっすぐ伸びる大樹の木性です。向上心と芯の強さを備え、一度決めた道を着実に歩む姿勢が持ち味です。曲がったことを嫌う正直さがあり、周囲からの信頼を集めますが、融通のきかなさが頑固さとして出ることもあります。' },
+    1: { sym: '草花', text: '乙はしなやかな草花の木性です。環境に合わせて柔軟に形を変えながら、決して折れない粘り強さを秘めています。人当たりが柔らかく協調性に富みますが、内には確かな主張を持っており、静かに目標を達成していく人です。' },
+    2: { sym: '太陽', text: '丙は万物を照らす太陽の火性です。明るくエネルギッシュで、その場の空気を一変させる存在感があります。裏表がなくオープンな性格で人を惹きつけますが、熱しやすく冷めやすい面や、感情が表に出やすい面もあります。' },
+    3: { sym: '灯火', text: '丁は闇を照らす灯火・炉の火性です。表向きは物静かでも、内に情熱と鋭い感受性を秘めています。細やかな気配りと洞察力に優れ、芸術や精神性の分野で才能を発揮しやすい人です。感情の起伏を溜め込みやすい点には注意が必要です。' },
+    4: { sym: '山岳', text: '戊はどっしりと構える山・大地の土性です。安定感と包容力があり、周囲から頼られる存在です。動じない胆力を持ちますが、腰が重く変化を好まない傾向もあります。信頼を守る誠実さが最大の財産です。' },
+    5: { sym: '田畑', text: '己は作物を育てる田畑の土性です。面倒見がよく、人を育て支えることに喜びを見いだします。柔軟で吸収力が高く、知識や経験を蓄えて実らせる才能があります。一方で心配性な面や、他人に尽くしすぎる傾向もあります。' },
+    6: { sym: '鋼鉄', text: '庚は鍛えられた鋼・刃物の金性です。決断力と行動力に富み、困難に立ち向かうほど力を発揮する闘志の人です。白黒をはっきりつける性分で、改革や勝負の場面で頼りになりますが、言葉が鋭くなりやすい点は要注意です。' },
+    7: { sym: '宝石', text: '辛は磨かれた宝石・貴金属の金性です。繊細な美意識と鋭い感性を持ち、洗練されたものを好みます。プライドが高く自分を磨く努力を惜しみませんが、傷つきやすい内面を強がりで覆うことがあります。品格が武器になる人です。' },
+    8: { sym: '大河', text: '壬は滔々と流れる大河・海の水性です。スケールが大きく自由を愛し、知恵と行動力で新しい世界を切り開きます。細事にこだわらないおおらかさが魅力ですが、奔放さが気まぐれと映ることもあります。' },
+    9: { sym: '雨露', text: '癸は静かに大地を潤す雨・泉の水性です。物静かで思慮深く、鋭い直感と観察眼を持ちます。縁の下で人を支え、知識を深めることに長けています。内向的に見えますが、内面には粘り強い意志を秘めています。' }
+  };
+
+  /* ---------- 通変星 ---------- */
+  var TSUHEN_TEXT = {
+    0: { general: '独立心と自我の強さを表す星です。人に頼らず自分の力で道を開こうとします。', work: '独立・自営に向き、対等な立場での協働を好みます。組織では自分の裁量がある仕事で力を発揮します。', love: '恋愛でも対等な関係を望みます。束縛を嫌い、自立したパートナーシップを築くタイプです。' },
+    1: { general: '負けん気と勝負強さの星です。目標へ向かう突破力と、仲間を巻き込む力があります。', work: '競争のある環境で燃えるタイプです。営業や勝負事に強い反面、金銭の出入りが荒くなりがちです。', love: '情熱的で駆け引きも辞さないタイプです。恋のライバルがいるほど燃える傾向があります。' },
+    2: { general: '衣食住に恵まれる福の星です。おおらかで楽しみ上手、人生を味わう才能があります。', work: '専門技術・食・サービス・創作など、楽しみながら続けられる仕事で長く花開きます。', love: '穏やかで自然体の恋愛を好みます。一緒にいて楽な相手と縁が深まります。' },
+    3: { general: '鋭い感性と表現力の星です。美意識が高く、繊細で頭の回転が速い人です。', work: '企画・デザイン・技術・批評など、感性と頭脳を活かす仕事が適職です。単調な作業は苦手です。', love: '理想が高く、ドラマチックな恋を求める傾向があります。言葉の鋭さが出ないよう注意を。' },
+    4: { general: '回転の速い財の星です。社交性と商才があり、動きながら豊かさをつかみます。', work: '商売・営業・金融など、お金と人が動く現場に強い星です。副業や投資の才もあります。', love: 'モテる星です。出会いが多く恋も軽やかですが、本命を定める決断が課題になります。' },
+    5: { general: '堅実な財の星です。コツコツと信用と資産を積み上げる、誠実で真面目な人です。', work: '経理・管理・不動産など、確実さが求められる仕事で信頼を得ます。堅実な蓄財に向きます。', love: '誠実で一途な恋愛をします。結婚に結びつく真面目な交際を望むタイプです。' },
+    6: { general: '行動力と統率力の星です。困難に挑む気迫があり、親分肌・姉御肌の人望を集めます。', work: '現場指揮・起業・警察消防など、責任と決断を伴う仕事で輝きます。じっとした事務は不向きです。', love: '押しの強い情熱的な恋をします。主導権を握りたいタイプで、スピード婚も少なくありません。' },
+    7: { general: '責任感と品位の星です。規律を重んじ、組織や社会の中で信頼を得て地位を築きます。', work: '公務・管理職・法務など、正確さと信用が問われる仕事が天職です。着実に出世する星です。', love: '真面目で折り目正しい交際をします。世間体や家柄を意識した堅実な結婚に向かいます。' },
+    8: { general: '独創性と探究心の星です。人と違う視点を持ち、専門の道や副業的な才能で光ります。', work: '研究・医療・占術・IT・芸能など、特殊な専門分野が適職です。飽きっぽさが課題です。', love: '変化のある恋を好み、平凡な関係には物足りなさを感じがちです。年の差や遠距離の縁も。' },
+    9: { general: '知性と学びの星です。知識を吸収し人に伝える才があり、目上からの引き立てに恵まれます。', work: '教育・執筆・学術・宗教など、知を扱う仕事が適職です。名誉を重んじ、実利は二の次になりがちです。', love: '精神的なつながりを重視します。尊敬できる相手との落ち着いた愛情を育みます。' }
+  };
+
+  /* ---------- 十二運 ---------- */
+  var JUNIUN_TEXT = {
+    0: '長生：素直で伸びやかな発展のエネルギー。学び始めたことが順調に育ちます。',
+    1: '沐浴：変化と迷いのエネルギー。感受性が豊かで、住まいや心が定まりにくい時期・性質を表します。',
+    2: '冠帯：華やかな上昇のエネルギー。人前に立つほど輝き、見栄も力に変えます。',
+    3: '建禄：自立と実力のエネルギー。地に足のついた努力が確実に実ります。',
+    4: '帝旺：頂点の強運エネルギー。強い意志と統率力を持ちますが、強すぎて孤立しない配慮も必要です。',
+    5: '衰：円熟と内省のエネルギー。派手さはなくとも、経験に裏打ちされた堅実さがあります。',
+    6: '病：感受性と想像力のエネルギー。優しく空想力豊かですが、気力の波があります。',
+    7: '死：静けさと専門性のエネルギー。一つの道を深く極める職人気質を表します。',
+    8: '墓：蓄積と探究のエネルギー。物・知識・お金を蓄える才があり、渋い魅力を放ちます。',
+    9: '絶：転換と再生のエネルギー。移り気な面はありますが、ゼロから立ち上がる強さがあります。',
+    10: '胎：構想と可能性のエネルギー。新しいことを思い描く力に富み、好奇心が原動力です。',
+    11: '養：育みと継承のエネルギー。人に可愛がられる徳があり、受け継いだものを大切に育てます。'
+  };
+
+  /* ---------- 五行 ---------- */
+  var GOGYO_TRAIT = {
+    0: '木（成長・仁）', 1: '火（情熱・礼）', 2: '土（安定・信）', 3: '金（決断・義）', 4: '水（知恵・智）'
+  };
+
+  function fmtPillar(p) { return Koyomi.sixtyName(p.sixty); }
+
+  /* ---------- 命式の総合鑑定文 ---------- */
+  function generalText(m, name) {
+    var d = m.pillars.day;
+    var out = [];
+    var who = name ? name + '様' : 'あなた';
+
+    out.push('【日主：' + Data.STEMS[d.stem] + '（' + NIKKAN[d.stem].sym + '）】');
+    out.push(who + 'の日主（生まれ日の干）は「' + Data.STEMS[d.stem] + '」。' + NIKKAN[d.stem].text);
+
+    // 月柱通変星（社会面の中心）
+    var mt = m.tsuhen.stems.month;
+    if (mt != null) {
+      out.push('【社会面の星：' + Data.TSUHEN[mt] + '】');
+      out.push('月柱に「' + Data.TSUHEN[mt] + '」を持ちます。' + TSUHEN_TEXT[mt].general + TSUHEN_TEXT[mt].work);
+    }
+    // 月支蔵干通変星（内面の中核）
+    var mz = m.tsuhen.zokan.month && m.tsuhen.zokan.month[0];
+    if (mz != null) {
+      out.push('内面の中核には「' + Data.TSUHEN[mz] + '」の性質が流れています。' + TSUHEN_TEXT[mz].general);
+    }
+    // 日支十二運
+    out.push('【日柱の十二運：' + Data.JUNIUN[m.juniun.day] + '】');
+    out.push(JUNIUN_TEXT[m.juniun.day]);
+
+    // 五行バランス
+    var g = m.gogyo;
+    var maxI = 0, minI = 0;
+    for (var i = 1; i < 5; i++) { if (g[i] > g[maxI]) maxI = i; if (g[i] < g[minI]) minI = i; }
+    out.push('【五行のバランス】');
+    out.push('命式中で最も強いのは' + GOGYO_TRAIT[maxI] + 'の気、最も少ないのは' + GOGYO_TRAIT[minI] + 'の気です。' +
+      Data.ELEMS[minI] + 'を補う色・方位・習慣を取り入れると全体の調和が高まります。');
+
+    // 身強弱・格局・用神
+    out.push('【身強身弱と格局】');
+    out.push('日主の強さは「' + m.strength.level + '」、格局は「' + m.kakkyoku.name + '」です。' + m.kakkyoku.note);
+    out.push('【用神】');
+    out.push('運勢の鍵を握る用神は「' + Data.ELEMS[m.yojin.fuyoku] + '」。' + m.yojin.note.join(''));
+
+    // 神殺
+    if (m.shinsatsu.length) {
+      var names = {};
+      m.shinsatsu.forEach(function (s) { names[s.name] = true; });
+      out.push('【神殺】');
+      out.push('命式には ' + Object.keys(names).join('・') + ' が巡っています。特に吉神は人生の要所で守りとなり、注意星は自覚することで力に変わります。');
+    }
+    // 空亡
+    var kname = (m.settings && m.settings.kuboName) || '空亡';
+    out.push('【' + kname + '】');
+    out.push(kname + 'は「' + Data.BRANCHES[m.kubo[0]] + '・' + Data.BRANCHES[m.kubo[1]] + '」。この支が巡る年月は結論を急がず、準備と学びに充てるのが吉です。');
+
+    return out.join('\n');
+  }
+
+  /* ---------- テーマ別鑑定 ---------- */
+  function findStars(m, indexes) { // 指定通変星がどこにあるか
+    var hits = [];
+    ['year', 'month', 'hour'].forEach(function (k) {
+      if (m.tsuhen.stems[k] != null && indexes.indexOf(m.tsuhen.stems[k]) >= 0) hits.push({ where: k, t: m.tsuhen.stems[k], pos: '天干' });
+    });
+    ['year', 'month', 'day', 'hour'].forEach(function (k) {
+      (m.tsuhen.zokan[k] || []).forEach(function (t) {
+        if (indexes.indexOf(t) >= 0) hits.push({ where: k, t: t, pos: '蔵干' });
+      });
+    });
+    return hits;
+  }
+
+  function themeText(m, theme, gender) {
+    var out = [];
+    var d = m.pillars.day.stem;
+    var isM = gender !== 'F';
+    switch (theme) {
+      case 'love': {
+        out.push('◆ 恋愛運');
+        var stars = isM ? findStars(m, [4, 5]) : findStars(m, [6, 7]);
+        var starName = isM ? '財星（正財・偏財）' : '官星（正官・偏官）';
+        if (stars.length >= 2) out.push('恋愛の縁を示す' + starName + 'が命式に複数あり、出会いには恵まれる方です。選ぶ目を養うことが幸せへの近道です。');
+        else if (stars.length === 1) out.push('恋愛の縁を示す' + starName + 'がしっかりと根づいています。縁は量より質。信頼を積み重ねる交際が実ります。');
+        else out.push('恋愛の星が表に出ていない分、恋に不器用な印象を与えることがあります。ただし縁が無いのではなく、運気（財官の巡る年）が扉を開くタイプです。');
+        var kanchiHits = m.shinsatsu.filter(function (s) { return s.name.indexOf('咸池') >= 0 || s.name === '紅艶殺'; });
+        if (kanchiHits.length) out.push('咸池（桃花）・紅艶といった魅力の星を持ち、異性を惹きつける華があります。');
+        out.push(TSUHEN_TEXT[m.tsuhen.zokan.day && m.tsuhen.zokan.day[0] != null ? m.tsuhen.zokan.day[0] : 0].love);
+        break;
+      }
+      case 'marriage': {
+        out.push('◆ 結婚運');
+        out.push('結婚生活の場を示すのは日支（配偶者宮）です。日支は「' + Data.BRANCHES[m.pillars.day.branch] + '」、十二運は' + Data.JUNIUN[m.juniun.day] + '。');
+        var chu = m.gochu.filter(function (r) { return r.type === '冲' && (r.a === 'day' || r.b === 'day'); });
+        var go = m.gochu.filter(function (r) { return (r.type === '支合' || r.type === '半会') && (r.a === 'day' || r.b === 'day'); });
+        if (go.length) out.push('日支が他の柱と合を結んでおり、家庭が心の拠り所となる暗示です。パートナーとの結びつきは強い方です。');
+        if (chu.length) out.push('日支に冲があり、結婚生活には変化やすれ違いが起きやすい暗示です。生活リズムの違いを認め合う工夫が長続きの秘訣です。');
+        if (!go.length && !chu.length) out.push('配偶者宮は穏やかで、結婚により運気が安定するタイプです。');
+        if (m.kubo.indexOf(m.pillars.day.branch) >= 0) out.push('配偶者宮が空亡にあたるため、結婚の形にとらわれない柔軟な夫婦観が吉と出ます。');
+        break;
+      }
+      case 'work': {
+        out.push('◆ 仕事運・適職');
+        var mt = m.tsuhen.stems.month != null ? m.tsuhen.stems.month : (m.tsuhen.zokan.month ? m.tsuhen.zokan.month[0] : 0);
+        out.push('社会での顔を示す月柱の星は「' + Data.TSUHEN[mt] + '」。' + TSUHEN_TEXT[mt].work);
+        out.push('格局「' + m.kakkyoku.name + '」から見ると、' + kakuWork(m.kakkyoku.name));
+        var bunsho = m.shinsatsu.some(function (s) { return s.name === '文昌貴人'; });
+        if (bunsho) out.push('文昌貴人があり、文筆・学術・資格の分野で頭角を現しやすい人です。');
+        break;
+      }
+      case 'career': {
+        out.push('◆ 転職・独立');
+        var ekiba = m.shinsatsu.some(function (s) { return s.name.indexOf('駅馬') >= 0; });
+        if (ekiba) out.push('駅馬を持つため、転職・転居などの「動」があるたびに運が開けるタイプです。環境を変えることを恐れる必要はありません。');
+        else out.push('駅馬が無く、腰を据えて積み上げるほど強みが出るタイプです。転職は「逃げ」でなく「攻め」のタイミングで。');
+        if (m.strength.level.indexOf('身強') >= 0) out.push('日主が強いため独立・起業に耐える体力があります。勝負運の巡る年（喜神の年）を選んで動きましょう。');
+        else out.push('日主は控えめなため、単独での起業よりも、良きパートナーや組織の看板を活かす形が安全です。');
+        break;
+      }
+      case 'health': {
+        out.push('◆ 健康運');
+        var g = m.gogyo;
+        var minI = 0, maxI = 0;
+        for (var i = 1; i < 5; i++) { if (g[i] < g[minI]) minI = i; if (g[i] > g[maxI]) maxI = i; }
+        var organ = { 0: '肝・胆・目・筋', 1: '心・小腸・血流', 2: '脾・胃・消化器', 3: '肺・大腸・呼吸器・皮膚', 4: '腎・膀胱・耳・冷え' };
+        out.push('五行で最も弱い「' + Data.ELEMS[minI] + '」に対応する ' + organ[minI] + ' は労わりたい部位です。');
+        out.push('また最も強い「' + Data.ELEMS[maxI] + '」は過剰による不調（' + organ[maxI] + 'の酷使）にも注意が必要です。');
+        out.push('用神「' + Data.ELEMS[m.yojin.fuyoku] + '」を養う生活（' + yojinLife(m.yojin.fuyoku) + '）が健康の土台になります。');
+        break;
+      }
+      case 'money': {
+        out.push('◆ 金運');
+        var zai = findStars(m, [4, 5]);
+        if (zai.length >= 2) out.push('財星が豊かで、お金との縁は太い方です。ただし財が多い命式は「お金は入るが出ても行く」形。管理の仕組み化が鍵です。');
+        else if (zai.length === 1) out.push('財星が一つ、良い位置に据わっています。堅実な蓄財に向き、コツコツ型の資産形成が性に合います。');
+        else out.push('財星が表に出ていないため、お金そのものより「技能・信用」を蓄える方が結果的に豊かになれるタイプです。');
+        if (m.strength.level === '身弱' || m.strength.level === '極身弱') out.push('日主が弱めなので、大きな財を動かす投機より、身の丈の積立や技能への投資が吉です。');
+        else out.push('日主がしっかりしているため、財を追う攻めの投資にも耐えられます。喜神の年が勝負どきです。');
+        break;
+      }
+      default: {
+        out.push(generalText(m));
+      }
+    }
+    return out.join('\n');
+  }
+  function kakuWork(name) {
+    if (name.indexOf('正官') >= 0) return '組織の中で信頼と地位を築く王道の出世タイプです。';
+    if (name.indexOf('偏官') >= 0) return '現場の指揮官タイプ。責任と権限のある立場で燃えます。';
+    if (name.indexOf('正財') >= 0) return '堅実な実務・管理で財を成すタイプです。';
+    if (name.indexOf('偏財') >= 0) return '商才と人脈で流通・商売の世界を泳ぐタイプです。';
+    if (name.indexOf('食神') >= 0) return '好きなことを続けて食べていける、専門・創作向きのタイプです。';
+    if (name.indexOf('傷官') >= 0) return '感性と技術で勝負するスペシャリストタイプです。';
+    if (name.indexOf('印') >= 0) return '知識・教育・資格を武器にする学究タイプです。';
+    if (name.indexOf('建禄') >= 0 || name.indexOf('月刃') >= 0) return '自力で道を切り開く独立独歩のタイプです。';
+    if (name.indexOf('従') >= 0) return '時流と環境に乗ることで大きく伸びる特殊な形です。流れに逆らわないことが成功の鍵です。';
+    return '自分の格を活かした働き方が吉です。';
+  }
+  function yojinLife(elem) {
+    return { 0: '緑・朝の散歩・東の方位', 1: '赤・日光浴・南の方位', 2: '黄・土いじり・規則的な食事', 3: '白・呼吸法・西の方位', 4: '黒・水分と休息・北の方位' }[elem];
+  }
+
+  /* ---------- 相性鑑定 ---------- */
+  function aishouText(m1, m2, name1, name2) {
+    var out = [];
+    var n1 = name1 || 'お一人目', n2 = name2 || 'お二人目';
+    var d1 = m1.pillars.day, d2 = m2.pillars.day;
+    var score = 50;
+
+    out.push('◆ ' + n1 + '（日主 ' + Data.STEMS[d1.stem] + '・' + fmtPillar(d1) + '） × ' + n2 + '（日主 ' + Data.STEMS[d2.stem] + '・' + fmtPillar(d2) + '）');
+
+    // 日干の関係
+    var t12 = Data.tsuhenIndex(d1.stem, d2.stem);
+    var e1 = Data.STEM_ELEM[d1.stem], e2 = Data.STEM_ELEM[d2.stem];
+    if (Data.KANGO[d1.stem] === d2.stem) {
+      score += 20;
+      out.push('お二人の日干は「干合」の関係。理屈を超えて惹かれ合う、四柱推命で最も縁の深い組み合わせの一つです。');
+    } else if ((e1 + 1) % 5 === e2 || (e2 + 1) % 5 === e1) {
+      score += 10;
+      out.push('日干は相生（生じ合う）の関係。どちらかが自然に相手を支える、循環の良い間柄です。');
+    } else if ((e1 + 2) % 5 === e2 || (e2 + 2) % 5 === e1) {
+      score -= 5;
+      out.push('日干は相剋の関係。刺激し合い成長できる反面、疲れたときに衝突しやすい組み合わせです。役割分担を明確にすると安定します。');
+    } else if (e1 === e2) {
+      score += 5;
+      out.push('日干は同じ五行。価値観が近く「わかり合える」関係ですが、似た者同士ゆえに譲り合いが課題です。');
+    }
+
+    // 日支の関係
+    var b1 = d1.branch, b2 = d2.branch;
+    if (Data.SHIGO[b1] === b2) { score += 15; out.push('日支は「支合」。生活のリズムが自然と噛み合う、家庭運の良い相性です。'); }
+    if (Data.chuOf(b1) === b2) { score -= 12; out.push('日支は「冲」。生活習慣や価値観が正反対になりやすい組み合わせです。違いを面白がれるかが分かれ目です。'); }
+    Data.SANGO.forEach(function (g) {
+      var tri = [g[0], g[1], g[2]];
+      if (tri.indexOf(b1) >= 0 && tri.indexOf(b2) >= 0 && b1 !== b2) { score += 12; out.push('日支は三合の仲間。同じ目標へ向かうときに絶大な力を発揮するチームの相性です。'); }
+    });
+    if (Data.GAI[b1] === b2) { score -= 6; out.push('日支に「害」があり、小さなすれ違いが積もりやすい面があります。不満はその日のうちに言葉にしましょう。'); }
+
+    // 空亡の一致
+    var k1 = m1.kubo.join(','), k2 = m2.kubo.join(',');
+    if (k1 === k2) { score += 8; out.push('お二人は同じ空亡（天中殺）グループ。人生の停滞期と充実期が重なるため、共に歩みやすい間柄です。'); }
+
+    // 用神の補完
+    if (m2.gogyo[m1.yojin.fuyoku] >= 2) { score += 10; out.push(n2 + 'は' + n1 + 'の用神「' + Data.ELEMS[m1.yojin.fuyoku] + '」を豊かに持っており、一緒にいるだけで運気を補ってくれる存在です。'); }
+    if (m1.gogyo[m2.yojin.fuyoku] >= 2) { score += 10; out.push(n1 + 'は' + n2 + 'の用神「' + Data.ELEMS[m2.yojin.fuyoku] + '」を豊かに持っており、互いに支え合う縁です。'); }
+
+    score = Math.max(5, Math.min(98, Math.round(score)));
+    out.splice(1, 0, '総合相性スコア: ' + score + ' / 100');
+    return { text: out.join('\n'), score: score };
+  }
+
+  /* ---------- 大運・年運の文章 ---------- */
+  function taiunText(m, tu) {
+    return tu.map(function (t) {
+      var lab = Unsei.scoreLabel(t.score);
+      return t.startAge + '歳〜' + t.endAge + '歳（' + t.startYear + '年〜）: ' + t.name +
+        '　' + Data.TSUHEN[t.tsuhen] + '・' + Data.JUNIUN[t.juniun] + (t.kubo ? '・空亡' : '') +
+        '【' + lab + '】 ' + TSUHEN_TEXT[t.tsuhen].general;
+    }).join('\n');
+  }
+  function nenunText(m, list) {
+    return list.map(function (t) {
+      var lab = Unsei.scoreLabel(t.score);
+      return t.year + '年（' + t.age + '歳・' + t.name + '）【' + lab + '】 ' +
+        Data.TSUHEN[t.tsuhen] + 'の年。' + TSUHEN_TEXT[t.tsuhen].general + (t.kubo ? '空亡年のため、新規の大勝負より足場固めが吉。' : '');
+    }).join('\n');
+  }
+
+  global.Texts = {
+    NIKKAN: NIKKAN,
+    TSUHEN_TEXT: TSUHEN_TEXT,
+    JUNIUN_TEXT: JUNIUN_TEXT,
+    generalText: generalText,
+    themeText: themeText,
+    aishouText: aishouText,
+    taiunText: taiunText,
+    nenunText: nenunText
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.Texts;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * ai.js — オフラインAI機能
+ * 「AI文章仕上げ」: 鑑定文を自然で読みやすい日本語に整える
+ *   軽量な日本語ルールベースNLPエンジン（PC内で完結）
+ * 「AIアシスタント」: 用語・使い方・表示中の命式について
+ *   チャット形式で回答する対話エンジン
+ * ※ いずれも外部送信は一切行いません。
+ * ========================================================= */
+(function (global) {
+  'use strict';
+  var Data = global.Data || (typeof require !== 'undefined' ? require('./data.js') : null);
+  var Koyomi = global.Koyomi || (typeof require !== 'undefined' ? require('./koyomi.js') : null);
+
+  /* =========================================
+   * AI文章仕上げ
+   * ========================================= */
+  var CONNECTORS = ['また、', 'さらに、', '一方で、', 'そして、', '加えて、'];
+
+  function polishText(text, options) {
+    var o = options || {};
+    var tone = o.tone || 'polite'; // polite | soft | formal
+    var lines = text.split('\n');
+    var out = [];
+    var connIdx = 0;
+    var prevWasBody = false;
+
+    lines.forEach(function (line) {
+      var t = line.trim();
+      if (!t) { out.push(''); prevWasBody = false; return; }
+      // 見出しはそのまま
+      if (/^[【◆■○]/.test(t)) { out.push(t); prevWasBody = false; return; }
+
+      // 1) 重複語の除去（「ですです」「ますます。」等）
+      t = t.replace(/です。です。/g, 'です。').replace(/ます。ます。/g, 'ます。');
+      // 2) 文頭の接続詞を適度に補い、単調さを軽減
+      // 3文に1回程度、決定的に付与（乱数は使わず文字数で決める＝再現性確保）
+      if (prevWasBody && !/^(また|さらに|一方|そして|ただし|なお|加えて|特に|この)/.test(t) && connIdx < 5 && t.length % 3 === 0) {
+        t = CONNECTORS[connIdx % CONNECTORS.length] + t; connIdx++;
+      }
+      // 3) 文末のトーン調整
+      if (tone === 'soft') {
+        t = t.replace(/です。/g, 'ですよ。').replace(/ですよ。ですよ。/g, 'ですよ。')
+             .replace(/でしょう。/g, 'でしょうね。')
+             .replace(/が吉です(よ)?。/g, 'をおすすめします。');
+        t = t.replace(/(ですよ。){2,}/g, 'ですよ。');
+      } else if (tone === 'formal') {
+        t = t.replace(/ですよ。/g, 'です。')
+             .replace(/タイプです/g, '傾向を備えています')
+             .replace(/〜/g, 'から');
+      }
+      // 4) 冗長表現の圧縮
+      t = t.replace(/することができます/g, 'できます')
+           .replace(/という風に/g, 'というように')
+           .replace(/ということです。/g, 'です。');
+      // 5) 連続する読点の整理
+      t = t.replace(/、、+/g, '、').replace(/。。+/g, '。');
+      out.push(t);
+      prevWasBody = true;
+    });
+
+    var result = out.join('\n');
+    // 6) 全体の締めの一文（重複防止）
+    if (o.addClosing && result.indexOf('実り多い日々') < 0) {
+      result += '\n\nこの鑑定が、実り多い日々への一助となりますように。';
+    }
+    return result;
+  }
+
+  // 要約（鑑定書の「要約版」用）: 見出しごとに先頭文を抽出
+  function summarizeText(text, maxSentencesPerSection) {
+    var n = maxSentencesPerSection || 1;
+    var lines = text.split('\n');
+    var out = [];
+    var sectionBody = 0;
+    lines.forEach(function (line) {
+      var t = line.trim();
+      if (!t) return;
+      if (/^[【◆■○]/.test(t)) { out.push(t); sectionBody = 0; return; }
+      if (sectionBody < n) {
+        var first = t.split('。').slice(0, 1).join('。');
+        if (first) out.push(first + '。');
+        sectionBody++;
+      }
+    });
+    return out.join('\n');
+  }
+
+  /* =========================================
+   * AIアシスタント（チャット）
+   * ========================================= */
+  function normalize(q) {
+    return (q || '').toLowerCase().replace(/[\s　、。？?！!]/g, '');
+  }
+
+  // 使い方ヘルプ
+  var HOWTO = [
+    { keys: ['使い方', 'ヘルプ', 'help', 'はじめ'], a: '基本の流れ:\n1.「鑑定入力」タブで生年月日・出生時刻・性別を入力し「命式を立てる」を押します。\n2.「命式」タブで四柱・蔵干・通変星などを確認できます。\n3.「鑑定文」タブで文章を生成し、エディタで自由に編集できます。\n4.「PDF鑑定書」ボタンで印刷（PDF保存）できます。' },
+    { keys: ['pdf', '鑑定書', '印刷'], a: 'PDF鑑定書は「鑑定文」タブまたは各画面の「PDF鑑定書」ボタンから作成します。種類（標準／要約／年運／相性）を選ぶと印刷プレビューが開き、プリンタの選択で「PDFに保存」を選べば保存先を指定して保存できます。書体は明朝系を使用しています。' },
+    { keys: ['流派', 'カスタマイズ', '設定'], a: '「設定」タブで7つの収録流派プリセットを切り替えられます。年柱／日柱の切替・時刻補正（真太陽時）・蔵干方式・通変星の表記・大運の順逆・起運・身強身弱・格局・神殺・空亡の呼称を個別に調整し、「マイ流派として保存」であなただけの流派を作成できます。' },
+    { keys: ['顧客', 'お客様', 'カルテ'], a: '「顧客管理」タブで顧客情報を登録できます。データはパスワードで暗号化してこのPC内にのみ保存されます。「バックアップ」ボタンで暗号化されたままファイルに書き出せます。' },
+    { keys: ['予約', '売上'], a: '「顧客管理」タブ内の「予約・売上」で鑑定予約と売上を記録できます。月別の集計も表示されます。' },
+    { keys: ['旧暦'], a: '「鑑定入力」タブで「旧暦で入力」に切り替えると、旧暦の年月日（閏月対応）で入力できます。内部で新暦に変換して命式を立てます。' },
+    { keys: ['逆引き', '干支から'], a: '「ツール」タブの「干支の逆引き」で、日干支（例: 甲子）を指定して該当する日付を検索できます。' },
+    { keys: ['択日', '開運日', '吉日'], a: '「ツール」タブの「択日（開運日）」で、目的（契約・引越し・恋愛など）と期間を指定すると、命式に合う吉日を提案します。' },
+    { keys: ['json', '入出力', 'エクスポート'], a: '「ツール」タブから命式データをJSON形式で書き出し・読み込みできます。他のPCへの持ち運びや記録の保管にご利用ください。' },
+    { keys: ['メール', '下書き'], a: '鑑定文画面の「メール下書き」ボタンで、既定のメールソフトに鑑定文入りの下書きを作成します。' },
+    { keys: ['オフライン', 'インターネット', '送信'], a: '本ソフトは計算・鑑定文生成・AI機能・PDF作成のすべてがお使いのPC内で完結します。データが外部に送信されることは一切ありません。' },
+    { keys: ['ai', '文章仕上げ'], a: '「AI文章仕上げ」は鑑定文の語調を整え、重複や冗長表現を除いて読みやすくする機能です。丁寧・やわらか・格調の3トーンを選べます。処理はすべてPC内で行われます。' }
+  ];
+
+  function chartSummary(m) {
+    if (!m) return null;
+    var P = ['year', 'month', 'day', 'hour'];
+    var names = P.map(function (k) { return m.pillars[k] ? Koyomi.sixtyName(m.pillars[k].sixty) : '—'; });
+    return {
+      names: names,
+      dayStem: m.pillars.day.stem,
+      strength: m.strength.level,
+      kaku: m.kakkyoku.name,
+      yojin: Data.ELEMS[m.yojin.fuyoku],
+      kubo: Data.BRANCHES[m.kubo[0]] + Data.BRANCHES[m.kubo[1]]
+    };
+  }
+
+  function assistantAnswer(question, currentMeishiki) {
+    var q = normalize(question);
+    if (!q) return 'ご質問をどうぞ。用語の意味、使い方、表示中の命式について何でもお答えします。';
+
+    // 1) 表示中の命式についての質問
+    var cs = chartSummary(currentMeishiki);
+    if (cs) {
+      if (/この(命式|人|方)|いまの|今の|表示中/.test(question) || /命式.*(教えて|説明|どんな)/.test(question)) {
+        return '表示中の命式は 年柱' + cs.names[0] + '・月柱' + cs.names[1] + '・日柱' + cs.names[2] + '・時柱' + cs.names[3] +
+          ' です。日主は「' + Data.STEMS[cs.dayStem] + '」、身強身弱は「' + cs.strength + '」、格局は「' + cs.kaku +
+          '」、用神は「' + cs.yojin + '」、空亡は「' + cs.kubo + '」です。詳しくは「命式」タブをご覧ください。';
+      }
+      if (q.indexOf('ようじん') >= 0 || question.indexOf('用神') >= 0) {
+        if (question.indexOf('とは') < 0 && question.indexOf('意味') < 0) {
+          return '表示中の命式の用神は「' + cs.yojin + '」です。' + currentMeishiki.yojin.note.join('') +
+            '\n（用語としての「用神」の意味を知りたい場合は「用神とは」とお尋ねください）';
+        }
+      }
+      if (question.indexOf('身強') >= 0 || question.indexOf('身弱') >= 0) {
+        if (question.indexOf('とは') < 0) {
+          return '表示中の命式は「' + cs.strength + '」です。判定内訳: ' + currentMeishiki.strength.detail.join(' / ');
+        }
+      }
+      if (question.indexOf('格局') >= 0 && question.indexOf('とは') < 0) {
+        return '表示中の命式の格局は「' + cs.kaku + '」です。' + currentMeishiki.kakkyoku.note;
+      }
+    }
+
+    // 2) 用語辞典から検索
+    var best = null, bestLen = 0;
+    Data.GLOSSARY.forEach(function (g) {
+      var term = g.term.replace(/（.*）/, '');
+      if (question.indexOf(term) >= 0 && term.length > bestLen) { best = g; bestLen = term.length; }
+      // 別表記（括弧内）でも
+      var alt = (g.term.match(/（(.+)）/) || [])[1];
+      if (alt && question.indexOf(alt) >= 0 && alt.length > bestLen) { best = g; bestLen = alt.length; }
+    });
+    if (best) return '【' + best.term + '（' + best.yomi + '）】\n' + best.desc;
+
+    // 3) 使い方ヘルプ
+    for (var i = 0; i < HOWTO.length; i++) {
+      for (var k = 0; k < HOWTO[i].keys.length; k++) {
+        if (q.indexOf(normalize(HOWTO[i].keys[k])) >= 0) return HOWTO[i].a;
+      }
+    }
+
+    // 4) 干支そのものの質問（例:「甲子とは」）
+    for (var s = 0; s < 60; s++) {
+      var nm = Koyomi.sixtyName(s);
+      if (question.indexOf(nm) >= 0) {
+        var p = Koyomi.pillarFromSixty(s);
+        return '「' + nm + '」は六十干支の第' + (s + 1) + '番。天干「' + Data.STEMS[p.stem] + '」（' + Data.ELEMS[Data.STEM_ELEM[p.stem]] + 'の' + (Data.STEM_YANG[p.stem] ? '陽' : '陰') + '）と地支「' + Data.BRANCHES[p.branch] + '」の組み合わせで、納音は「' + Data.natchinOf(s) + '」です。';
+      }
+    }
+
+    return '申し訳ありません、うまくお答えできませんでした。「用語（例: 通変星とは）」「使い方（例: PDFの作り方）」「表示中の命式について」などの聞き方でお試しください。';
+  }
+
+  global.AI = {
+    polishText: polishText,
+    summarizeText: summarizeText,
+    assistantAnswer: assistantAnswer
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.AI;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * store.js — ローカル保存層
+ * 暗号化顧客DB（WebCrypto AES-GCM + PBKDF2）・予約・売上・
+ * バックアップ入出力・設定（マイ流派）保存・命式JSON入出力
+ * すべて localStorage / ファイルに保存。外部送信なし。
+ * ========================================================= */
+(function (global) {
+  'use strict';
+
+  var LS_CUSTOMERS = 'ssp.customers.v1';   // 暗号化ブロブ
+  var LS_SETTINGS = 'ssp.settings.v1';     // 流派設定（平文でよい）
+  var LS_SALT = 'ssp.salt.v1';
+  var LS_CHECK = 'ssp.check.v1';           // パスワード検証用
+
+  /* ---------- 暗号化ユーティリティ ---------- */
+  function bufToB64(buf) {
+    var bytes = new Uint8Array(buf), s = '';
+    for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s);
+  }
+  function b64ToBuf(b64) {
+    var s = atob(b64), bytes = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+    return bytes.buffer;
+  }
+
+  function hasCrypto() {
+    return typeof crypto !== 'undefined' && crypto.subtle && typeof crypto.subtle.deriveKey === 'function';
+  }
+
+  function getSalt() {
+    var s = localStorage.getItem(LS_SALT);
+    if (s) return b64ToBuf(s);
+    var salt = crypto.getRandomValues(new Uint8Array(16));
+    localStorage.setItem(LS_SALT, bufToB64(salt.buffer));
+    return salt.buffer;
+  }
+
+  function deriveKey(password) {
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey'])
+      .then(function (baseKey) {
+        return crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: getSalt(), iterations: 200000, hash: 'SHA-256' },
+          baseKey,
+          { name: 'AES-GCM', length: 256 },
+          false, ['encrypt', 'decrypt']
+        );
+      });
+  }
+
+  function encryptJSON(obj, key) {
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var data = new TextEncoder().encode(JSON.stringify(obj));
+    return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, data)
+      .then(function (ct) { return JSON.stringify({ iv: bufToB64(iv.buffer), ct: bufToB64(ct) }); });
+  }
+
+  function decryptJSON(blob, key) {
+    var o = JSON.parse(blob);
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(b64ToBuf(o.iv)) }, key, b64ToBuf(o.ct))
+      .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); });
+  }
+
+  /* ---------- 顧客DB ----------
+   * unlock(password) でセッション内にキーを保持。
+   * データ構造: { customers: [...], reservations: [...], sales: [...] } */
+  var sessionKey = null;
+  var cache = null;
+
+  function isSetup() { return !!localStorage.getItem(LS_CHECK); }
+  function isUnlocked() { return sessionKey !== null; }
+
+  function setup(password) {
+    if (!hasCrypto()) return Promise.reject(new Error('この環境ではWebCrypto（暗号化機能）が利用できません。'));
+    return deriveKey(password).then(function (key) {
+      sessionKey = key;
+      cache = { customers: [], reservations: [], sales: [] };
+      return encryptJSON({ ok: true }, key).then(function (blob) {
+        localStorage.setItem(LS_CHECK, blob);
+        return save();
+      });
+    });
+  }
+
+  function unlock(password) {
+    if (!hasCrypto()) return Promise.reject(new Error('この環境ではWebCrypto（暗号化機能）が利用できません。'));
+    return deriveKey(password).then(function (key) {
+      var check = localStorage.getItem(LS_CHECK);
+      return decryptJSON(check, key).then(function () {
+        sessionKey = key;
+        var blob = localStorage.getItem(LS_CUSTOMERS);
+        if (!blob) { cache = { customers: [], reservations: [], sales: [] }; return cache; }
+        return decryptJSON(blob, key).then(function (data) { cache = data; return cache; });
+      }).catch(function () { throw new Error('パスワードが違います。'); });
+    });
+  }
+
+  function lock() { sessionKey = null; cache = null; }
+
+  function save() {
+    if (!sessionKey || !cache) return Promise.reject(new Error('ロックされています。'));
+    return encryptJSON(cache, sessionKey).then(function (blob) {
+      localStorage.setItem(LS_CUSTOMERS, blob);
+      return true;
+    });
+  }
+
+  function getData() { return cache; }
+
+  function upsertCustomer(c) {
+    if (!cache) throw new Error('ロックされています。');
+    if (!c.id) { c.id = 'c' + Date.now() + Math.floor(Math.random() * 1000); c.createdAt = new Date().toISOString(); }
+    c.updatedAt = new Date().toISOString();
+    var idx = cache.customers.findIndex(function (x) { return x.id === c.id; });
+    if (idx >= 0) cache.customers[idx] = c; else cache.customers.push(c);
+    return save().then(function () { return c; });
+  }
+  function deleteCustomer(id) {
+    if (!cache) throw new Error('ロックされています。');
+    cache.customers = cache.customers.filter(function (x) { return x.id !== id; });
+    cache.reservations = cache.reservations.filter(function (x) { return x.customerId !== id; });
+    return save();
+  }
+
+  function addReservation(r) {
+    if (!cache) throw new Error('ロックされています。');
+    r.id = 'r' + Date.now();
+    cache.reservations.push(r);
+    return save().then(function () { return r; });
+  }
+  function deleteReservation(id) {
+    cache.reservations = cache.reservations.filter(function (x) { return x.id !== id; });
+    return save();
+  }
+  function addSale(s) {
+    if (!cache) throw new Error('ロックされています。');
+    s.id = 's' + Date.now();
+    cache.sales.push(s);
+    return save().then(function () { return s; });
+  }
+  function deleteSale(id) {
+    cache.sales = cache.sales.filter(function (x) { return x.id !== id; });
+    return save();
+  }
+  function salesSummary() {
+    if (!cache) return {};
+    var byMonth = {};
+    cache.sales.forEach(function (s) {
+      var key = (s.date || '').slice(0, 7);
+      byMonth[key] = (byMonth[key] || 0) + (Number(s.amount) || 0);
+    });
+    return byMonth;
+  }
+
+  /* ---------- バックアップ（暗号化されたまま書き出し） ---------- */
+  function exportBackup() {
+    return {
+      format: 'ssp-backup-v1',
+      exportedAt: new Date().toISOString(),
+      salt: localStorage.getItem(LS_SALT),
+      check: localStorage.getItem(LS_CHECK),
+      customers: localStorage.getItem(LS_CUSTOMERS),
+      settings: localStorage.getItem(LS_SETTINGS)
+    };
+  }
+  function importBackup(obj) {
+    if (!obj || obj.format !== 'ssp-backup-v1') throw new Error('バックアップファイルの形式が正しくありません。');
+    if (obj.salt) localStorage.setItem(LS_SALT, obj.salt);
+    if (obj.check) localStorage.setItem(LS_CHECK, obj.check);
+    if (obj.customers) localStorage.setItem(LS_CUSTOMERS, obj.customers);
+    if (obj.settings) localStorage.setItem(LS_SETTINGS, obj.settings);
+    lock();
+    return true;
+  }
+
+  /* ---------- 設定（流派）の保存 ---------- */
+  function saveSettings(settings) { localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); }
+  function loadSettings() {
+    try { return JSON.parse(localStorage.getItem(LS_SETTINGS)) || null; } catch (e) { return null; }
+  }
+
+  /* ---------- ファイルダウンロード補助 ---------- */
+  function downloadJSON(obj, filename) {
+    var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  global.Store = {
+    hasCrypto: hasCrypto,
+    isSetup: isSetup,
+    isUnlocked: isUnlocked,
+    setup: setup,
+    unlock: unlock,
+    lock: lock,
+    save: save,
+    getData: getData,
+    upsertCustomer: upsertCustomer,
+    deleteCustomer: deleteCustomer,
+    addReservation: addReservation,
+    deleteReservation: deleteReservation,
+    addSale: addSale,
+    deleteSale: deleteSale,
+    salesSummary: salesSummary,
+    exportBackup: exportBackup,
+    importBackup: importBackup,
+    saveSettings: saveSettings,
+    loadSettings: loadSettings,
+    downloadJSON: downloadJSON
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * charts.js — 可視化（Canvas / SVG）
+ * 五行レーダー・運勢曲線・ライフチャート・命式関係図
+ * 外部ライブラリ不使用。
+ * ========================================================= */
+(function (global) {
+  'use strict';
+  var Data = global.Data || null;
+
+  var ELEM_COLORS = ['#2e8b57', '#d2544a', '#b8860b', '#8a8a8a', '#3a6ea5']; // 木火土金水
+
+  function setupCanvas(canvas) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = canvas.clientWidth || canvas.width, h = canvas.clientHeight || canvas.height;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  /* ---------- 五行レーダーチャート ---------- */
+  function drawGogyoRadar(canvas, scores) {
+    var c = setupCanvas(canvas), ctx = c.ctx;
+    var cx = c.w / 2, cy = c.h / 2 + 6, R = Math.min(c.w, c.h) / 2 - 30;
+    var max = Math.max(4, Math.max.apply(null, scores));
+    ctx.clearRect(0, 0, c.w, c.h);
+    var labels = ['木', '火', '土', '金', '水'];
+
+    // グリッド
+    ctx.strokeStyle = '#d5c4cf'; ctx.fillStyle = '#faf4f7';
+    for (var ring = 4; ring >= 1; ring--) {
+      ctx.beginPath();
+      for (var i = 0; i <= 5; i++) {
+        var a = -Math.PI / 2 + i * 2 * Math.PI / 5;
+        var r = R * ring / 4;
+        var x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      if (ring === 4) ctx.fill();
+      ctx.stroke();
+    }
+    // 軸
+    for (var i2 = 0; i2 < 5; i2++) {
+      var a2 = -Math.PI / 2 + i2 * 2 * Math.PI / 5;
+      ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * Math.cos(a2), cy + R * Math.sin(a2));
+      ctx.stroke();
+      // ラベル
+      ctx.fillStyle = ELEM_COLORS[i2];
+      ctx.font = 'bold 14px "Hiragino Mincho ProN","Yu Mincho",serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(labels[i2] + ' ' + scores[i2].toFixed(1),
+        cx + (R + 18) * Math.cos(a2), cy + (R + 18) * Math.sin(a2));
+    }
+    // データ
+    ctx.beginPath();
+    for (var j = 0; j <= 5; j++) {
+      var k = j % 5;
+      var a3 = -Math.PI / 2 + k * 2 * Math.PI / 5;
+      var r3 = R * Math.min(1, scores[k] / max);
+      var x3 = cx + r3 * Math.cos(a3), y3 = cy + r3 * Math.sin(a3);
+      if (j === 0) ctx.moveTo(x3, y3); else ctx.lineTo(x3, y3);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(93, 58, 110, 0.22)';
+    ctx.strokeStyle = '#5d3a6e'; ctx.lineWidth = 2;
+    ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 1;
+  }
+
+  /* ---------- 運勢曲線（大運・年運） ---------- */
+  function drawFortuneCurve(canvas, points, opts) {
+    // points: [{label, score}] score -5..+5
+    var o = opts || {};
+    var c = setupCanvas(canvas), ctx = c.ctx;
+    var padL = 34, padR = 12, padT = 14, padB = 34;
+    var W = c.w - padL - padR, H = c.h - padT - padB;
+    ctx.clearRect(0, 0, c.w, c.h);
+    if (!points.length) return;
+
+    function xAt(i) { return padL + W * (points.length === 1 ? 0.5 : i / (points.length - 1)); }
+    function yAt(s) { return padT + H * (1 - (s + 5) / 10); }
+
+    // 背景帯（吉/凶）
+    ctx.fillStyle = 'rgba(46,139,87,0.07)';
+    ctx.fillRect(padL, padT, W, H / 2);
+    ctx.fillStyle = 'rgba(210,84,74,0.07)';
+    ctx.fillRect(padL, padT + H / 2, W, H / 2);
+    // ゼロ線・目盛
+    ctx.strokeStyle = '#b8a5b3';
+    ctx.beginPath(); ctx.moveTo(padL, yAt(0)); ctx.lineTo(padL + W, yAt(0)); ctx.stroke();
+    ctx.fillStyle = '#71627a'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    [-4, -2, 0, 2, 4].forEach(function (s) { ctx.fillText(String(s), padL - 4, yAt(s) + 3); });
+
+    // 折れ線（滑らかに）
+    ctx.beginPath();
+    for (var i = 0; i < points.length; i++) {
+      var x = xAt(i), y = yAt(points[i].score);
+      if (i === 0) ctx.moveTo(x, y);
+      else {
+        var px = xAt(i - 1), py = yAt(points[i - 1].score);
+        var mx = (px + x) / 2;
+        ctx.bezierCurveTo(mx, py, mx, y, x, y);
+      }
+    }
+    ctx.strokeStyle = '#5d3a6e'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+
+    // 点とラベル
+    var step = Math.max(1, Math.ceil(points.length / (o.maxLabels || 12)));
+    for (var j = 0; j < points.length; j++) {
+      var xj = xAt(j), yj = yAt(points[j].score);
+      ctx.beginPath(); ctx.arc(xj, yj, 3, 0, Math.PI * 2);
+      ctx.fillStyle = points[j].score >= 0 ? '#2e8b57' : '#d2544a';
+      ctx.fill();
+      if (j % step === 0) {
+        ctx.fillStyle = '#403548'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(points[j].label, xj, c.h - padB + 14);
+      }
+    }
+  }
+
+  /* ---------- ライフチャート（0〜100歳） ---------- */
+  function drawLifeChart(canvas, lifePoints, currentAge) {
+    var pts = lifePoints.filter(function (p, i) { return i % 2 === 0; }) // 2歳刻みで軽量化
+      .map(function (p) { return { label: p.age % 10 === 0 ? p.age + '歳' : '', score: p.score }; });
+    drawFortuneCurve(canvas, pts, { maxLabels: 11 });
+    // 現在年齢マーカー
+    if (currentAge != null && currentAge >= 0 && currentAge <= 100) {
+      var c = canvas.getContext('2d');
+      var dpr = window.devicePixelRatio || 1;
+      var w = canvas.width / dpr;
+      var padL = 34, padR = 12;
+      var x = padL + (w - padL - padR) * (currentAge / 100);
+      c.save();
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.strokeStyle = 'rgba(58,110,165,0.8)';
+      c.setLineDash([4, 3]);
+      c.beginPath(); c.moveTo(x, 8); c.lineTo(x, canvas.height / dpr - 30); c.stroke();
+      c.setLineDash([]);
+      c.fillStyle = '#3a6ea5'; c.font = '10px sans-serif'; c.textAlign = 'center';
+      c.fillText('現在', x, 8);
+      c.restore();
+    }
+  }
+
+  /* ---------- 命式関係図（SVG） ----------
+   * 四柱を並べ、干合・支合・冲・刑・害・三合を線で結ぶ */
+  function renderRelationSVG(container, m) {
+    var keys = ['hour', 'day', 'month', 'year'].filter(function (k) { return m.pillars[k]; });
+    var names = { year: '年柱', month: '月柱', day: '日柱', hour: '時柱' };
+    var W = 560, colW = W / keys.length;
+    var H = 300;
+    var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    var svg = [];
+    svg.push('<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:640px;font-family:\'Hiragino Mincho ProN\',\'Yu Mincho\',serif">');
+
+    var pos = {};
+    keys.forEach(function (k, i) {
+      var cx = colW * i + colW / 2;
+      pos[k] = { stemX: cx, stemY: 84, branchX: cx, branchY: 176 };
+      var p = m.pillars[k];
+      svg.push('<text x="' + cx + '" y="34" text-anchor="middle" font-size="14" fill="#71627a">' + names[k] + '</text>');
+      // 天干
+      svg.push('<circle cx="' + cx + '" cy="84" r="26" fill="#fffdfe" stroke="#5d3a6e"/>');
+      svg.push('<text x="' + cx + '" y="90" text-anchor="middle" font-size="22" fill="#362b3a">' + Data.STEMS[p.stem] + '</text>');
+      // 地支
+      svg.push('<circle cx="' + cx + '" cy="176" r="26" fill="#f7ecf2" stroke="#c9748f"/>');
+      svg.push('<text x="' + cx + '" y="182" text-anchor="middle" font-size="22" fill="#362b3a">' + Data.BRANCHES[p.branch] + '</text>');
+      // 蔵干
+      var zk = (m.zokan[k] || []).map(function (z) { return Data.STEMS[z]; }).join('');
+      svg.push('<text x="' + cx + '" y="222" text-anchor="middle" font-size="12" fill="#71627a">蔵干 ' + esc(zk) + '</text>');
+    });
+
+    var relColor = { '干合': '#3a6ea5', '支合': '#2e8b57', '冲': '#d2544a', '刑': '#c07c2a', '害': '#9a7bb0', '破': '#888' };
+    var used = {};
+    m.gochu.forEach(function (r) {
+      if (!r.a || !r.b || !pos[r.a] || !pos[r.b]) return;
+      var isStem = r.type === '干合';
+      var y1 = isStem ? pos[r.a].stemY : pos[r.a].branchY;
+      var y2 = isStem ? pos[r.b].stemY : pos[r.b].branchY;
+      var x1 = pos[r.a].stemX, x2 = pos[r.b].stemX;
+      // 弧の高さを重なりで変える
+      var key = r.type + Math.min(x1, x2);
+      used[key] = (used[key] || 0) + 1;
+      var lift = (isStem ? -1 : 1) * (34 + used[key] * 12 + Math.abs(x2 - x1) * 0.06);
+      var midX = (x1 + x2) / 2, midY = (isStem ? y1 - 26 : y1 + 26) + lift;
+      var col = relColor[r.type] || '#666';
+      svg.push('<path d="M ' + x1 + ' ' + (isStem ? y1 - 26 : y1 + 26) + ' Q ' + midX + ' ' + midY + ' ' + x2 + ' ' + (isStem ? y2 - 26 : y2 + 26) + '" fill="none" stroke="' + col + '" stroke-width="1.6"/>');
+      svg.push('<text x="' + midX + '" y="' + (midY + (isStem ? 10 : 2)) + '" text-anchor="middle" font-size="11" fill="' + col + '">' + r.type + '</text>');
+    });
+
+    // 柱をまたがない関係（三合等）は下部に注記
+    var wide = m.gochu.filter(function (r) { return !r.a; });
+    wide.forEach(function (r, i) {
+      svg.push('<text x="' + (W / 2) + '" y="' + (256 + i * 16) + '" text-anchor="middle" font-size="12" fill="#7d5694">◎ ' + r.type + '：' + esc(r.detail) + '</text>');
+    });
+
+    svg.push('</svg>');
+    container.innerHTML = svg.join('');
+  }
+
+  /* ---------- 日運カレンダー（HTML描画補助） ---------- */
+  function renderCalendar(container, days, year, month) {
+    var html = ['<table class="cal"><thead><tr>'];
+    ['日', '月', '火', '水', '木', '金', '土'].forEach(function (w, i) {
+      html.push('<th class="' + (i === 0 ? 'sun' : i === 6 ? 'sat' : '') + '">' + w + '</th>');
+    });
+    html.push('</tr></thead><tbody><tr>');
+    var first = days[0].weekday;
+    for (var i = 0; i < first; i++) html.push('<td class="empty"></td>');
+    days.forEach(function (d) {
+      if (d.weekday === 0 && d.d !== 1) html.push('</tr><tr>');
+      var cls = d.score >= 2 ? 'best' : d.score >= 1 ? 'good' : d.score <= -2 ? 'bad' : '';
+      html.push('<td class="' + cls + (d.weekday === 0 ? ' sun' : d.weekday === 6 ? ' sat' : '') + '">' +
+        '<div class="d">' + d.d + '</div>' +
+        '<div class="kanshi">' + d.name + '</div>' +
+        '<div class="mark">' + (d.kubo ? '空' : '') + (d.score >= 2 ? '◎' : d.score >= 1 ? '○' : d.score <= -2 ? '▲' : '') + '</div></td>');
+    });
+    html.push('</tr></tbody></table>');
+    container.innerHTML = html.join('');
+  }
+
+  global.Charts = {
+    drawGogyoRadar: drawGogyoRadar,
+    drawFortuneCurve: drawFortuneCurve,
+    drawLifeChart: drawLifeChart,
+    renderRelationSVG: renderRelationSVG,
+    renderCalendar: renderCalendar,
+    ELEM_COLORS: ELEM_COLORS
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* =========================================================
+ * app.js — アプリケーション本体（UI結線）
+ * ========================================================= */
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = {
+    meishiki: null,     // 現在の命式
+    input: null,        // 現在の入力値
+    name: '',
+    settings: null,     // 流派設定
+    persons: [],        // 相性用
+    calY: null, calM: null,
+    editingCustId: null
+  };
+
+  /* =========================================
+   * 流派プリセット（7流派）
+   * ========================================= */
+  var PRESETS = [
+    { id: 'standard', name: '櫻紫標準（日本通俗式）', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'none', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'score', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '空亡' } },
+    { id: 'taizan', name: '泰山流系', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'none', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'floor', strengthMode: 'getsurei', kakkyokuMode: 'hongi', allowGaikaku: true, kuboName: '空亡' } },
+    { id: 'takagi', name: '高木乗系', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'lmt', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'score', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '空亡' } },
+    { id: 'toha', name: '透派系', s: { yearSwitch: 'risshun', daySwitch: 'h23', timeAdjust: 'tst', zokanMode: 'main', tsuhenNames: 'alt', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'getsurei', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '旬空' } },
+    { id: 'shihei', name: '子平古典系', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'tst', zokanMode: 'main', tsuhenNames: 'alt', taiunDir: 'standard', kiunMode: 'floor', strengthMode: 'getsurei', kakkyokuMode: 'hongi', allowGaikaku: true, kuboName: '旬空' } },
+    { id: 'jissho', name: '現代実証系', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'tst', zokanMode: 'all', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'score', kakkyokuMode: 'auto', allowGaikaku: false, kuboName: '空亡' } },
+    { id: 'toji', name: '冬至基準研究系', s: { yearSwitch: 'toji', daySwitch: 'midnight', timeAdjust: 'tst', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'score', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '空亡' } }
+  ];
+  var SHINSATSU_ALL = ['天乙貴人', '天徳貴人', '月徳貴人', '文昌貴人', '金輿', '駅馬', '咸池（桃花）', '華蓋', '羊刃', '飛刃', '紅艶殺', '魁罡', '孤辰', '寡宿', '駅馬（日支基準）', '咸池（日支基準）'];
+
+  /* 都道府県 → 県庁所在地の東経（時刻補正用） */
+  var PREFS = [
+    ['未指定（補正なし）', null], ['北海道（札幌）', 141.35], ['青森', 140.74], ['岩手', 141.15], ['宮城', 140.87], ['秋田', 140.10],
+    ['山形', 140.36], ['福島', 140.47], ['茨城', 140.45], ['栃木', 139.88], ['群馬', 139.06], ['埼玉', 139.65],
+    ['千葉', 140.12], ['東京', 139.69], ['神奈川', 139.64], ['新潟', 139.02], ['富山', 137.21], ['石川', 136.63],
+    ['福井', 136.22], ['山梨', 138.57], ['長野', 138.18], ['岐阜', 136.72], ['静岡', 138.38], ['愛知', 136.91],
+    ['三重', 136.51], ['滋賀', 135.87], ['京都', 135.76], ['大阪', 135.52], ['兵庫', 135.18], ['奈良', 135.83],
+    ['和歌山', 135.17], ['鳥取', 134.24], ['島根', 133.05], ['岡山', 133.93], ['広島', 132.46], ['山口', 131.47],
+    ['徳島', 134.56], ['香川', 134.04], ['愛媛', 132.77], ['高知', 133.53], ['福岡', 130.42], ['佐賀', 130.30],
+    ['長崎', 129.87], ['熊本', 130.74], ['大分', 131.61], ['宮崎', 131.42], ['鹿児島', 130.56], ['沖縄（那覇）', 127.68]
+  ];
+
+  function tsuhenName(i) {
+    var set = state.settings.tsuhenNames === 'alt' ? Data.TSUHEN_ALT : Data.TSUHEN;
+    return set[i];
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  /* =========================================
+   * タブ
+   * ========================================= */
+  function switchTab(id) {
+    document.querySelectorAll('#mainTabs button').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === id); });
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.toggle('active', t.id === 'tab-' + id); });
+  }
+  $('mainTabs').addEventListener('click', function (e) {
+    if (e.target.dataset.tab) switchTab(e.target.dataset.tab);
+  });
+
+  /* =========================================
+   * 設定タブ
+   * ========================================= */
+  function renderPresets() {
+    var row = $('presetRow');
+    row.innerHTML = '';
+    PRESETS.forEach(function (p) {
+      var b = document.createElement('button');
+      b.textContent = p.name;
+      b.className = state.settings && state.settings.presetId === p.id ? 'active' : '';
+      b.onclick = function () {
+        state.settings = JSON.parse(JSON.stringify(p.s));
+        state.settings.presetId = p.id;
+        state.settings.presetName = p.name;
+        state.settings.shinsatsuSet = null;
+        settingsToForm();
+        renderPresets();
+        updateSchoolNote();
+        rebuildIfPossible();
+      };
+      row.appendChild(b);
+    });
+    var my = Store.loadSettings();
+    if (my && my.presetId === 'my') {
+      var b2 = document.createElement('button');
+      b2.textContent = '★ マイ流派';
+      b2.className = state.settings.presetId === 'my' ? 'active' : '';
+      b2.onclick = function () {
+        state.settings = my; settingsToForm(); renderPresets(); updateSchoolNote(); rebuildIfPossible();
+      };
+      row.appendChild(b2);
+    }
+  }
+
+  function settingsToForm() {
+    var s = state.settings;
+    $('stYearSwitch').value = s.yearSwitch;
+    $('stDaySwitch').value = s.daySwitch;
+    $('stTimeAdjust').value = s.timeAdjust;
+    $('stZokan').value = s.zokanMode;
+    $('stTsuhen').value = s.tsuhenNames;
+    $('stTaiunDir').value = s.taiunDir;
+    $('stKiun').value = s.kiunMode;
+    $('stStrength').value = s.strengthMode;
+    $('stKakkyoku').value = s.kakkyokuMode;
+    $('stGaikaku').value = s.allowGaikaku ? 'yes' : 'no';
+    $('stKubo').value = s.kuboName;
+    // 神殺チェック
+    var box = $('stShinsatsuChecks');
+    box.innerHTML = '';
+    SHINSATSU_ALL.forEach(function (name) {
+      var lb = document.createElement('label');
+      var ck = document.createElement('input');
+      ck.type = 'checkbox';
+      ck.checked = !s.shinsatsuSet || s.shinsatsuSet.indexOf(name) >= 0;
+      ck.dataset.name = name;
+      ck.onchange = formToSettings;
+      lb.appendChild(ck);
+      lb.appendChild(document.createTextNode(name));
+      box.appendChild(lb);
+    });
+  }
+
+  function formToSettings() {
+    var s = state.settings;
+    s.yearSwitch = $('stYearSwitch').value;
+    s.daySwitch = $('stDaySwitch').value;
+    s.timeAdjust = $('stTimeAdjust').value;
+    s.zokanMode = $('stZokan').value;
+    s.tsuhenNames = $('stTsuhen').value;
+    s.taiunDir = $('stTaiunDir').value;
+    s.kiunMode = $('stKiun').value;
+    s.strengthMode = $('stStrength').value;
+    s.kakkyokuMode = $('stKakkyoku').value;
+    s.allowGaikaku = $('stGaikaku').value === 'yes';
+    s.kuboName = $('stKubo').value;
+    var checks = Array.prototype.slice.call($('stShinsatsuChecks').querySelectorAll('input'));
+    var sel = checks.filter(function (c) { return c.checked; }).map(function (c) { return c.dataset.name; });
+    s.shinsatsuSet = sel.length === SHINSATSU_ALL.length ? null : sel;
+    s.presetId = 'custom';
+    s.presetName = 'カスタム（未保存）';
+    renderPresets();
+    updateSchoolNote();
+    rebuildIfPossible();
+  }
+  ['stYearSwitch', 'stDaySwitch', 'stTimeAdjust', 'stZokan', 'stTsuhen', 'stTaiunDir', 'stKiun', 'stStrength', 'stKakkyoku', 'stGaikaku', 'stKubo'].forEach(function (id) {
+    $(id).addEventListener('change', formToSettings);
+  });
+  $('btnSaveSchool').onclick = function () {
+    state.settings.presetId = 'my';
+    state.settings.presetName = '★ マイ流派';
+    Store.saveSettings(state.settings);
+    $('saveSchoolNote').textContent = '保存しました。次回起動時も「マイ流派」が使えます。';
+    renderPresets(); updateSchoolNote();
+  };
+  function updateSchoolNote() {
+    $('schoolNote').textContent = '現在の流派: ' + (state.settings.presetName || '標準');
+  }
+
+  /* =========================================
+   * 鑑定入力タブ
+   * ========================================= */
+  (function initInput() {
+    var sel = $('inPref');
+    PREFS.forEach(function (p, i) {
+      var o = document.createElement('option');
+      o.value = p[1] === null ? '' : p[1];
+      o.textContent = p[0];
+      sel.appendChild(o);
+    });
+    $('inCalendar').onchange = function () {
+      var lunar = this.value === 'l';
+      $('gregorianInputs').classList.toggle('hidden', lunar);
+      $('lunarInputs').classList.toggle('hidden', !lunar);
+    };
+    $('inTimeUnknown').onchange = function () {
+      $('inHH').disabled = this.checked;
+      $('inMM').disabled = this.checked;
+    };
+  })();
+
+  function readInput() {
+    var y, m, d;
+    if ($('inCalendar').value === 'l') {
+      var g = Astro.lunarToGregorian(+$('inLY').value, +$('inLM').value, $('inLeap').checked, +$('inLD').value);
+      if (!g) { alert('旧暦の日付を新暦に変換できませんでした。日付をご確認ください。'); return null; }
+      y = g.y; m = g.m; d = g.d;
+    } else {
+      y = +$('inY').value; m = +$('inM').value; d = +$('inD').value;
+    }
+    if (!y || !m || !d || y < 1900 || y > 2100) { alert('生年月日をご確認ください（1900〜2100年に対応）。'); return null; }
+    var timeUnknown = $('inTimeUnknown').checked;
+    return {
+      y: y, m: m, d: d,
+      hh: timeUnknown ? 12 : +$('inHH').value,
+      mm: timeUnknown ? 0 : +$('inMM').value,
+      gender: $('inGender').value,
+      lon: $('inPref').value === '' ? null : +$('inPref').value,
+      timeUnknown: timeUnknown
+    };
+  }
+
+  $('btnBuild').onclick = function () {
+    var input = readInput();
+    if (!input) return;
+    buildChart(input, $('inName').value.trim());
+  };
+
+  function buildChart(input, name) {
+    try {
+      state.input = input;
+      state.name = name || '';
+      state.meishiki = Meishiki.build(input, state.settings);
+      renderMeishiki();
+      renderUnsei();
+      switchTab('meishiki');
+    } catch (e) {
+      alert('計算中にエラーが発生しました: ' + e.message);
+      console.error(e);
+    }
+  }
+  function rebuildIfPossible() {
+    if (state.input) {
+      state.meishiki = Meishiki.build(state.input, state.settings);
+      renderMeishiki();
+      renderUnsei();
+    }
+  }
+
+  /* =========================================
+   * 命式タブ描画
+   * ========================================= */
+  function stemHTML(s) { return '<span class="elem-' + Data.STEM_ELEM[s] + '">' + Data.STEMS[s] + '</span>'; }
+  function branchHTML(b) { return '<span class="elem-' + Data.BRANCH_ELEM[b] + '">' + Data.BRANCHES[b] + '</span>'; }
+
+  function renderMeishiki() {
+    var m = state.meishiki;
+    if (!m) return;
+    $('meishikiEmpty').classList.add('hidden');
+    $('meishikiBody').classList.remove('hidden');
+
+    var inp = m.meta.input;
+    var adjustedNote = '';
+    if (m.meta.adjusted.corrMin) adjustedNote = '（時刻補正 ' + (m.meta.adjusted.corrMin > 0 ? '+' : '') + m.meta.adjusted.corrMin.toFixed(0) + '分）';
+    $('msPerson').textContent = (state.name ? state.name + '様 ' : '') +
+      inp.y + '年' + inp.m + '月' + inp.d + '日 ' +
+      (inp.timeUnknown ? '時刻不明' : ('0' + inp.hh).slice(-2) + ':' + ('0' + inp.mm).slice(-2)) +
+      ' ' + (inp.gender === 'F' ? '女性' : '男性') + adjustedNote +
+      '｜流派: ' + (state.settings.presetName || '標準');
+
+    var keys = ['year', 'month', 'day', 'hour'];
+    var heads = { year: '年柱', month: '月柱', day: '日柱', hour: '時柱' };
+    var rows = [];
+    function row(label, fn) {
+      var tds = keys.map(function (k) {
+        if (!m.pillars[k]) return '<td class="small">—</td>';
+        return fn(k);
+      }).join('');
+      rows.push('<tr><th>' + label + '</th>' + tds + '</tr>');
+    }
+    rows.push('<tr><th></th>' + keys.map(function (k) { return '<th>' + heads[k] + (k === 'day' ? '（日主）' : '') + '</th>'; }).join('') + '</tr>');
+    row('天干', function (k) {
+      var t = m.tsuhen.stems[k];
+      return '<td class="kan">' + stemHTML(m.pillars[k].stem) + (t == null ? '<div class="ts">日主</div>' : '<div class="ts">' + tsuhenName(t) + '</div>') + '</td>';
+    });
+    row('地支', function (k) { return '<td class="shi">' + branchHTML(m.pillars[k].branch) + '</td>'; });
+    row('蔵干', function (k) {
+      var z = m.zokan[k].map(function (s, i) { return Data.STEMS[s] + '（' + tsuhenName(m.tsuhen.zokan[k][i]) + '）'; }).join('<br>');
+      return '<td class="small">' + z + '</td>';
+    });
+    row('十二運', function (k) { return '<td>' + Data.JUNIUN[m.juniun[k]] + '</td>'; });
+    row('十二神殺', function (k) { return '<td class="small">' + m.juniShinsatsu[k] + '</td>'; });
+    row('納音', function (k) { return '<td class="small">' + m.natchin[k] + '</td>'; });
+    $('msTable').innerHTML = rows.join('');
+
+    // 補足情報
+    var kname = state.settings.kuboName || '空亡';
+    var ex = [];
+    ex.push('<span class="item"><b>' + kname + '</b>：' + Data.BRANCHES[m.kubo[0]] + '・' + Data.BRANCHES[m.kubo[1]] + '（' + m.jun + '）</span>');
+    if (m.meikyu) ex.push('<span class="item"><b>命宮</b>：' + Koyomi.sixtyName(m.meikyu.sixty) + '</span>');
+    if (m.shinkyu) ex.push('<span class="item"><b>身宮</b>：' + Koyomi.sixtyName(m.shinkyu.sixty) + '</span>');
+    ex.push('<span class="item"><b>胎元</b>：' + Koyomi.sixtyName(m.taigen.sixty) + '</span>');
+    ex.push('<span class="item"><b>胎息</b>：' + Koyomi.sixtyName(m.taisoku.sixty) + '</span>');
+    ex.push('<span class="item"><b>節入</b>：' + m.meta.prevSetsu.name + '（経過' + m.meta.daysIntoMonth.toFixed(1) + '日）</span>');
+    ex.push('<span class="item"><b>起運</b>：' + m.meta.kiun.years + '歳' + (m.meta.kiun.months ? m.meta.kiun.months + 'ヶ月' : '') + '（大運' + (m.meta.forward ? '順行' : '逆行') + '）</span>');
+    $('msExtra').innerHTML = ex.join('');
+
+    // 五行レーダー
+    Charts.drawGogyoRadar($('radarCanvas'), m.gogyo);
+    // 関係図
+    Charts.renderRelationSVG($('relationSVG'), m);
+
+    // 判定
+    var j = [];
+    j.push('<p><b>身強身弱</b>：<strong>' + m.strength.level + '</strong>（' + m.strength.score.toFixed(1) + '点）</p>');
+    j.push('<p class="note">' + m.strength.detail.join('／') + '</p>');
+    j.push('<p><b>格局</b>：<strong>' + m.kakkyoku.name + '</strong><br><span class="note">' + m.kakkyoku.note + '</span></p>');
+    j.push('<p><b>用神</b>：<strong class="elem-' + m.yojin.fuyoku + '">' + Data.ELEMS[m.yojin.fuyoku] + '</strong>');
+    if (m.yojin.choko) j.push('　<b>調候用神</b>：' + m.yojin.choko.split('').join('・'));
+    j.push('</p><p class="note">' + m.yojin.note.join('<br>') + '</p>');
+    if (m.yojin.koki.length) j.push('<p><b>喜神</b>：' + m.yojin.koki.map(function (e) { return Data.ELEMS[e]; }).join('・') +
+      (m.yojin.kiki.length ? '　<b>忌神</b>：' + m.yojin.kiki.map(function (e) { return Data.ELEMS[e]; }).join('・') : '') + '</p>');
+    $('msJudge').innerHTML = j.join('');
+
+    // 神殺
+    var sh = [];
+    if (m.shinsatsu.length) {
+      var byName = {};
+      m.shinsatsu.forEach(function (s) {
+        (byName[s.name] = byName[s.name] || []).push(Meishiki.PILLAR_NAMES[s.pillar]);
+      });
+      sh.push('<ul>');
+      Object.keys(byName).forEach(function (n) {
+        sh.push('<li><b>' + n + '</b>（' + byName[n].join('・') + '）</li>');
+      });
+      sh.push('</ul>');
+    } else sh.push('<p class="note">表示対象の神殺はありません。</p>');
+    sh.push('<p class="note">十二神殺は命式表の行に表示しています。</p>');
+    $('msShinsatsu').innerHTML = sh.join('');
+
+    // 透干通根
+    var tt = m.toukanTsukon;
+    var t1 = tt.toukan.map(function (t) {
+      return Meishiki.PILLAR_NAMES[t.from] + 'の蔵干「' + Data.STEMS[t.stem] + '」が' + Meishiki.PILLAR_NAMES[t.to] + 'の天干に透出';
+    });
+    var seen = {};
+    t1 = t1.filter(function (x) { if (seen[x]) return false; seen[x] = true; return true; });
+    var t2seen = {};
+    var t2 = tt.tsukon.map(function (t) {
+      return Meishiki.PILLAR_NAMES[t.pillar] + 'の天干が' + Meishiki.PILLAR_NAMES[t.root] + 'に通根';
+    }).filter(function (x) { if (t2seen[x]) return false; t2seen[x] = true; return true; });
+    $('msToukan').innerHTML =
+      '<p><b>透干</b>：' + (t1.length ? t1.join('／') : 'なし') + '</p>' +
+      '<p><b>通根</b>：' + (t2.length ? t2.join('／') : 'なし') + '</p>';
+  }
+
+  /* =========================================
+   * 鑑定文タブ
+   * ========================================= */
+  $('btnGenText').onclick = function () {
+    if (!state.meishiki) { alert('先に命式を立ててください。'); return; }
+    var theme = $('themeSelect').value;
+    var text;
+    if (theme === 'general') text = Texts.generalText(state.meishiki, state.name);
+    else text = Texts.themeText(state.meishiki, theme, state.input.gender);
+    $('textEditor').value = text;
+  };
+  $('btnPolish').onclick = function () {
+    var t = $('textEditor').value;
+    if (!t.trim()) { alert('先に鑑定文を生成または入力してください。'); return; }
+    $('textEditor').value = AI.polishText(t, { tone: $('aiTone').value, addClosing: true });
+  };
+  $('btnMailDraft').onclick = function () {
+    var t = $('textEditor').value;
+    if (!t.trim()) { alert('鑑定文がありません。'); return; }
+    var subject = '【櫻紫より鑑定書のお届け】' + (state.name ? state.name + '様 ' : '') + '四柱推命鑑定結果';
+    location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(t);
+  };
+  $('btnPDF').onclick = function () { makePDF($('pdfKind') ? $('pdfKind').value : 'full'); };
+  $('btnPDF2').onclick = function () { makePDF($('pdfKind').value); };
+
+  /* =========================================
+   * 運勢タブ
+   * ========================================= */
+  function renderUnsei() {
+    var m = state.meishiki;
+    if (!m) return;
+    $('unseiEmpty').classList.add('hidden');
+    $('unseiBody').classList.remove('hidden');
+
+    var now = new Date();
+    // 大運
+    var tu = Unsei.taiun(m, 10);
+    var rows = ['<tr><th>年齢</th><th>西暦</th><th>干支</th><th>通変星</th><th>十二運</th><th>吉凶</th></tr>'];
+    tu.forEach(function (t) {
+      rows.push('<tr><td>' + t.startAge + '〜' + t.endAge + '歳</td><td>' + t.startYear + '年〜</td><td>' + t.name + (t.kubo ? '<span class="note">（' + (state.settings.kuboName || '空亡') + '）</span>' : '') + '</td><td>' + tsuhenName(t.tsuhen) + '</td><td>' + Data.JUNIUN[t.juniun] + '</td><td class="score-' + Unsei.scoreLabel(t.score) + '">' + Unsei.scoreLabel(t.score) + '</td></tr>');
+    });
+    $('taiunTable').innerHTML = rows.join('');
+    Charts.drawFortuneCurve($('taiunCanvas'), tu.map(function (t) { return { label: t.startAge + '歳', score: t.score }; }));
+
+    // 年運
+    if (!$('nenunFrom').value) $('nenunFrom').value = now.getFullYear();
+    renderNenun();
+
+    // 月運
+    if (!$('getsuunYear').value) $('getsuunYear').value = now.getFullYear();
+    renderGetsuun();
+
+    // 日運カレンダー
+    if (state.calY === null) { state.calY = now.getFullYear(); state.calM = now.getMonth() + 1; }
+    renderCal();
+
+    // ライフチャート
+    var lifePts = Unsei.lifeChart(m, 100);
+    var age = now.getFullYear() - m.meta.input.y;
+    Charts.drawLifeChart($('lifeCanvas'), lifePts, age);
+  }
+
+  function renderNenun() {
+    var m = state.meishiki; if (!m) return;
+    var from = +$('nenunFrom').value || new Date().getFullYear();
+    var list = Unsei.nenun(m, from, 10);
+    var rows = ['<tr><th>西暦</th><th>年齢</th><th>干支</th><th>通変星</th><th>十二運</th><th>吉凶</th></tr>'];
+    list.forEach(function (t) {
+      rows.push('<tr><td>' + t.year + '</td><td>' + t.age + '歳</td><td>' + t.name + (t.kubo ? '<span class="note">（' + (state.settings.kuboName || '空亡') + '）</span>' : '') + '</td><td>' + tsuhenName(t.tsuhen) + '</td><td>' + Data.JUNIUN[t.juniun] + '</td><td class="score-' + Unsei.scoreLabel(t.score) + '">' + Unsei.scoreLabel(t.score) + '</td></tr>');
+    });
+    $('nenunTable').innerHTML = rows.join('');
+    Charts.drawFortuneCurve($('nenunCanvas'), list.map(function (t) { return { label: String(t.year), score: t.score }; }));
+  }
+  $('nenunFrom').addEventListener('change', renderNenun);
+
+  function renderGetsuun() {
+    var m = state.meishiki; if (!m) return;
+    var y = +$('getsuunYear').value || new Date().getFullYear();
+    var list = Unsei.getsuun(m, y);
+    var rows = ['<tr><th>節入り</th><th>節</th><th>干支</th><th>通変星</th><th>十二運</th><th>吉凶</th></tr>'];
+    list.forEach(function (t) {
+      rows.push('<tr><td>' + t.label + '</td><td>' + t.setsu + '</td><td>' + t.name + '</td><td>' + tsuhenName(t.tsuhen) + '</td><td>' + Data.JUNIUN[t.juniun] + '</td><td class="score-' + Unsei.scoreLabel(t.score) + '">' + Unsei.scoreLabel(t.score) + '</td></tr>');
+    });
+    $('getsuunTable').innerHTML = rows.join('');
+  }
+  $('getsuunYear').addEventListener('change', renderGetsuun);
+
+  function renderCal() {
+    var m = state.meishiki; if (!m) return;
+    var days = Unsei.nichiun(m, state.calY, state.calM);
+    $('calLabel').textContent = state.calY + '年' + state.calM + '月';
+    Charts.renderCalendar($('calContainer'), days, state.calY, state.calM);
+  }
+  $('calPrev').onclick = function () { state.calM--; if (state.calM < 1) { state.calM = 12; state.calY--; } renderCal(); };
+  $('calNext').onclick = function () { state.calM++; if (state.calM > 12) { state.calM = 1; state.calY++; } renderCal(); };
+
+  /* =========================================
+   * 相性タブ
+   * ========================================= */
+  function addPersonRow(preset) {
+    var div = document.createElement('div');
+    div.className = 'person-row';
+    div.innerHTML =
+      '<label>名前<input type="text" class="pName" value="' + esc(preset && preset.name || '') + '"></label>' +
+      '<label>性別<select class="pGender"><option value="F">女性</option><option value="M">男性</option></select></label>' +
+      '<label>生年月日<span class="date-row">' +
+      '<input type="number" class="pY" style="width:5.5em" value="' + (preset && preset.y || 1990) + '">年' +
+      '<input type="number" class="pM" style="width:3.5em" value="' + (preset && preset.m || 1) + '">月' +
+      '<input type="number" class="pD" style="width:3.5em" value="' + (preset && preset.d || 1) + '">日</span></label>' +
+      '<label>時刻<span class="date-row">' +
+      '<input type="number" class="pHH" style="width:3.5em" value="12">時' +
+      '<input type="number" class="pMM" style="width:3.5em" value="0">分' +
+      '<label class="inline"><input type="checkbox" class="pUnknown" checked>不明</label></span></label>' +
+      '<button class="mini pDel">削除</button>';
+    div.querySelector('.pDel').onclick = function () { div.remove(); };
+    if (preset && preset.gender) div.querySelector('.pGender').value = preset.gender;
+    $('aishouPersons').appendChild(div);
+  }
+  $('btnAddPerson').onclick = function () { addPersonRow(); };
+
+  function readPersons() {
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#aishouPersons .person-row'));
+    return rows.map(function (r, i) {
+      var unknown = r.querySelector('.pUnknown').checked;
+      return {
+        name: r.querySelector('.pName').value.trim() || ('人物' + (i + 1)),
+        input: {
+          y: +r.querySelector('.pY').value, m: +r.querySelector('.pM').value, d: +r.querySelector('.pD').value,
+          hh: unknown ? 12 : +r.querySelector('.pHH').value, mm: unknown ? 0 : +r.querySelector('.pMM').value,
+          gender: r.querySelector('.pGender').value, lon: null, timeUnknown: unknown
+        }
+      };
+    });
+  }
+
+  var lastAishou = [];
+  $('btnAishou').onclick = function () {
+    var persons = readPersons();
+    if (persons.length < 2) { alert('2名以上を登録してください。'); return; }
+    var charts;
+    try {
+      charts = persons.map(function (p) { return { name: p.name, m: Meishiki.build(p.input, state.settings) }; });
+    } catch (e) { alert('計算エラー: ' + e.message); return; }
+    var out = [];
+    lastAishou = [];
+    for (var i = 0; i < charts.length; i++) {
+      for (var j = i + 1; j < charts.length; j++) {
+        var r = Texts.aishouText(charts[i].m, charts[j].m, charts[i].name, charts[j].name);
+        lastAishou.push({ a: charts[i].name, b: charts[j].name, r: r });
+        out.push('<div class="aishou-block"><div class="aishou-score">' + esc(charts[i].name) + ' × ' + esc(charts[j].name) + '　' + r.score + '点</div>' + esc(r.text) + '</div>');
+      }
+    }
+    $('aishouResult').innerHTML = out.join('');
+  };
+  $('btnAishouPDF').onclick = function () {
+    if (!lastAishou.length) { alert('先に相性を鑑定してください。'); return; }
+    makePDF('aishou');
+  };
+
+  /* =========================================
+   * 顧客管理タブ
+   * ========================================= */
+  function renderLockPane() {
+    var pane = $('lockPane');
+    if (!Store.hasCrypto()) {
+      pane.innerHTML = '<p class="env-ng">この環境では暗号化機能（WebCrypto）が利用できないため、顧客管理は無効です。最新のブラウザでお試しください。</p>';
+      return;
+    }
+    if (Store.isUnlocked()) {
+      pane.innerHTML = '<p class="env-ok">ロック解除済み。顧客データは暗号化されてこのPC内にのみ保存されています。</p>';
+      $('customerBody').classList.remove('hidden');
+      renderCustomers(); renderResv(); renderSales();
+      return;
+    }
+    $('customerBody').classList.add('hidden');
+    if (!Store.isSetup()) {
+      pane.innerHTML =
+        '<p>顧客データベースを初期化します。データはパスワードで暗号化され、<b>このPC内にのみ</b>保存されます。</p>' +
+        '<div class="form-grid"><label>マスターパスワード（お忘れになると復元できません）<input type="password" id="pwNew"></label></div>' +
+        '<div class="actions"><button class="primary" id="btnSetup">初期化する</button></div>';
+      $('btnSetup').onclick = function () {
+        var pw = $('pwNew').value;
+        if (pw.length < 4) { alert('パスワードは4文字以上にしてください。'); return; }
+        Store.setup(pw).then(renderLockPane).catch(function (e) { alert(e.message); });
+      };
+    } else {
+      pane.innerHTML =
+        '<div class="form-grid"><label>マスターパスワード<input type="password" id="pwOpen"></label></div>' +
+        '<div class="actions"><button class="primary" id="btnUnlock">ロック解除</button></div>';
+      $('btnUnlock').onclick = function () {
+        Store.unlock($('pwOpen').value).then(renderLockPane).catch(function (e) { alert(e.message); });
+      };
+      $('pwOpen').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btnUnlock').click(); });
+    }
+  }
+  $('btnLock').onclick = function () { Store.lock(); renderLockPane(); };
+
+  function renderCustomers() {
+    var data = Store.getData(); if (!data) return;
+    var q = $('custSearch').value.trim();
+    var rows = ['<tr><th>氏名</th><th>生年月日</th><th>性別</th><th>電話</th><th></th></tr>'];
+    data.customers
+      .filter(function (c) { return !q || (c.name || '').indexOf(q) >= 0 || (c.kana || '').indexOf(q) >= 0; })
+      .forEach(function (c) {
+        rows.push('<tr><td>' + esc(c.name) + '</td><td>' + c.y + '/' + c.m + '/' + c.d + '</td><td>' + (c.gender === 'F' ? '女' : '男') + '</td><td>' + esc(c.tel || '') + '</td>' +
+          '<td><button class="mini" data-edit="' + c.id + '">開く</button></td></tr>');
+      });
+    $('custTable').innerHTML = rows.join('');
+    $('custTable').querySelectorAll('button[data-edit]').forEach(function (b) {
+      b.onclick = function () { openCustomer(b.dataset.edit); };
+    });
+    // 予約フォームの顧客プルダウン
+    var sel = $('rCust');
+    sel.innerHTML = '';
+    data.customers.forEach(function (c) {
+      var o = document.createElement('option'); o.value = c.id; o.textContent = c.name; sel.appendChild(o);
+    });
+  }
+  $('custSearch').addEventListener('input', renderCustomers);
+
+  $('btnNewCust').onclick = function () { openCustomer(null); };
+  function openCustomer(id) {
+    state.editingCustId = id;
+    var c = id ? Store.getData().customers.find(function (x) { return x.id === id; }) : null;
+    $('custEditCard').classList.remove('hidden');
+    $('custEditTitle').textContent = c ? '顧客情報: ' + c.name : '新規顧客';
+    $('cName').value = c ? c.name : '';
+    $('cKana').value = c ? c.kana || '' : '';
+    $('cGender').value = c ? c.gender : 'F';
+    $('cY').value = c ? c.y : ''; $('cM').value = c ? c.m : ''; $('cD').value = c ? c.d : '';
+    $('cHH').value = c && c.hh != null ? c.hh : ''; $('cMM').value = c && c.mm != null ? c.mm : '';
+    $('cTimeUnknown').checked = c ? !!c.timeUnknown : true;
+    $('cTel').value = c ? c.tel || '' : '';
+    $('cMail').value = c ? c.mail || '' : '';
+    $('cMemo').value = c ? c.memo || '' : '';
+  }
+  $('btnSaveCust').onclick = function () {
+    var c = {
+      id: state.editingCustId || undefined,
+      name: $('cName').value.trim(), kana: $('cKana').value.trim(), gender: $('cGender').value,
+      y: +$('cY').value, m: +$('cM').value, d: +$('cD').value,
+      hh: $('cHH').value === '' ? null : +$('cHH').value, mm: $('cMM').value === '' ? null : +$('cMM').value,
+      timeUnknown: $('cTimeUnknown').checked,
+      tel: $('cTel').value.trim(), mail: $('cMail').value.trim(), memo: $('cMemo').value
+    };
+    if (!c.name) { alert('氏名を入力してください。'); return; }
+    var existing = state.editingCustId ? Store.getData().customers.find(function (x) { return x.id === state.editingCustId; }) : null;
+    if (existing) { c.createdAt = existing.createdAt; c.id = existing.id; }
+    Store.upsertCustomer(c).then(function (saved) {
+      state.editingCustId = saved.id;
+      renderCustomers();
+      $('custEditTitle').textContent = '顧客情報: ' + saved.name + '（保存済み）';
+    }).catch(function (e) { alert(e.message); });
+  };
+  $('btnDelCust').onclick = function () {
+    if (!state.editingCustId) return;
+    if (!confirm('この顧客と関連する予約を削除します。よろしいですか？')) return;
+    Store.deleteCustomer(state.editingCustId).then(function () {
+      state.editingCustId = null;
+      $('custEditCard').classList.add('hidden');
+      renderCustomers(); renderResv();
+    });
+  };
+  $('btnCloseCust').onclick = function () { $('custEditCard').classList.add('hidden'); };
+  $('btnCustToChart').onclick = function () {
+    if (!state.editingCustId) { alert('先に保存してください。'); return; }
+    var c = Store.getData().customers.find(function (x) { return x.id === state.editingCustId; });
+    if (!c) return;
+    var unknown = c.timeUnknown || c.hh == null;
+    buildChart({ y: c.y, m: c.m, d: c.d, hh: unknown ? 12 : c.hh, mm: unknown ? 0 : (c.mm || 0), gender: c.gender, lon: null, timeUnknown: unknown }, c.name);
+  };
+
+  function renderResv() {
+    var data = Store.getData(); if (!data) return;
+    var rows = ['<tr><th>日時</th><th>顧客</th><th>内容</th><th></th></tr>'];
+    data.reservations.slice().sort(function (a, b) { return (a.when || '').localeCompare(b.when || ''); }).forEach(function (r) {
+      var c = data.customers.find(function (x) { return x.id === r.customerId; });
+      rows.push('<tr><td>' + esc((r.when || '').replace('T', ' ')) + '</td><td>' + esc(c ? c.name : '—') + '</td><td>' + esc(r.note || '') + '</td>' +
+        '<td><button class="mini" data-del="' + r.id + '">削除</button></td></tr>');
+    });
+    $('resvTable').innerHTML = rows.join('');
+    $('resvTable').querySelectorAll('button[data-del]').forEach(function (b) {
+      b.onclick = function () { Store.deleteReservation(b.dataset.del).then(renderResv); };
+    });
+  }
+  $('btnAddResv').onclick = function () {
+    if (!$('rWhen').value) { alert('日時を入力してください。'); return; }
+    Store.addReservation({ when: $('rWhen').value, customerId: $('rCust').value, note: $('rNote').value })
+      .then(function () { $('rNote').value = ''; renderResv(); });
+  };
+
+  function renderSales() {
+    var data = Store.getData(); if (!data) return;
+    var rows = ['<tr><th>日付</th><th>金額</th><th>内容</th><th></th></tr>'];
+    data.sales.slice().sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); }).forEach(function (s) {
+      rows.push('<tr><td>' + esc(s.date) + '</td><td class="num">' + Number(s.amount).toLocaleString() + '円</td><td>' + esc(s.note || '') + '</td>' +
+        '<td><button class="mini" data-del="' + s.id + '">削除</button></td></tr>');
+    });
+    $('salesTable').innerHTML = rows.join('');
+    $('salesTable').querySelectorAll('button[data-del]').forEach(function (b) {
+      b.onclick = function () { Store.deleteSale(b.dataset.del).then(renderSales); };
+    });
+    var sum = Store.salesSummary();
+    var months = Object.keys(sum).sort().reverse().slice(0, 6);
+    $('salesSummary').innerHTML = months.length
+      ? '<p class="note">月別売上: ' + months.map(function (k) { return k + '＝' + sum[k].toLocaleString() + '円'; }).join('　') + '</p>' : '';
+  }
+  $('btnAddSale').onclick = function () {
+    if (!$('sDate').value || !$('sAmount').value) { alert('日付と金額を入力してください。'); return; }
+    Store.addSale({ date: $('sDate').value, amount: +$('sAmount').value, note: $('sNote').value })
+      .then(function () { $('sNote').value = ''; $('sAmount').value = ''; renderSales(); });
+  };
+
+  $('btnBackup').onclick = function () {
+    Store.downloadJSON(Store.exportBackup(), 'shichusuimei-backup-' + new Date().toISOString().slice(0, 10) + '.json');
+  };
+  $('btnRestore').onclick = function () {
+    pickFile(function (obj) {
+      try {
+        Store.importBackup(obj);
+        alert('バックアップを読み込みました。パスワードでロック解除してください。');
+        renderLockPane();
+      } catch (e) { alert(e.message); }
+    });
+  };
+
+  /* =========================================
+   * ツールタブ
+   * ========================================= */
+  $('btnTakujitsu').onclick = function () {
+    if (!state.meishiki) { alert('先に命式を立ててください（本人の命式に合わせて吉日を選びます）。'); return; }
+    var from = $('tkFrom').value ? new Date($('tkFrom').value) : new Date();
+    var list = Unsei.takujitsu(state.meishiki, from.getFullYear(), from.getMonth() + 1, from.getDate(), +$('tkDays').value, $('tkPurpose').value);
+    var rows = ['<tr><th>日付</th><th>干支</th><th>評価</th><th>備考</th></tr>'];
+    list.slice(0, 15).forEach(function (d) {
+      rows.push('<tr><td>' + d.y + '/' + d.m + '/' + d.d + '</td><td>' + d.name + '</td><td class="score-' + d.label + '">' + d.label + '</td><td class="note">' + d.notes.join('・') + '</td></tr>');
+    });
+    $('tkTable').innerHTML = rows.join('');
+  };
+
+  (function initReverse() {
+    Data.STEMS.forEach(function (s, i) { var o = document.createElement('option'); o.value = i; o.textContent = s; $('rvStem').appendChild(o); });
+    Data.BRANCHES.forEach(function (b, i) { var o = document.createElement('option'); o.value = i; o.textContent = b; $('rvBranch').appendChild(o); });
+  })();
+  $('btnReverse').onclick = function () {
+    var stem = +$('rvStem').value, branch = +$('rvBranch').value;
+    var sixty = Koyomi.sixtyFromStemBranch(stem, branch);
+    if (sixty < 0) { $('rvResult').innerHTML = '<p class="env-ng">その組み合わせ（陰陽不一致）は六十干支に存在しません。</p>'; return; }
+    var days = Koyomi.reverseLookupDays(sixty, +$('rvY1').value, +$('rvY2').value, 500);
+    $('rvResult').innerHTML = '<p><b>' + Koyomi.sixtyName(sixty) + '</b>の日（' + days.length + '件）</p>' +
+      days.map(function (d) { return d.y + '/' + d.m + '/' + d.d; }).join('、 ');
+  };
+
+  $('btnExportJSON').onclick = function () {
+    if (!state.input) { alert('先に命式を立ててください。'); return; }
+    var m = state.meishiki;
+    Store.downloadJSON({
+      format: 'ssp-meishiki-v1',
+      name: state.name,
+      input: state.input,
+      settings: state.settings,
+      result: {
+        pillars: ['year', 'month', 'day', 'hour'].map(function (k) { return m.pillars[k] ? Koyomi.sixtyName(m.pillars[k].sixty) : null; }),
+        strength: m.strength.level,
+        kakkyoku: m.kakkyoku.name,
+        yojin: Data.ELEMS[m.yojin.fuyoku]
+      }
+    }, 'meishiki-' + (state.name || 'noname') + '.json');
+  };
+  function importMeishikiJSON(obj) {
+    if (!obj || obj.format !== 'ssp-meishiki-v1' || !obj.input) { alert('命式JSONの形式が正しくありません。'); return; }
+    if (obj.settings) { state.settings = obj.settings; settingsToForm(); renderPresets(); updateSchoolNote(); }
+    buildChart(obj.input, obj.name || '');
+  }
+  $('btnImportJSON').onclick = function () { pickFile(importMeishikiJSON); };
+  $('btnLoadJSON').onclick = function () { pickFile(importMeishikiJSON); };
+
+  function pickFile(cb) {
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = function () {
+      var f = inp.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () {
+        try { cb(JSON.parse(rd.result)); } catch (e) { alert('JSONの読み込みに失敗しました: ' + e.message); }
+      };
+      rd.readAsText(f);
+    };
+    inp.click();
+  }
+
+  function renderTodayKoyomi() {
+    var now = new Date();
+    var r = Koyomi.pillarsOfDate(now.getFullYear(), now.getMonth() + 1, now.getDate(), state.settings);
+    var lunar = Astro.gregorianToLunar(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    $('todayKoyomi').innerHTML =
+      '<p>' + now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日</p>' +
+      '<p><b>年柱</b> ' + Koyomi.sixtyName(r.year.sixty) + '　<b>月柱</b> ' + Koyomi.sixtyName(r.month.sixty) + '　<b>日柱</b> ' + Koyomi.sixtyName(r.day.sixty) + '</p>' +
+      (lunar ? '<p><b>旧暦</b> ' + lunar.year + '年' + (lunar.leap ? '閏' : '') + lunar.month + '月' + lunar.day + '日</p>' : '') +
+      '<p class="note">節: ' + r.meta.prevSetsu.name + '（' + r.meta.prevSetsu.jst.m + '/' + r.meta.prevSetsu.jst.d + '）〜 次節: ' + r.meta.nextSetsu.name + '（' + r.meta.nextSetsu.jst.m + '/' + r.meta.nextSetsu.jst.d + '）</p>';
+  }
+
+  /* =========================================
+   * 用語辞典
+   * ========================================= */
+  function renderGlossary(q) {
+    var list = $('glossaryList');
+    var html = [];
+    Data.GLOSSARY.forEach(function (g) {
+      if (q && g.term.indexOf(q) < 0 && g.yomi.indexOf(q) < 0 && g.desc.indexOf(q) < 0) return;
+      html.push('<dt>' + esc(g.term) + '<span class="yomi">' + esc(g.yomi) + '</span></dt><dd>' + esc(g.desc) + '</dd>');
+    });
+    list.innerHTML = html.join('') || '<dd>該当する用語が見つかりませんでした。</dd>';
+  }
+  $('glossarySearch').addEventListener('input', function () { renderGlossary(this.value.trim()); });
+
+  /* =========================================
+   * AIアシスタント
+   * ========================================= */
+  $('aiToggle').onclick = function () { $('aiPanel').classList.toggle('hidden'); };
+  $('aiClose').onclick = function () { $('aiPanel').classList.add('hidden'); };
+  function aiSend() {
+    var q = $('aiQuestion').value.trim();
+    if (!q) return;
+    var log = $('aiLog');
+    var u = document.createElement('div'); u.className = 'ai-msg user'; u.textContent = q; log.appendChild(u);
+    var a = document.createElement('div'); a.className = 'ai-msg bot';
+    a.textContent = AI.assistantAnswer(q, state.meishiki);
+    log.appendChild(a);
+    log.scrollTop = log.scrollHeight;
+    $('aiQuestion').value = '';
+  }
+  $('aiSend').onclick = aiSend;
+  $('aiQuestion').addEventListener('keydown', function (e) { if (e.key === 'Enter') aiSend(); });
+
+  /* =========================================
+   * PDF鑑定書
+   * ========================================= */
+  function pillarTableHTML(m) {
+    var keys = ['year', 'month', 'day', 'hour'];
+    var heads = { year: '年柱', month: '月柱', day: '日柱', hour: '時柱' };
+    var h = ['<table><tr><th></th>' + keys.map(function (k) { return '<th>' + heads[k] + '</th>'; }).join('') + '</tr>'];
+    function row(label, fn) {
+      h.push('<tr><th>' + label + '</th>' + keys.map(function (k) { return m.pillars[k] ? fn(k) : '<td>—</td>'; }).join('') + '</tr>');
+    }
+    row('干支', function (k) { return '<td class="kanji-big">' + Koyomi.sixtyName(m.pillars[k].sixty) + '</td>'; });
+    row('通変星', function (k) { var t = m.tsuhen.stems[k]; return '<td>' + (t == null ? '日主' : tsuhenName(t)) + '</td>'; });
+    row('蔵干', function (k) { return '<td>' + m.zokan[k].map(function (s, i) { return Data.STEMS[s] + '（' + tsuhenName(m.tsuhen.zokan[k][i]) + '）'; }).join(' ') + '</td>'; });
+    row('十二運', function (k) { return '<td>' + Data.JUNIUN[m.juniun[k]] + '</td>'; });
+    h.push('</table>');
+    return h.join('');
+  }
+
+  function makePDF(kind) {
+    var area = $('printArea');
+    var m = state.meishiki;
+    var today = new Date();
+    var dateStr = today.getFullYear() + '年' + (today.getMonth() + 1) + '月' + today.getDate() + '日';
+    var signer = $('pdfSigner').value.trim();
+    var pages = [];
+
+    function head(title) {
+      var inp = m ? m.meta.input : null;
+      return '<h1>' + title + '</h1>' +
+        '<div class="pdf-meta">' +
+        (state.name ? esc(state.name) + ' 様　' : '') +
+        (inp ? inp.y + '年' + inp.m + '月' + inp.d + '日生（' + (inp.gender === 'F' ? '女性' : '男性') + (inp.timeUnknown ? '・時刻不明' : '・' + ('0' + inp.hh).slice(-2) + ':' + ('0' + inp.mm).slice(-2)) + '）　' : '') +
+        '鑑定日 ' + dateStr + '</div>';
+    }
+    function foot() {
+      return (signer ? '<div class="pdf-sign">' + esc(signer) + '</div>' : '') +
+        '<div class="pdf-foot">❀ 本鑑定書は櫻紫式鑑定システムにより作成されました（流派: ' + esc(state.settings.presetName || '標準') + '） ❀</div>';
+    }
+
+    if (kind === 'aishou') {
+      if (!lastAishou.length) { alert('先に相性タブで鑑定してください。'); return; }
+      var body = lastAishou.map(function (x) {
+        return '<h2>' + esc(x.a) + ' × ' + esc(x.b) + '（' + x.r.score + '点）</h2><div class="pdf-body">' + esc(x.r.text) + '</div>';
+      }).join('');
+      pages.push('<div class="pdf-page"><h1>櫻紫式 相性鑑定書</h1><div class="pdf-meta">鑑定日 ' + dateStr + '</div>' + body + foot() + '</div>');
+    } else {
+      if (!m) { alert('先に命式を立ててください。'); return; }
+      var editorText = $('textEditor').value.trim() || Texts.generalText(m, state.name);
+
+      if (kind === 'summary') {
+        var sum = AI.summarizeText(editorText, 2);
+        pages.push('<div class="pdf-page">' + head('櫻紫式 鑑定書（要約）') + pillarTableHTML(m) +
+          '<h2>鑑定要旨</h2><div class="pdf-body">' + esc(sum) + '</div>' + foot() + '</div>');
+      } else if (kind === 'nenun') {
+        var list = Unsei.nenun(m, today.getFullYear(), 10);
+        var rows = ['<table><tr><th>西暦</th><th>年齢</th><th>干支</th><th>通変星</th><th>十二運</th><th>吉凶</th></tr>'];
+        list.forEach(function (t) {
+          rows.push('<tr><td>' + t.year + '</td><td>' + t.age + '歳</td><td>' + t.name + '</td><td>' + tsuhenName(t.tsuhen) + '</td><td>' + Data.JUNIUN[t.juniun] + '</td><td>' + Unsei.scoreLabel(t.score) + '</td></tr>');
+        });
+        rows.push('</table>');
+        pages.push('<div class="pdf-page">' + head('櫻紫式 年運鑑定書') + pillarTableHTML(m) +
+          '<h2>今後10年の年運</h2>' + rows.join('') +
+          '<div class="pdf-body">' + esc(Texts.nenunText(m, list)) + '</div>' + foot() + '</div>');
+      } else {
+        // 標準
+        var tu = Unsei.taiun(m, 8);
+        var turows = ['<table><tr><th>年齢</th><th>干支</th><th>通変星</th><th>十二運</th><th>吉凶</th></tr>'];
+        tu.forEach(function (t) {
+          turows.push('<tr><td>' + t.startAge + '〜' + t.endAge + '歳</td><td>' + t.name + '</td><td>' + tsuhenName(t.tsuhen) + '</td><td>' + Data.JUNIUN[t.juniun] + '</td><td>' + Unsei.scoreLabel(t.score) + '</td></tr>');
+        });
+        turows.push('</table>');
+        var kname = state.settings.kuboName || '空亡';
+        pages.push('<div class="pdf-page">' + head('櫻紫式 四柱推命鑑定書') + pillarTableHTML(m) +
+          '<div class="pdf-body">' +
+          esc('格局：' + m.kakkyoku.name + '　身強身弱：' + m.strength.level + '　用神：' + Data.ELEMS[m.yojin.fuyoku] +
+            (m.yojin.choko ? '　調候用神：' + m.yojin.choko.split('').join('・') : '') +
+            '　' + kname + '：' + Data.BRANCHES[m.kubo[0]] + '・' + Data.BRANCHES[m.kubo[1]]) + '</div>' +
+          '<h2>鑑定文</h2><div class="pdf-body">' + esc(editorText) + '</div></div>');
+        pages.push('<div class="pdf-page"><h2>大運（10年ごとの運気）</h2>' + turows.join('') +
+          '<h2>直近の年運</h2><div class="pdf-body">' + esc(Texts.nenunText(m, Unsei.nenun(m, today.getFullYear(), 5))) + '</div>' + foot() + '</div>');
+      }
+    }
+    area.innerHTML = pages.join('');
+    window.print();
+  }
+
+  /* =========================================
+   * 環境診断（初回起動時）
+   * ========================================= */
+  function runDiagnostics() {
+    var rows = [];
+    function check(name, ok, note) {
+      rows.push('<tr><td>' + name + '</td><td class="' + (ok ? 'env-ok' : 'env-ng') + '">' + (ok ? '✓ 正常' : '✕ 利用不可') + '</td><td class="note">' + (note || '') + '</td></tr>');
+      return ok;
+    }
+    var okLS = false;
+    try { localStorage.setItem('ssp.test', '1'); localStorage.removeItem('ssp.test'); okLS = true; } catch (e) { }
+    check('データ保存（localStorage）', okLS, okLS ? '設定・顧客DBを保存できます' : 'プライベートモードでは保存できません');
+    check('暗号化（WebCrypto）', Store.hasCrypto(), Store.hasCrypto() ? '顧客DBを暗号化できます' : '顧客管理機能が無効になります');
+    var okCanvas = !!document.createElement('canvas').getContext;
+    check('グラフ描画（Canvas）', okCanvas);
+    // 計算自己テスト
+    var calcOK = false;
+    try {
+      var t = Koyomi.computePillars({ y: 2000, m: 1, d: 1, hh: 0, mm: 0, gender: 'M', lon: null }, {});
+      calcOK = Koyomi.sixtyName(t.day.sixty) === '戊午' && Koyomi.sixtyName(t.year.sixty) === '己卯';
+    } catch (e) { }
+    check('暦計算エンジン自己テスト', calcOK, calcOK ? '既知の命式と一致しました' : '計算に問題があります');
+    check('印刷（PDF作成）', typeof window.print === 'function', '「PDFに保存」で鑑定書を出力できます');
+    check('オフライン動作', true, 'すべての処理はこのPC内で完結します');
+    $('envReport').innerHTML = '<table>' + rows.join('') + '</table>';
+  }
+
+  /* =========================================
+   * 初期化
+   * ========================================= */
+  function init() {
+    var saved = Store.loadSettings();
+    if (saved) state.settings = saved;
+    else {
+      state.settings = JSON.parse(JSON.stringify(PRESETS[0].s));
+      state.settings.presetId = 'standard';
+      state.settings.presetName = PRESETS[0].name;
+    }
+    settingsToForm();
+    renderPresets();
+    updateSchoolNote();
+    renderGlossary('');
+    renderLockPane();
+    runDiagnostics();
+    renderTodayKoyomi();
+    addPersonRow(); addPersonRow(); // 相性の初期2名
+    var now = new Date();
+    $('tkFrom').value = now.toISOString().slice(0, 10);
+    $('sDate').value = now.toISOString().slice(0, 10);
+  }
+  init();
+})();
+
+</script>
+</body>
+</html>

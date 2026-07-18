@@ -19,7 +19,7 @@
    * 流派プリセット（7流派）
    * ========================================= */
   var PRESETS = [
-    { id: 'standard', name: '標準（日本通俗式）', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'none', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'score', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '空亡' } },
+    { id: 'standard', name: '櫻紫標準（日本通俗式）', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'none', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'score', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '空亡' } },
     { id: 'taizan', name: '泰山流系', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'none', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'floor', strengthMode: 'getsurei', kakkyokuMode: 'hongi', allowGaikaku: true, kuboName: '空亡' } },
     { id: 'takagi', name: '高木乗系', s: { yearSwitch: 'risshun', daySwitch: 'midnight', timeAdjust: 'lmt', zokanMode: 'bunya', tsuhenNames: 'std', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'score', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '空亡' } },
     { id: 'toha', name: '透派系', s: { yearSwitch: 'risshun', daySwitch: 'h23', timeAdjust: 'tst', zokanMode: 'main', tsuhenNames: 'alt', taiunDir: 'standard', kiunMode: 'detail', strengthMode: 'getsurei', kakkyokuMode: 'auto', allowGaikaku: true, kuboName: '旬空' } },
@@ -353,7 +353,7 @@
   $('btnMailDraft').onclick = function () {
     var t = $('textEditor').value;
     if (!t.trim()) { alert('鑑定文がありません。'); return; }
-    var subject = '【鑑定書】' + (state.name ? state.name + '様 ' : '') + '四柱推命鑑定結果';
+    var subject = '【櫻紫より鑑定書のお届け】' + (state.name ? state.name + '様 ' : '') + '四柱推命鑑定結果';
     location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(t);
   };
   $('btnPDF').onclick = function () { makePDF($('pdfKind') ? $('pdfKind').value : 'full'); };
@@ -805,7 +805,7 @@
     }
     function foot() {
       return (signer ? '<div class="pdf-sign">' + esc(signer) + '</div>' : '') +
-        '<div class="pdf-foot">本鑑定書は四柱推命 Pro により作成されました（流派: ' + esc(state.settings.presetName || '標準') + '）</div>';
+        '<div class="pdf-foot">❀ 本鑑定書は櫻紫式鑑定システムにより作成されました（流派: ' + esc(state.settings.presetName || '標準') + '） ❀</div>';
     }
 
     if (kind === 'aishou') {
@@ -813,14 +813,14 @@
       var body = lastAishou.map(function (x) {
         return '<h2>' + esc(x.a) + ' × ' + esc(x.b) + '（' + x.r.score + '点）</h2><div class="pdf-body">' + esc(x.r.text) + '</div>';
       }).join('');
-      pages.push('<div class="pdf-page"><h1>相性鑑定書</h1><div class="pdf-meta">鑑定日 ' + dateStr + '</div>' + body + foot() + '</div>');
+      pages.push('<div class="pdf-page"><h1>櫻紫式 相性鑑定書</h1><div class="pdf-meta">鑑定日 ' + dateStr + '</div>' + body + foot() + '</div>');
     } else {
       if (!m) { alert('先に命式を立ててください。'); return; }
       var editorText = $('textEditor').value.trim() || Texts.generalText(m, state.name);
 
       if (kind === 'summary') {
         var sum = AI.summarizeText(editorText, 2);
-        pages.push('<div class="pdf-page">' + head('四柱推命 鑑定書（要約）') + pillarTableHTML(m) +
+        pages.push('<div class="pdf-page">' + head('櫻紫式 鑑定書（要約）') + pillarTableHTML(m) +
           '<h2>鑑定要旨</h2><div class="pdf-body">' + esc(sum) + '</div>' + foot() + '</div>');
       } else if (kind === 'nenun') {
         var list = Unsei.nenun(m, today.getFullYear(), 10);
@@ -829,7 +829,7 @@
           rows.push('<tr><td>' + t.year + '</td><td>' + t.age + '歳</td><td>' + t.name + '</td><td>' + tsuhenName(t.tsuhen) + '</td><td>' + Data.JUNIUN[t.juniun] + '</td><td>' + Unsei.scoreLabel(t.score) + '</td></tr>');
         });
         rows.push('</table>');
-        pages.push('<div class="pdf-page">' + head('四柱推命 年運鑑定書') + pillarTableHTML(m) +
+        pages.push('<div class="pdf-page">' + head('櫻紫式 年運鑑定書') + pillarTableHTML(m) +
           '<h2>今後10年の年運</h2>' + rows.join('') +
           '<div class="pdf-body">' + esc(Texts.nenunText(m, list)) + '</div>' + foot() + '</div>');
       } else {
@@ -841,7 +841,7 @@
         });
         turows.push('</table>');
         var kname = state.settings.kuboName || '空亡';
-        pages.push('<div class="pdf-page">' + head('四柱推命 鑑定書') + pillarTableHTML(m) +
+        pages.push('<div class="pdf-page">' + head('櫻紫式 四柱推命鑑定書') + pillarTableHTML(m) +
           '<div class="pdf-body">' +
           esc('格局：' + m.kakkyoku.name + '　身強身弱：' + m.strength.level + '　用神：' + Data.ELEMS[m.yojin.fuyoku] +
             (m.yojin.choko ? '　調候用神：' + m.yojin.choko.split('').join('・') : '') +

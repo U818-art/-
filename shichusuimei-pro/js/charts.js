@@ -27,7 +27,7 @@
     var labels = ['木', '火', '土', '金', '水'];
 
     // グリッド
-    ctx.strokeStyle = '#c9c2b4'; ctx.fillStyle = '#f7f4ec';
+    ctx.strokeStyle = '#d5c4cf'; ctx.fillStyle = '#faf4f7';
     for (var ring = 4; ring >= 1; ring--) {
       ctx.beginPath();
       for (var i = 0; i <= 5; i++) {
@@ -62,8 +62,8 @@
       if (j === 0) ctx.moveTo(x3, y3); else ctx.lineTo(x3, y3);
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(122, 62, 44, 0.25)';
-    ctx.strokeStyle = '#7a3e2c'; ctx.lineWidth = 2;
+    ctx.fillStyle = 'rgba(93, 58, 110, 0.22)';
+    ctx.strokeStyle = '#5d3a6e'; ctx.lineWidth = 2;
     ctx.fill(); ctx.stroke();
     ctx.lineWidth = 1;
   }
@@ -87,9 +87,9 @@
     ctx.fillStyle = 'rgba(210,84,74,0.07)';
     ctx.fillRect(padL, padT + H / 2, W, H / 2);
     // ゼロ線・目盛
-    ctx.strokeStyle = '#b0a893';
+    ctx.strokeStyle = '#b8a5b3';
     ctx.beginPath(); ctx.moveTo(padL, yAt(0)); ctx.lineTo(padL + W, yAt(0)); ctx.stroke();
-    ctx.fillStyle = '#6b6555'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillStyle = '#71627a'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
     [-4, -2, 0, 2, 4].forEach(function (s) { ctx.fillText(String(s), padL - 4, yAt(s) + 3); });
 
     // 折れ線（滑らかに）
@@ -103,7 +103,7 @@
         ctx.bezierCurveTo(mx, py, mx, y, x, y);
       }
     }
-    ctx.strokeStyle = '#7a3e2c'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+    ctx.strokeStyle = '#5d3a6e'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
 
     // 点とラベル
     var step = Math.max(1, Math.ceil(points.length / (o.maxLabels || 12)));
@@ -113,7 +113,7 @@
       ctx.fillStyle = points[j].score >= 0 ? '#2e8b57' : '#d2544a';
       ctx.fill();
       if (j % step === 0) {
-        ctx.fillStyle = '#403a2e'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#403548'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(points[j].label, xj, c.h - padB + 14);
       }
     }
@@ -159,16 +159,16 @@
       var cx = colW * i + colW / 2;
       pos[k] = { stemX: cx, stemY: 84, branchX: cx, branchY: 176 };
       var p = m.pillars[k];
-      svg.push('<text x="' + cx + '" y="34" text-anchor="middle" font-size="14" fill="#6b6555">' + names[k] + '</text>');
+      svg.push('<text x="' + cx + '" y="34" text-anchor="middle" font-size="14" fill="#71627a">' + names[k] + '</text>');
       // 天干
-      svg.push('<circle cx="' + cx + '" cy="84" r="26" fill="#fdfbf5" stroke="#7a3e2c"/>');
-      svg.push('<text x="' + cx + '" y="90" text-anchor="middle" font-size="22" fill="#33291f">' + Data.STEMS[p.stem] + '</text>');
+      svg.push('<circle cx="' + cx + '" cy="84" r="26" fill="#fffdfe" stroke="#5d3a6e"/>');
+      svg.push('<text x="' + cx + '" y="90" text-anchor="middle" font-size="22" fill="#362b3a">' + Data.STEMS[p.stem] + '</text>');
       // 地支
-      svg.push('<circle cx="' + cx + '" cy="176" r="26" fill="#f4efe3" stroke="#5b6d54"/>');
-      svg.push('<text x="' + cx + '" y="182" text-anchor="middle" font-size="22" fill="#33291f">' + Data.BRANCHES[p.branch] + '</text>');
+      svg.push('<circle cx="' + cx + '" cy="176" r="26" fill="#f7ecf2" stroke="#c9748f"/>');
+      svg.push('<text x="' + cx + '" y="182" text-anchor="middle" font-size="22" fill="#362b3a">' + Data.BRANCHES[p.branch] + '</text>');
       // 蔵干
       var zk = (m.zokan[k] || []).map(function (z) { return Data.STEMS[z]; }).join('');
-      svg.push('<text x="' + cx + '" y="222" text-anchor="middle" font-size="12" fill="#6b6555">蔵干 ' + esc(zk) + '</text>');
+      svg.push('<text x="' + cx + '" y="222" text-anchor="middle" font-size="12" fill="#71627a">蔵干 ' + esc(zk) + '</text>');
     });
 
     var relColor = { '干合': '#3a6ea5', '支合': '#2e8b57', '冲': '#d2544a', '刑': '#c07c2a', '害': '#9a7bb0', '破': '#888' };
@@ -192,7 +192,7 @@
     // 柱をまたがない関係（三合等）は下部に注記
     var wide = m.gochu.filter(function (r) { return !r.a; });
     wide.forEach(function (r, i) {
-      svg.push('<text x="' + (W / 2) + '" y="' + (256 + i * 16) + '" text-anchor="middle" font-size="12" fill="#5b6d54">◎ ' + r.type + '：' + esc(r.detail) + '</text>');
+      svg.push('<text x="' + (W / 2) + '" y="' + (256 + i * 16) + '" text-anchor="middle" font-size="12" fill="#7d5694">◎ ' + r.type + '：' + esc(r.detail) + '</text>');
     });
 
     svg.push('</svg>');

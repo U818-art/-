@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>四柱推命 Pro — プロ鑑定士のための本格命式ソフト（完全オフライン）</title>
+<title>櫻紫式 四柱推命 — 櫻紫専用鑑定システム（完全オフライン）</title>
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
 <header class="appbar">
   <div class="brand">
-    <span class="brand-mark">命</span>
+    <span class="brand-mark">櫻</span>
     <div>
-      <h1>四柱推命 Pro</h1>
-      <p class="tagline">電話占い・対面・オンライン鑑定のための本格四柱推命 — 完全オフライン動作</p>
+      <h1>櫻紫式 四柱推命</h1>
+      <p class="tagline">櫻紫オリジナル鑑定システム — 電話・対面・オンライン鑑定用（完全オフライン）</p>
     </div>
   </div>
   <nav class="tabs" id="mainTabs">
@@ -444,7 +444,7 @@
           <option value="aishou">相性鑑定書</option>
         </select>
       </label>
-      <label>鑑定士名（奥付に記載）<input type="text" id="pdfSigner" placeholder="例）鑑定士 ○○"></label>
+      <label>鑑定士名（奥付に記載）<input type="text" id="pdfSigner" value="鑑定士 櫻紫"></label>
     </div>
     <div class="actions"><button class="primary" id="btnPDF2">PDF鑑定書を作成</button></div>
     <p class="note">印刷ダイアログで「PDFに保存」を選ぶと保存先を選択できます。書体は明朝体を使用します。</p>
@@ -470,7 +470,7 @@
     <button id="aiClose" class="mini">✕</button>
   </div>
   <div id="aiLog" class="ai-log">
-    <div class="ai-msg bot">こんにちは。用語の意味・使い方・表示中の命式について、何でもお尋ねください。</div>
+    <div class="ai-msg bot">こんにちは、櫻紫先生。用語の意味・使い方・表示中の命式について、何でもお尋ねください。</div>
   </div>
   <div class="ai-input">
     <input type="text" id="aiQuestion" placeholder="例）用神とは？ / PDFの作り方">
@@ -482,7 +482,7 @@
 <div id="printArea" class="print-area" aria-hidden="true"></div>
 
 <footer class="appfoot">
-  <span>四柱推命 Pro — すべての計算・AI処理・保存はこのPC内で完結します（インターネット接続不要）</span>
+  <span>櫻紫式 四柱推命 — 櫻紫専用ツール／すべての計算・AI処理・保存はこのPC内で完結します</span>
 </footer>
 
 <script src="js/astro.js"></script>
